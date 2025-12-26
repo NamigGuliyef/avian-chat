@@ -1,13 +1,9 @@
-import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString, IsBoolean } from 'class-validator';
 
 export enum MessageSenderType {
-  Visitor = 'Visitor',
-  Agent = 'Agent',
-  Chatbot = 'Chatbot',
-}
-
-export enum MessageType {
-  Text = 'Text',
+  visitor = 'visitor',
+  agent = 'agent',
+  bot = 'bot',
 }
 
 export class CreateMessageDto {
@@ -15,23 +11,24 @@ export class CreateMessageDto {
   conversationId: string;
 
   @IsEnum(MessageSenderType)
-  senderType: MessageSenderType;
+  sender: MessageSenderType;
 
   @IsString()
   @IsOptional()
   senderId?: string;
 
-  @IsEnum(MessageType)
-  messageType: MessageType;
+  @IsString()
+  @IsOptional()
+  senderName?: string;
 
   @IsString()
   content: string;
 
   @IsDateString()
   @IsOptional()
-  seenAt?: string;
+  timestamp?: string;
 
-  @IsDateString()
+  @IsBoolean()
   @IsOptional()
-  createdAt?: string;
+  isRead?: boolean;
 }

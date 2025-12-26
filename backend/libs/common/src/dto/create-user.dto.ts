@@ -1,18 +1,19 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength, IsArray, IsBoolean } from 'class-validator';
 import { UserRole } from '../enum/user-role.enum';
 
 export class CreateUserDto {
     @IsString()
     @IsNotEmpty()
-    fullName: string;
+    name: string;
 
     @IsEmail()
+    @IsNotEmpty()
     email: string;
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     @MinLength(8)
-    password: string;
+    password?: string;
 
     @IsEnum(UserRole)
     @IsNotEmpty()
@@ -20,6 +21,20 @@ export class CreateUserDto {
 
     // company id as string (ObjectId)
     @IsString()
-    @IsNotEmpty()
-    companyID?: string;
+    @IsOptional()
+    companyId?: string;
+
+    @IsArray()
+    @IsOptional()
+    channelIds?: string[];
+
+    @IsString()
+    @IsOptional()
+    avatar?: string;
+
+    @IsOptional()
+    isOnline?: boolean;
+
+    @IsOptional()
+    chatbotEnabled?: boolean;
 }

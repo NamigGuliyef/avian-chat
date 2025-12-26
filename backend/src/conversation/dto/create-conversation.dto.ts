@@ -1,11 +1,9 @@
-import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsString, IsArray } from 'class-validator';
 
 export enum ConversationStatus {
-  Open = 'Open',
-  Closed = 'Closed',
-  Snoozed = 'Snoozed',
-  Spam = 'Spam',
-  Chatbot = 'Chatbot',
+  open = 'open',
+  closed = 'closed',
+  snoozed = 'snoozed',
 }
 
 export class CreateConversationDto {
@@ -14,21 +12,25 @@ export class CreateConversationDto {
 
   @IsString()
   @IsOptional()
-  agentId?: string;
+  assignedAgentId?: string;
 
   @IsEnum(ConversationStatus)
   @IsOptional()
   status?: ConversationStatus;
 
-  @IsDateString()
+  @IsString()
   @IsOptional()
-  startedAt?: string;
-
-  @IsDateString()
-  @IsOptional()
-  closedAt?: string;
+  channel?: string;
 
   @IsString()
   @IsOptional()
-  conversationNote?: string;
+  triggerId?: string;
+
+  @IsArray()
+  @IsOptional()
+  tags?: string[];
+
+  @IsDateString()
+  @IsOptional()
+  createdAt?: string;
 }

@@ -35,7 +35,6 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { mockLeads, mockOperationLogs, mockStats, mockCrmUsers } from '@/data/mockData';
 import { OperationLogs } from '@/components/admin/OperationLogs';
-import { ReportsView } from '@/components/admin/ReportsView';
 import { UserManagement } from '@/components/admin/UserManagement';
 import CompanyDetail from '@/components/admin/CompanyDetail';
 import SupervisorManagement from '@/components/admin/SupervisorManagement';
@@ -43,6 +42,7 @@ import LeadManagement from '@/components/admin/LeadManagement';
 import ChatbotsManagement from '@/components/admin/ChatbotsManagement';
 import { User as CrmUser, Lead } from '@/types/crm';
 import { Company } from '@/types/chat';
+import ReportsPage from '@/components/admin/ReportsPage';
 
 const AdminPanel: React.FC = () => {
   const { 
@@ -414,7 +414,11 @@ const AdminPanel: React.FC = () => {
         {activeSection === 'lead-management' && <LeadManagement />}
         {activeSection === 'supervisors' && <SupervisorManagement />}
         {activeSection === 'crm-users' && <div><div className="mb-6"><h2 className="text-2xl font-bold">CRM User-lər</h2><p className="text-sm text-muted-foreground">CRM sistemi üçün istifadəçi idarəetməsi</p></div><UserManagement users={crmUsers} onUsersChange={handleCrmUsersChange} /></div>}
-        {activeSection === 'reports' && <div><div className="mb-6"><h2 className="text-2xl font-bold">Hesabatlar</h2></div><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"><Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Ümumi Söhbətlər</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold">{conversations.length}</p></CardContent></Card><Card><CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Açıq Söhbətlər</CardTitle></CardHeader><CardContent><p className="text-3xl font-bold text-primary">{conversations.filter(c => c.status === 'open').length}</p></CardContent></Card></div><ReportsView stats={stats} /></div>}
+        {activeSection === 'reports' && (
+          <div>
+            <ReportsPage />
+          </div>
+        )}
         {activeSection === 'logs' && <div><div className="mb-6"><h2 className="text-2xl font-bold">Log-lar</h2></div><OperationLogs logs={operationLogs} users={crmUsers} /></div>}
       </div>
     </div>

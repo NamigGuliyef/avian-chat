@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateChannelDto {
   @IsString()
@@ -6,4 +6,8 @@ export class CreateChannelDto {
 
   @IsString()
   companyId: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }

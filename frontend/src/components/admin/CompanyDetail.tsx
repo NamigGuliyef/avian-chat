@@ -255,10 +255,6 @@ const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack }) => {
               <h3 className="text-lg font-semibold">Layihələr</h3>
               <p className="text-sm text-muted-foreground">Bu şirkətə bağlı layihələr</p>
             </div>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Yeni Layihə
-            </Button>
           </div>
 
           <div className="space-y-3">
