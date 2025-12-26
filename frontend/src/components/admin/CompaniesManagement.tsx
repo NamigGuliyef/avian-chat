@@ -58,7 +58,7 @@ const CompaniesManagement: React.FC = () => {
     if (!formData.name || !formData.domain) return;
     
     addCompany({
-      name: formData.name,
+      name: formData.name, 
       domain: formData.domain,
       email: '',
       website: '',

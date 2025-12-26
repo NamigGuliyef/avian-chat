@@ -12,12 +12,14 @@ import {
   Trash2,
   Users,
   Eye,
-  ChevronLeft,
+  ChevronLeft, 
   ChevronRight,
   UserCog,
   FolderKanban,
   MessageSquare,
-  PhoneCall
+  PhoneCall,
+  Search,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +28,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { mockLeads, mockOperationLogs, mockStats, mockCrmUsers } from '@/data/mockData';
@@ -63,14 +68,34 @@ const AdminPanel: React.FC = () => {
   const [operationLogs] = useState(mockOperationLogs);
   const [stats] = useState(mockStats);
 
-  const [companyForm, setCompanyForm] = useState({ name: '', domain: '' });
+  const [companyForm, setCompanyForm] = useState({
+    name: '',
+    domain: '',
+    projectType: '' as '' | 'outbound' | 'inbound',
+    projectKind: '' as '' | 'call' | 'social',
+    projectName: '' as '' | 'survey' | 'telesales' | 'telemarketing',
+    supervisorIds: [] as string[],
+    userIds: [] as string[],
+    supervisorSearch: '',
+    userSearch: ''
+  });
 
   if (!isAuthenticated || currentUser?.role !== 'admin') {
     return <Navigate to="/login" replace />;
   }
 
   const resetCompanyForm = () => {
-    setCompanyForm({ name: '', domain: '' });
+    setCompanyForm({
+      name: '',
+      domain: '',
+      projectType: '',
+      projectKind: '',
+      projectName: '',
+      supervisorIds: [],
+      userIds: [],
+      supervisorSearch: '',
+      userSearch: ''
+    });
     setEditingCompany(null);
   };
 
@@ -94,13 +119,55 @@ const AdminPanel: React.FC = () => {
   };
 
   const startEditCompany = (company: Company) => {
-    setCompanyForm({ name: company.name, domain: company.domain || '' });
+    // setCompanyForm(company as any);
+    setCompanyForm({
+      name: '',
+      domain: '',
+      projectType: '',
+      projectKind: '',
+      projectName: '',
+      supervisorIds: [],
+      userIds: [],
+      supervisorSearch: '',
+      userSearch: ''
+    })
     setEditingCompany(company.id);
     setIsCompanyDialogOpen(true);
   };
 
   const handleCrmUsersChange = (newUsers: CrmUser[]) => setCrmUsers(newUsers);
   const getCompanyAgents = (companyId: string) => users.filter(u => u.companyId === companyId);
+
+  const supervisors = crmUsers.filter(u => u.role === 'supervayzer');
+  const agents = crmUsers.filter(u => u.role === 'agent');
+
+  const filteredSupervisors = supervisors.filter(s => 
+    s.name.toLowerCase().includes(companyForm.supervisorSearch.toLowerCase()) ||
+    s.email.toLowerCase().includes(companyForm.supervisorSearch.toLowerCase())
+  );
+
+  const filteredAgents = agents.filter(a => 
+    a.name.toLowerCase().includes(companyForm.userSearch.toLowerCase()) ||
+    a.email.toLowerCase().includes(companyForm.userSearch.toLowerCase())
+  );
+
+  const toggleSupervisor = (supId: string) => {
+    setCompanyForm(prev => ({
+      ...prev,
+      supervisorIds: prev.supervisorIds.includes(supId)
+        ? prev.supervisorIds.filter(id => id !== supId)
+        : [...prev.supervisorIds, supId]
+    }));
+  };
+
+  const toggleUser = (userId: string) => {
+    setCompanyForm(prev => ({
+      ...prev,
+      userIds: prev.userIds.includes(userId)
+        ? prev.userIds.filter(id => id !== userId)
+        : [...prev.userIds, userId]
+    }));
+  }; 
 
   const menuItems = [
     { id: 'companies', icon: Building2, label: 'Şirkətlər' },
@@ -182,11 +249,132 @@ const AdminPanel: React.FC = () => {
               <h2 className="text-2xl font-bold">Şirkətlər</h2>
               <Dialog open={isCompanyDialogOpen} onOpenChange={(open) => { setIsCompanyDialogOpen(open); if (!open) resetCompanyForm(); }}>
                 <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Yeni Şirkət</Button></DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader><DialogTitle>{editingCompany ? 'Şirkəti Redaktə Et' : 'Yeni Şirkət'}</DialogTitle></DialogHeader>
                   <div className="space-y-4 mt-4">
                     <div><Label>Şirkət adı</Label><Input value={companyForm.name} onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })} placeholder="Şirkət adı" /></div>
                     <div><Label>Domain</Label><Input value={companyForm.domain} onChange={(e) => setCompanyForm({ ...companyForm, domain: e.target.value })} placeholder="example.com" /></div>
+
+                    <div className="space-y-2">
+                      <Label>Layihə tipi</Label>
+                      <Select value={companyForm.projectType} onValueChange={(v: 'outbound' | 'inbound') => setCompanyForm({ ...companyForm, projectType: v })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Layihə tipi seçin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="outbound">Outbound</SelectItem>
+                          <SelectItem value="inbound">Inbound</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Layihənin növü</Label>
+                      <Select value={companyForm.projectKind} onValueChange={(v: 'call' | 'social') => setCompanyForm({ ...companyForm, projectKind: v })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Layihənin növünü seçin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="call">Call</SelectItem>
+                          <SelectItem value="social">Sosial şəbəkə</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Layihənin adı</Label>
+                      <Select value={companyForm.projectName} onValueChange={(v: 'survey' | 'telesales' | 'telemarketing') => setCompanyForm({ ...companyForm, projectName: v })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Layihənin adını seçin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="survey">Survey</SelectItem>
+                          <SelectItem value="telesales">Telesales</SelectItem>
+                          <SelectItem value="telemarketing">Tele Marketing</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Supervayzer seçin</Label>
+                      <div className="relative mb-2">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Supervayzer axtar..."
+                          value={companyForm.supervisorSearch}
+                          onChange={(e) => setCompanyForm({ ...companyForm, supervisorSearch: e.target.value })}
+                          className="pl-9"
+                        />
+                      </div>
+                      <ScrollArea className="h-32 border rounded-lg p-2">
+                        {filteredSupervisors.map((sup) => (
+                          <div key={sup.id} className="flex items-center gap-2 py-1.5 px-1 hover:bg-muted rounded">
+                            <Checkbox
+                              id={`sup-${sup.id}`}
+                              checked={companyForm.supervisorIds.includes(sup.id)}
+                              onCheckedChange={() => toggleSupervisor(sup.id)}
+                            />
+                            <label htmlFor={`sup-${sup.id}`} className="text-sm cursor-pointer flex-1">{sup.name}</label>
+                            <span className="text-xs text-muted-foreground">{sup.email}</span>
+                          </div>
+                        ))}
+                        {filteredSupervisors.length === 0 && <p className="text-sm text-muted-foreground text-center py-2">Supervayzer tapılmadı</p>}
+                      </ScrollArea>
+                      {companyForm.supervisorIds.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {companyForm.supervisorIds.map(id => {
+                            const sup = supervisors.find(s => s.id === id);
+                            return sup ? (
+                              <Badge key={id} variant="secondary" className="gap-1">
+                                {sup.name}
+                                <X className="h-3 w-3 cursor-pointer" onClick={() => toggleSupervisor(id)} />
+                              </Badge>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>İstifadəçilər seçin (çoxlu seçim)</Label>
+                      <div className="relative mb-2">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Agent axtar..."
+                          value={companyForm.userSearch}
+                          onChange={(e) => setCompanyForm({ ...companyForm, userSearch: e.target.value })}
+                          className="pl-9"
+                        />
+                      </div>
+                      <ScrollArea className="h-32 border rounded-lg p-2">
+                        {filteredAgents.map((agent) => (
+                          <div key={agent.id} className="flex items-center gap-2 py-1.5 px-1 hover:bg-muted rounded">
+                            <Checkbox
+                              id={`agent-${agent.id}`}
+                              checked={companyForm.userIds.includes(agent.id)}
+                              onCheckedChange={() => toggleUser(agent.id)}
+                            />
+                            <label htmlFor={`agent-${agent.id}`} className="text-sm cursor-pointer flex-1">{agent.name}</label>
+                            <span className="text-xs text-muted-foreground">{agent.email}</span>
+                          </div>
+                        ))}
+                        {filteredAgents.length === 0 && <p className="text-sm text-muted-foreground text-center py-2">Agent tapılmadı</p>}
+                      </ScrollArea>
+                      {companyForm.userIds.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {companyForm.userIds.map(id => {
+                            const agent = agents.find(a => a.id === id);
+                            return agent ? (
+                              <Badge key={id} variant="secondary" className="gap-1">
+                                {agent.name}
+                                <X className="h-3 w-3 cursor-pointer" onClick={() => toggleUser(id)} />
+                              </Badge>
+                            ) : null;
+                          })}
+                        </div>
+                      )}
+                    </div>
+
                     <Button className="w-full" onClick={editingCompany ? handleUpdateCompany : handleAddCompany}>{editingCompany ? 'Yenilə' : 'Yarat'}</Button>
                   </div>
                 </DialogContent>
