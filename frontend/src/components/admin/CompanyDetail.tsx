@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { Company, UserRole } from '@/types/chat';
 import {
   ArrowLeft,
+  Folder,
   Plus,
   Radio,
   Trash2,
@@ -99,8 +100,8 @@ const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack }) => {
             İstifadəçilər
           </TabsTrigger>
           <TabsTrigger value="projects" className="gap-2">
-            <Users className="w-4 h-4" />
-            Layiheler
+            <Folder className="w-4 h-4" />
+            Layihələr
           </TabsTrigger>
         </TabsList>
 
