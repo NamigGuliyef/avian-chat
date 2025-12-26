@@ -1,0 +1,238 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    /* Brand Colors - Professional Blue Theme */
+    --brand-primary: 217 91% 60%;
+    --brand-primary-light: 217 91% 70%;
+    --brand-primary-dark: 217 91% 45%;
+    --brand-secondary: 220 14% 96%;
+    
+    /* Backgrounds */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    
+    /* Primary - Blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Secondary - Light Gray */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+    
+    /* Muted */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    
+    /* Accent */
+    --accent: 217 91% 95%;
+    --accent-foreground: 217 91% 40%;
+    
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Success */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    
+    /* Warning */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    
+    /* Borders & Inputs */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
+    
+    --radius: 0.5rem;
+    
+    /* Chat Widget Specific */
+    --chat-header: 217 91% 55%;
+    --chat-bubble-user: 217 91% 60%;
+    --chat-bubble-agent: 220 14% 96%;
+    --chat-bubble-bot: 220 14% 96%;
+    
+    /* Sidebar */
+    --sidebar-background: 220 14% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 91% 95%;
+    --sidebar-accent-foreground: 217 91% 40%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217 91% 60%;
+    
+    /* Status Colors */
+    --status-online: 142 76% 36%;
+    --status-offline: 220 9% 46%;
+    --status-away: 38 92% 50%;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+    
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 212 27% 84%;
+    
+    --sidebar-background: 222 47% 8%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  /* Chat Widget Styles */
+  .chat-widget-container {
+    @apply fixed bottom-6 right-6 z-50;
+  }
+  
+  .chat-bubble-user {
+    @apply bg-primary text-primary-foreground rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%] ml-auto;
+  }
+  
+  .chat-bubble-agent {
+    @apply bg-secondary text-secondary-foreground rounded-2xl rounded-bl-sm px-4 py-2 max-w-[80%];
+  }
+  
+  .chat-bubble-bot {
+    @apply bg-secondary text-secondary-foreground rounded-2xl rounded-bl-sm px-4 py-2 max-w-[80%];
+  }
+  
+  /* Quick Button Styles */
+  .quick-button {
+    @apply border border-border rounded-full px-4 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-all duration-200 cursor-pointer;
+  }
+  
+  /* Inbox Styles */
+  .inbox-sidebar {
+    @apply bg-sidebar-background border-r border-sidebar-border;
+  }
+  
+  .inbox-item {
+    @apply flex items-center gap-3 px-4 py-3 hover:bg-sidebar-accent cursor-pointer transition-colors duration-150;
+  }
+  
+  .inbox-item-active {
+    @apply bg-sidebar-accent;
+  }
+  
+  /* Status Indicator */
+  .status-dot {
+    @apply w-2.5 h-2.5 rounded-full;
+  }
+  
+  .status-online {
+    @apply bg-[hsl(var(--status-online))];
+  }
+  
+  .status-offline {
+    @apply bg-[hsl(var(--status-offline))];
+  }
+  
+  .status-away {
+    @apply bg-[hsl(var(--status-away))];
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 3px;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s ease-in-out infinite;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    from { 
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes bounceGentle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+}
