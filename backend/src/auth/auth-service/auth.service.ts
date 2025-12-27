@@ -1,5 +1,5 @@
 import { CreateUserDto } from '@app/common/dto/create-user.dto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { hashPassword } from 'src/helper/hashpass';
@@ -14,6 +14,9 @@ export class AuthService {
     async createUser(createUserDto: CreateUserDto): Promise<{ user: any, message: string }> {
 
         // hash password
+        if (!createUserDto.password) {
+            throw new NotFoundException('Parol daxil edilməyib');
+        }
         const hashedPassword = await hashPassword(createUserDto.password);
 
         // user microservice-ə sorğu göndərilir

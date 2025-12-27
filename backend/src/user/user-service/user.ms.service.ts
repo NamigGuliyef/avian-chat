@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { RpcException } from '@nestjs/microservices';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateUserDto } from '../../libs/common/src/dto/create-user.dto';
-import { User } from './model/user.schema';
+import { User } from '../model/user.schema';
+import { CreateUserDto } from '@app/common/dto/create-user.dto';
+
 
 @Injectable()
-export class UserService {
+export class UserMicroService {
   constructor(@InjectModel(User.name) private readonly userModel: Model<User>) { }
 
   async create(createUserDto: CreateUserDto) {

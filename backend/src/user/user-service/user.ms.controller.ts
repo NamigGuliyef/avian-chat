@@ -1,12 +1,12 @@
 import { Controller } from '@nestjs/common';
-import { UserService } from './user.service';
 import { MessagePattern } from '@nestjs/microservices';
-import { CreateUserDto } from '../../libs/common/src/dto/create-user.dto';
+import { CreateUserDto } from '../../../libs/common/src/dto/create-user.dto';
+import { UserMicroService } from './user.ms.service';
 
 @Controller()
-export class UserController {
+export class UserMicroServiceController {
 
-    constructor(private readonly userService: UserService) { }
+    constructor(private readonly userService: UserMicroService) { }
 
     // istifadəçi yaradılması funksiyası
 
