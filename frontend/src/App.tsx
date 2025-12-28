@@ -22,13 +22,13 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/" element={<Login />} />
-            <Route path="/user/login" element={<UserLogin />} />
-            <Route path="/user/dashboard" element={<UserDashboard />} />
-            <Route path="/supervisor" element={<SupervisorPanel />} />
-            <Route path="/widget" element={<WidgetDemo />} />
-            <Route path="*" element={<NotFound />} />
+            {/*+*/} <Route path="/" element={<Login />} />
+            {/*-*/} <Route path="/admin" element={<AdminPanel />} />
+            {/*-*/} <Route path="/user/login" element={<UserLogin />} />
+            {/*-*/} <Route path="/user/dashboard" element={<UserDashboard />} />
+            {/*-*/} <Route path="/supervisor" element={<SupervisorPanel />} />
+            {/*-*/} <Route path="/widget" element={<WidgetDemo />} />
+            {/*-*/} <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

@@ -1,3 +1,4 @@
+import { addCompany, deleteCompany, getCompanies, getUsers, updateCompany } from '@/api/company';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,8 +11,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useChat } from '@/contexts/ChatContext';
 import { mockCrmUsers, mockStats } from '@/data/mockData';
-import { Company } from '@/types/chat';
 import { User as CrmUser } from '@/types/crm';
+import { ICompany, IUser, ProjectDirection, ProjectName, ProjectType, Roles } from '@/types/types';
 import {
     Building2,
     Edit,
@@ -21,55 +22,49 @@ import {
     Trash2,
     X
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+const initialCompany: ICompany = {
+    _id: '',
+    name: '',
+    domain: '',
+    projectType: ProjectType.Inbound,
+    projectDirection: ProjectDirection.Call,
+    projectName: ProjectName.Survey,
+    supervisors: [],
+    agents: [],
+    channels: []
+}
 const CompanyManagement = ({ setSelectedCompany }: any) => {
-    const {
-        users,
-        companies,
-        addCompany,
-        updateCompany,
-        deleteCompany,
-    } = useChat();
-    const [crmUsers, setCrmUsers] = useState<CrmUser[]>(mockCrmUsers);
+    const [companies, setCompanies] = useState<ICompany[]>([])
     const [isCompanyDialogOpen, setIsCompanyDialogOpen] = useState(false);
-    const [editingCompany, setEditingCompany] = useState<string | null>(null);
-    const [stats] = useState(mockStats);
+    const [editingCompany, setEditingCompany] = useState<ICompany>(initialCompany);
+    const [selectedSupervisors, setSelectedSupervisors] = useState<string[]>([])
+    const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([])
+    const [supervisors, setSupervisors] = useState<IUser[]>([])
+    const [agents, setAgents] = useState<IUser[]>([])
 
-
-    const [companyForm, setCompanyForm] = useState({
-        name: '',
-        domain: '',
-        projectType: '' as '' | 'outbound' | 'inbound',
-        projectKind: '' as '' | 'call' | 'social',
-        projectName: '' as '' | 'survey' | 'telesales' | 'telemarketing',
-        supervisorIds: [] as string[],
-        userIds: [] as string[],
-        supervisorSearch: '',
-        userSearch: ''
-    });
+    useEffect(() => {
+        getCompanies().then((d) => setCompanies(d))
+        getUsers('').then((_us) => {
+            const _s = _us.filter((u) => u.role === Roles.Supervisor)
+            const _u = _us.filter((u) => u.role === Roles.Agent)
+            setSupervisors(_s)
+            setAgents(_u)
+        })
+    }, [])
 
     const resetCompanyForm = () => {
-        setCompanyForm({
-            name: '',
-            domain: '',
-            projectType: '',
-            projectKind: '',
-            projectName: '',
-            supervisorIds: [],
-            userIds: [],
-            supervisorSearch: '',
-            userSearch: ''
-        });
-        setEditingCompany(null);
+        setEditingCompany(initialCompany);
     };
 
     const handleAddCompany = () => {
-        if (!companyForm.name) {
+        if (!editingCompany.name) {
             toast.error('Şirkət adını daxil edin');
             return;
         }
-        addCompany({ name: companyForm.name, domain: companyForm.domain, email: '', website: '' });
+        addCompany(editingCompany);
         toast.success('Şirkət yaradıldı (default live-chat kanalı ilə)');
         resetCompanyForm();
         setIsCompanyDialogOpen(false);
@@ -77,62 +72,39 @@ const CompanyManagement = ({ setSelectedCompany }: any) => {
 
     const handleUpdateCompany = () => {
         if (!editingCompany) return;
-        updateCompany(editingCompany, { name: companyForm.name, domain: companyForm.domain });
+        updateCompany(editingCompany);
         toast.success('Şirkət yeniləndi');
         resetCompanyForm();
         setIsCompanyDialogOpen(false);
     };
 
-    const startEditCompany = (company: Company) => {
-        // setCompanyForm(company as any);
-        setCompanyForm({
-            name: '',
-            domain: '',
-            projectType: '',
-            projectKind: '',
-            projectName: '',
-            supervisorIds: [],
-            userIds: [],
-            supervisorSearch: '',
-            userSearch: ''
-        })
-        setEditingCompany(company.id);
-        setIsCompanyDialogOpen(true);
+    const handleDeleteCompany = (companyId) => {
+        deleteCompany(companyId);
+        toast.success('Şirkət silindi');
     };
 
-    const getCompanyAgents = (companyId: string) => users.filter(u => u.companyId === companyId);
 
-    const supervisors = crmUsers.filter(u => u.role === 'supervayzer');
-    const agents = crmUsers.filter(u => u.role === 'agent');
-
-
-    const filteredSupervisors = supervisors.filter(s =>
-        s.name.toLowerCase().includes(companyForm.supervisorSearch.toLowerCase()) ||
-        s.email.toLowerCase().includes(companyForm.supervisorSearch.toLowerCase())
-    );
-
-    const filteredAgents = agents.filter(a =>
-        a.name.toLowerCase().includes(companyForm.userSearch.toLowerCase()) ||
-        a.email.toLowerCase().includes(companyForm.userSearch.toLowerCase())
-    );
+    const startEditCompany = (company: ICompany) => {
+        // setEditingCompany(company as any);
+        setEditingCompany(company)
+        setIsCompanyDialogOpen(true);
+        setSelectedSupervisors(company.supervisors.map((sup) => sup._id))
+        setSelectedAgentIds(company.agents.map((ag) => ag._id))
+    };
 
     const toggleSupervisor = (supId: string) => {
-        setCompanyForm(prev => ({
-            ...prev,
-            supervisorIds: prev.supervisorIds.includes(supId)
-                ? prev.supervisorIds.filter(id => id !== supId)
-                : [...prev.supervisorIds, supId]
-        }));
+        setSelectedSupervisors((prev) => prev.includes(supId)
+            ? prev.filter(id => id !== supId)
+            : [...prev, supId])
     };
 
-    const toggleUser = (userId: string) => {
-        setCompanyForm(prev => ({
-            ...prev,
-            userIds: prev.userIds.includes(userId)
-                ? prev.userIds.filter(id => id !== userId)
-                : [...prev.userIds, userId]
-        }));
+    const toggleUser = (agentId: string) => {
+        setSelectedAgentIds((prev) => prev.includes(agentId)
+            ? prev.filter(id => id !== agentId)
+            : [...prev, agentId])
     };
+
+    const company = companies.find((comp) => comp._id === editingCompany._id)
 
     return (
         <div>
@@ -143,45 +115,45 @@ const CompanyManagement = ({ setSelectedCompany }: any) => {
                     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                         <DialogHeader><DialogTitle>{editingCompany ? 'Şirkəti Redaktə Et' : 'Yeni Şirkət'}</DialogTitle></DialogHeader>
                         <div className="space-y-4 mt-4">
-                            <div><Label>Şirkət adı</Label><Input value={companyForm.name} onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })} placeholder="Şirkət adı" /></div>
-                            <div><Label>Domain</Label><Input value={companyForm.domain} onChange={(e) => setCompanyForm({ ...companyForm, domain: e.target.value })} placeholder="example.com" /></div>
+                            <div><Label>Şirkət adı</Label><Input value={editingCompany.name} onChange={(e) => setEditingCompany({ ...editingCompany, name: e.target.value })} placeholder="Şirkət adı" /></div>
+                            <div><Label>Domain</Label><Input value={editingCompany.domain} onChange={(e) => setEditingCompany({ ...editingCompany, domain: e.target.value })} placeholder="example.com" /></div>
 
                             <div className="space-y-2">
                                 <Label>Layihə tipi</Label>
-                                <Select value={companyForm.projectType} onValueChange={(v: 'outbound' | 'inbound') => setCompanyForm({ ...companyForm, projectType: v })}>
+                                <Select value={String(editingCompany.projectType)} onValueChange={(v: ProjectType) => setEditingCompany({ ...editingCompany, projectType: v })}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Layihə tipi seçin" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="outbound">Outbound</SelectItem>
-                                        <SelectItem value="inbound">Inbound</SelectItem>
+                                        <SelectItem value={String(ProjectType.Outbound)}>Outbound</SelectItem>
+                                        <SelectItem value={String(ProjectType.Inbound)}>Inbound</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             <div className="space-y-2">
                                 <Label>Layihənin növü</Label>
-                                <Select value={companyForm.projectKind} onValueChange={(v: 'call' | 'social') => setCompanyForm({ ...companyForm, projectKind: v })}>
+                                <Select value={String(editingCompany.projectDirection)} onValueChange={(v: ProjectDirection) => setEditingCompany({ ...editingCompany, projectDirection: v })}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Layihənin növünü seçin" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="call">Call</SelectItem>
-                                        <SelectItem value="social">Sosial şəbəkə</SelectItem>
+                                        <SelectItem value={String(ProjectDirection.Call)}>Call</SelectItem>
+                                        <SelectItem value={String(ProjectDirection.Social)}>Sosial şəbəkə</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             <div className="space-y-2">
                                 <Label>Layihənin adı</Label>
-                                <Select value={companyForm.projectName} onValueChange={(v: 'survey' | 'telesales' | 'telemarketing') => setCompanyForm({ ...companyForm, projectName: v })}>
+                                <Select value={String(editingCompany.projectName)} onValueChange={(v: ProjectName) => setEditingCompany({ ...editingCompany, projectName: v })}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Layihənin adını seçin" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="survey">Survey</SelectItem>
-                                        <SelectItem value="telesales">Telesales</SelectItem>
-                                        <SelectItem value="telemarketing">Tele Marketing</SelectItem>
+                                        <SelectItem value={String(ProjectName.Survey)}>Survey</SelectItem>
+                                        <SelectItem value={String(ProjectName.Telesales)}>Telesales</SelectItem>
+                                        <SelectItem value={String(ProjectName.Telemarketing)}>Tele Marketing</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -192,33 +164,32 @@ const CompanyManagement = ({ setSelectedCompany }: any) => {
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder="Supervayzer axtar..."
-                                        value={companyForm.supervisorSearch}
-                                        onChange={(e) => setCompanyForm({ ...companyForm, supervisorSearch: e.target.value })}
+                                        onChange={(e) => { }}
                                         className="pl-9"
                                     />
                                 </div>
                                 <ScrollArea className="h-32 border rounded-lg p-2">
-                                    {filteredSupervisors.map((sup) => (
-                                        <div key={sup.id} className="flex items-center gap-2 py-1.5 px-1 hover:bg-muted rounded">
+                                    {supervisors.map((sup) => (
+                                        <div key={sup._id} className="flex items-center gap-2 py-1.5 px-1 hover:bg-muted rounded">
                                             <Checkbox
-                                                id={`sup-${sup.id}`}
-                                                checked={companyForm.supervisorIds.includes(sup.id)}
-                                                onCheckedChange={() => toggleSupervisor(sup.id)}
+                                                id={`sup-${sup._id}`}
+                                                checked={selectedSupervisors.includes(sup._id)}
+                                                onCheckedChange={() => toggleSupervisor(sup._id)}
                                             />
-                                            <label htmlFor={`sup-${sup.id}`} className="text-sm cursor-pointer flex-1">{sup.name}</label>
+                                            <label htmlFor={`sup-${sup._id}`} className="text-sm cursor-pointer flex-1">{sup.name}</label>
                                             <span className="text-xs text-muted-foreground">{sup.email}</span>
                                         </div>
                                     ))}
-                                    {filteredSupervisors.length === 0 && <p className="text-sm text-muted-foreground text-center py-2">Supervayzer tapılmadı</p>}
+                                    {supervisors.length === 0 && <p className="text-sm text-muted-foreground text-center py-2">Supervayzer tapılmadı</p>}
                                 </ScrollArea>
-                                {companyForm.supervisorIds.length > 0 && (
+                                {editingCompany.supervisors.length > 0 && (
                                     <div className="flex flex-wrap gap-1 mt-2">
-                                        {companyForm.supervisorIds.map(id => {
-                                            const sup = supervisors.find(s => s.id === id);
+                                        {editingCompany.supervisors.map(_s => {
+                                            const sup = company.supervisors.find(s => s._id === _s._id);
                                             return sup ? (
-                                                <Badge key={id} variant="secondary" className="gap-1">
+                                                <Badge key={sup._id} variant="secondary" className="gap-1">
                                                     {sup.name}
-                                                    <X className="h-3 w-3 cursor-pointer" onClick={() => toggleSupervisor(id)} />
+                                                    <X className="h-3 w-3 cursor-pointer" onClick={() => toggleSupervisor(sup._id)} />
                                                 </Badge>
                                             ) : null;
                                         })}
@@ -226,35 +197,35 @@ const CompanyManagement = ({ setSelectedCompany }: any) => {
                                 )}
                             </div>
 
-                            <div className="space-y-2">
+                            {/* <div className="space-y-2">
                                 <Label>İstifadəçilər seçin (çoxlu seçim)</Label>
                                 <div className="relative mb-2">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder="Agent axtar..."
-                                        value={companyForm.userSearch}
-                                        onChange={(e) => setCompanyForm({ ...companyForm, userSearch: e.target.value })}
+                                        value={editingCompany.userSearch}
+                                        onChange={(e) => setEditingCompany({ ...editingCompany, userSearch: e.target.value })}
                                         className="pl-9"
                                     />
                                 </div>
                                 <ScrollArea className="h-32 border rounded-lg p-2">
-                                    {filteredAgents.map((agent) => (
-                                        <div key={agent.id} className="flex items-center gap-2 py-1.5 px-1 hover:bg-muted rounded">
+                                    {company && company.agents.map((agent) => (
+                                        <div key={agent._id} className="flex items-center gap-2 py-1.5 px-1 hover:bg-muted rounded">
                                             <Checkbox
-                                                id={`agent-${agent.id}`}
-                                                checked={companyForm.userIds.includes(agent.id)}
-                                                onCheckedChange={() => toggleUser(agent.id)}
+                                                id={`agent-${agent._id}`}
+                                                checked={editingCompany.agentIds.includes(agent._id)}
+                                                onCheckedChange={() => toggleUser(agent._id)}
                                             />
-                                            <label htmlFor={`agent-${agent.id}`} className="text-sm cursor-pointer flex-1">{agent.name}</label>
+                                            <label htmlFor={`agent-${agent._id}`} className="text-sm cursor-pointer flex-1">{agent.name}</label>
                                             <span className="text-xs text-muted-foreground">{agent.email}</span>
                                         </div>
                                     ))}
-                                    {filteredAgents.length === 0 && <p className="text-sm text-muted-foreground text-center py-2">Agent tapılmadı</p>}
+                                    {company && company.agents.length === 0 && <p className="text-sm text-muted-foreground text-center py-2">Agent tapılmadı</p>}
                                 </ScrollArea>
-                                {companyForm.userIds.length > 0 && (
+                                {editingCompany.agentIds.length > 0 && (
                                     <div className="flex flex-wrap gap-1 mt-2">
-                                        {companyForm.userIds.map(id => {
-                                            const agent = agents.find(a => a.id === id);
+                                        {editingCompany.agentIds.map(id => {
+                                            const agent = company && company.agents.find(a => a._id === id);
                                             return agent ? (
                                                 <Badge key={id} variant="secondary" className="gap-1">
                                                     {agent.name}
@@ -264,7 +235,7 @@ const CompanyManagement = ({ setSelectedCompany }: any) => {
                                         })}
                                     </div>
                                 )}
-                            </div>
+                            </div> */}
 
                             <Button className="w-full" onClick={editingCompany ? handleUpdateCompany : handleAddCompany}>{editingCompany ? 'Yenilə' : 'Yarat'}</Button>
                         </div>
@@ -272,26 +243,25 @@ const CompanyManagement = ({ setSelectedCompany }: any) => {
                 </Dialog>
             </div>
             <div className="space-y-3">
-                {companies.map((company) => {
-                    const agents = getCompanyAgents(company.id);
+                {companies.map((_company) => {
                     return (
-                        <Card key={company.id} className="hover:bg-muted/30 transition-colors">
+                        <Card key={_company._id} className="hover:bg-muted/30 transition-colors">
                             <CardContent className="flex items-center justify-between p-4">
-                                <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => setSelectedCompany(company)}>
+                                <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => setSelectedCompany(_company)}>
                                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><Building2 className="h-6 w-6" /></div>
-                                    <div><p className="font-semibold text-lg">{company.name}</p><p className="text-sm text-muted-foreground">{company.domain || 'Domain yoxdur'}</p></div>
+                                    <div><p className="font-semibold text-lg">{_company.name}</p><p className="text-sm text-muted-foreground">{_company.domain || 'Domain yoxdur'}</p></div>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <Popover>
-                                        <PopoverTrigger asChild><Button variant="ghost" size="sm" className="gap-2 text-muted-foreground"><Eye className="h-4 w-4" />{agents.length}</Button></PopoverTrigger>
+                                        <PopoverTrigger asChild><Button variant="ghost" size="sm" className="gap-2 text-muted-foreground"><Eye className="h-4 w-4" />{_company.agents.length}</Button></PopoverTrigger>
                                         <PopoverContent className="w-64 p-0" align="end">
                                             <div className="p-3 border-b"><p className="font-medium text-sm">Agentlər</p></div>
-                                            <ScrollArea className="max-h-48">{agents.length > 0 ? <div className="p-2 space-y-1">{agents.map((agent) => (<div key={agent.id} className="flex items-center gap-2 p-2 rounded hover:bg-muted"><div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-medium">{agent.name.charAt(0)}</div><div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{agent.name}</p><p className="text-xs text-muted-foreground truncate">{agent.email}</p></div></div>))}</div> : <div className="p-4 text-center text-sm text-muted-foreground">Agent yoxdur</div>}</ScrollArea>
+                                            <ScrollArea className="max-h-48">{_company.agents.length > 0 ? <div className="p-2 space-y-1">{_company.agents.map((agent) => (<div key={agent._id} className="flex items-center gap-2 p-2 rounded hover:bg-muted"><div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-medium">{agent.name.charAt(0)}</div><div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{agent.name}</p><p className="text-xs text-muted-foreground truncate">{agent.email}</p></div></div>))}</div> : <div className="p-4 text-center text-sm text-muted-foreground">Agent yoxdur</div>}</ScrollArea>
                                         </PopoverContent>
                                     </Popover>
                                     <div className="flex gap-1">
-                                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); startEditCompany(company); }}><Edit className="h-4 w-4" /></Button>
-                                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); deleteCompany(company.id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); startEditCompany(_company); }}><Edit className="h-4 w-4" /></Button>
+                                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDeleteCompany(_company._id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                     </div>
                                 </div>
                             </CardContent>
@@ -299,7 +269,7 @@ const CompanyManagement = ({ setSelectedCompany }: any) => {
                     );
                 })}
             </div>
-        </div>
+        </div >
     )
 }
 export default CompanyManagement

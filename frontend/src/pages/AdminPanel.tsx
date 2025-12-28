@@ -12,6 +12,7 @@ import { mockCrmUsers, mockOperationLogs } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { Company } from '@/types/chat';
 import { User as CrmUser } from '@/types/crm';
+import { ICompany } from '@/types/types';
 import {
   BarChart3,
   Bot,
@@ -36,7 +37,7 @@ const AdminPanel: React.FC = () => {
 
   const [activeSection, setActiveSection] = useState('companies');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<ICompany | null>(null);
 
   // CRM State
   const [crmUsers, setCrmUsers] = useState<CrmUser[]>(mockCrmUsers);

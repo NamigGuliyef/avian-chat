@@ -2,9 +2,6 @@ export type CallStatus = 'successful' | 'unsuccessful' | 'pending' | 'callback' 
 export type CustomerStatus = 'ok' | 'not_ok' | 'pending' | 'interested';
 export type CrmUserRole = 'admin' | 'supervayzer' | 'agent' | 'partner';
 export type UserStatus = 'available' | 'busy' | 'break' | 'offline';
-export type TicketStatus = 'new' | 'in_progress' | 'pending' | 'completed';
-export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type TicketChannel = 'chat' | 'call' | 'social';
 
 export interface Lead {
   id: string;
@@ -136,37 +133,6 @@ export interface SupervisorAssignment {
   createdAt: string;
 }
 
-// Ticket/Task
-export interface Ticket {
-  id: string;
-  title: string;
-  description?: string;
-  type: 'task' | 'ticket';
-  status: TicketStatus;
-  priority: TicketPriority;
-  channel?: TicketChannel;
-  tags: string[];
-  deadline?: string;
-  assignedAgentId: string;
-  assignedAgentName?: string;
-  supervisorId: string;
-  notes: TicketNote[];
-  attachments?: string[];
-  slaTime?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface TicketNote {
-  id: string;
-  content: string;
-  authorId: string;
-  authorName: string;
-  isInternal: boolean;
-  createdAt: string;
-}
-
-// Agent KPI metrics
 export interface AgentKPI {
   agentId: string;
   answeredTickets: number;
