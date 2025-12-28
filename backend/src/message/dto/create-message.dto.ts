@@ -1,4 +1,10 @@
-import { IsDateString, IsEnum, IsOptional, IsString, IsBoolean } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsBoolean,
+} from 'class-validator';
 
 export enum MessageSenderType {
   visitor = 'visitor',

@@ -1,24 +1,20 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
-
-export type CompanyDocument = Company & Document;
+import mongoose from 'mongoose';
+import { Channel } from 'src/channel/model/channel.schema';
 
 @Schema({ versionKey: false, timestamps: true })
+
 export class Company {
+
   @Prop({ required: true })
   name: string;
 
   @Prop({ required: false })
-  domain?: string;
+  domain: string;
 
-  @Prop({ required: false })
-  email?: string;
+  @Prop({ default: false, ref: 'Channel', type: [mongoose.Schema.Types.ObjectId] })
+  channels: Channel[];
 
-  @Prop({ required: false })
-  website?: string;
-
-  @Prop({ type: [String], default: [] })
-  channels: string[]; // store channel ids
 }
 
 export const CompanySchema = SchemaFactory.createForClass(Company);

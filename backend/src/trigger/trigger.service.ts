@@ -5,7 +5,9 @@ import { TriggerDocument, Trigger } from './model/trigger.schema';
 
 @Injectable()
 export class TriggerService {
-  constructor(@InjectModel(Trigger.name) private triggerModel: Model<TriggerDocument>) {}
+  constructor(
+    @InjectModel(Trigger.name) private triggerModel: Model<TriggerDocument>,
+  ) {}
 
   async findAll(): Promise<Trigger[]> {
     return this.triggerModel.find().lean();

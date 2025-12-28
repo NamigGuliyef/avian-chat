@@ -1,4 +1,10 @@
-import { IsDateString, IsEnum, IsOptional, IsString, IsArray } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsArray,
+} from 'class-validator';
 
 export enum ConversationStatus {
   open = 'open',

@@ -5,9 +5,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Message, MessageSchema } from './model/message.schema';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }])],
+  imports: [
+    MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
+  ],
   controllers: [MessageController],
   providers: [MessageService],
-  exports: [MongooseModule]
+  exports: [MongooseModule],
 })
 export class MessageModule {}

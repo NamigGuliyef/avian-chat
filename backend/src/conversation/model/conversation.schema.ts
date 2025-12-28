@@ -20,10 +20,18 @@ export class Conversation {
   @Prop({ required: false })
   triggerId?: string;
 
-  @Prop({ required: true, enum: ['open', 'closed', 'snoozed'], default: 'open' })
+  @Prop({
+    required: true,
+    enum: ['open', 'closed', 'snoozed'],
+    default: 'open',
+  })
   status: 'open' | 'closed' | 'snoozed';
 
-  @Prop({ required: true, enum: ['webchat', 'whatsapp', 'sms', 'live-chat', 'instagram', 'facebook'], default: 'webchat' })
+  @Prop({
+    required: true,
+    enum: ['webchat', 'whatsapp', 'sms', 'live-chat', 'instagram', 'facebook'],
+    default: 'webchat',
+  })
   channel: string;
 
   @Prop({ type: [String], default: [] })

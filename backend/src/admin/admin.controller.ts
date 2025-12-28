@@ -1,35 +1,57 @@
-import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
+import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CreateProjectDto } from 'src/project/dto/create-project.dto';
 
-@Controller()
+@ApiTags('admin')
+@Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(private readonly adminService: AdminService) { }
 
-  @MessagePattern('createAdmin')
-  create(@Payload() createAdminDto: CreateAdminDto) {
-    return this.adminService.create(createAdminDto);
+
+  @ApiOperation({ summary: 'Yeni şirkət yarat' })
+  @ApiBody({
+    type: CreateCompanyDto,
+    description: 'Yeni şirkət yaratmaq üçün məlumatlar',
+  })
+  @Post('create-company')
+  @HttpCode(HttpStatus.CREATED)
+  async createCompany(@Body() createCompanyData: CreateCompanyDto) {
+    return await this.adminService.createCompany(createCompanyData);
   }
 
-  @MessagePattern('findAllAdmin')
-  findAll() {
-    return this.adminService.findAll();
+
+  @ApiOperation({ summary: 'Şirkəti yenilə' })
+  @ApiBody({
+    type: CreateCompanyDto,
+    description: 'Şirkət yeniləmək üçün məlumatlar',
+  })
+  @Patch('update-company/:_id')
+  @HttpCode(HttpStatus.OK)
+  async updateCompany(@Param('_id') _id: string, @Body() updateCompanyData: Partial<CreateCompanyDto>) {
+    return await this.adminService.updateCompany(_id, updateCompanyData);
   }
 
-  @MessagePattern('findOneAdmin')
-  findOne(@Payload() id: number) {
-    return this.adminService.findOne(id);
+
+  @ApiOperation({ summary: "Şirkət ləğv edilməsi" })
+  @Delete('delete-company/:_id')
+  @HttpCode(HttpStatus.OK)
+  async deleteCompany(@Param("_id") _id: string) {
+    return await this.adminService.deleteCompany(_id)
+
   }
 
-  @MessagePattern('updateAdmin')
-  update(@Payload() updateAdminDto: UpdateAdminDto) {
-    return this.adminService.update(updateAdminDto.id, updateAdminDto);
+
+
+  @ApiOperation({ summary: 'Yeni layihə yarat' })
+  @ApiBody({
+    type: CreateProjectDto,
+    description: 'Yeni layihə yaratmaq üçün məlumatlar',
+  })
+  @Post('create-project')
+  async createProject(@Body() createProjectData: CreateProjectDto) {
+    return await this.adminService.createProject(createProjectData);
   }
 
-  @MessagePattern('removeAdmin')
-  remove(@Payload() id: number) {
-    return this.adminService.remove(id);
-  }
 }

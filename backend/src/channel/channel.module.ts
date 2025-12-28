@@ -5,9 +5,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Channel, ChannelSchema } from './model/channel.schema';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Channel.name, schema: ChannelSchema }])],
+  imports: [
+    MongooseModule.forFeature([{ name: Channel.name, schema: ChannelSchema }]),
+  ],
   controllers: [ChannelController],
   providers: [ChannelService],
-  exports: [MongooseModule]
+  exports: [MongooseModule],
 })
 export class ChannelModule {}

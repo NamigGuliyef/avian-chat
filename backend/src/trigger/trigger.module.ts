@@ -5,9 +5,11 @@ import { TriggerService } from './trigger.service';
 import { TriggerController } from './trigger.controller';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Trigger.name, schema: TriggerSchema }])],
+  imports: [
+    MongooseModule.forFeature([{ name: Trigger.name, schema: TriggerSchema }]),
+  ],
   controllers: [TriggerController],
   providers: [TriggerService],
-  exports: [MongooseModule]
+  exports: [MongooseModule],
 })
 export class TriggerModule {}
