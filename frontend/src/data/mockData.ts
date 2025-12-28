@@ -17,24 +17,32 @@ export const mockExcels: Excel[] = [
 
 // Mock Sheets (inside Excels)
 export const mockSheets: Sheet[] = [
-  { id: 'sheet-1', excelId: 'excel-1', projectId: 'proj-1', name: 'Yanvar satışları', description: 'Yanvar ayı satış cədvəli', agentIds: ['user-1', 'user-2'], columns: [
-    { id: 'col-1', name: 'Telefon', dataKey: 'phone', type: 'phone', visibleToUser: true, editableByUser: false, order: 1, sheetId: 'sheet-1' },
-    { id: 'col-2', name: 'Zəng statusu', dataKey: 'callStatus', type: 'select', options: [{ value: 'successful', label: 'Uğurlu' }, { value: 'unsuccessful', label: 'Uğursuz' }, { value: 'pending', label: 'Gözləmədə' }], visibleToUser: true, editableByUser: true, order: 2, sheetId: 'sheet-1' },
-    { id: 'col-3', name: 'Aylıq ödəniş', dataKey: 'monthlyPayment', type: 'number', visibleToUser: true, editableByUser: true, order: 3, sheetId: 'sheet-1' },
-    { id: 'col-4', name: 'Tarif', dataKey: 'tariff', type: 'text', visibleToUser: true, editableByUser: true, order: 4, sheetId: 'sheet-1' },
-  ], createdAt: '2024-01-05', updatedAt: '2024-01-05' },
-  { id: 'sheet-2', excelId: 'excel-1', projectId: 'proj-1', name: 'Fevral satışları', description: 'Fevral ayı satış cədvəli', agentIds: ['user-2'], columns: [
-    { id: 'col-5', name: 'Telefon', dataKey: 'phone', type: 'phone', visibleToUser: true, editableByUser: false, order: 1, sheetId: 'sheet-2' },
-    { id: 'col-6', name: 'Müştəri statusu', dataKey: 'customerStatus', type: 'select', options: [{ value: 'ok', label: 'OK' }, { value: 'not_ok', label: 'Uyğun deyil' }, { value: 'interested', label: 'Maraqlanır' }], visibleToUser: true, editableByUser: true, order: 2, sheetId: 'sheet-2' },
-  ], createdAt: '2024-02-05', updatedAt: '2024-02-05' },
-  { id: 'sheet-3', excelId: 'excel-2', projectId: 'proj-1', name: 'Əlaqə siyahısı', description: 'Müştəri əlaqə məlumatları', agentIds: ['user-2'], columns: [
-    { id: 'col-7', name: 'Telefon', dataKey: 'phone', type: 'phone', visibleToUser: true, editableByUser: false, order: 1, sheetId: 'sheet-3' },
-    { id: 'col-8', name: 'Ad', dataKey: 'name', type: 'text', visibleToUser: true, editableByUser: true, order: 2, sheetId: 'sheet-3' },
-  ], createdAt: '2024-02-10', updatedAt: '2024-02-10' },
-  { id: 'sheet-4', excelId: 'excel-3', projectId: 'proj-2', name: 'VIP müştərilər', description: 'VIP müştəri siyahısı', agentIds: ['user-3'], columns: [
-    { id: 'col-9', name: 'Telefon', dataKey: 'phone', type: 'phone', visibleToUser: true, editableByUser: false, order: 1, sheetId: 'sheet-4' },
-    { id: 'col-10', name: 'Bonus', dataKey: 'bonus', type: 'text', visibleToUser: true, editableByUser: true, order: 2, sheetId: 'sheet-4' },
-  ], createdAt: '2024-02-10', updatedAt: '2024-02-10' },
+  {
+    id: 'sheet-1', excelId: 'excel-1', projectId: 'proj-1', name: 'Yanvar satışları', description: 'Yanvar ayı satış cədvəli', agentIds: ['user-1', 'user-2'], columns: [
+      { id: 'col-1', name: 'Telefon', dataKey: 'phone', type: 'phone', visibleToUser: true, editableByUser: false, order: 1, sheetId: 'sheet-1' },
+      { id: 'col-2', name: 'Zəng statusu', dataKey: 'callStatus', type: 'select', options: [{ value: 'successful', label: 'Uğurlu', color: 'green' }, { value: 'unsuccessful', label: 'Uğursuz', color: 'red' }, { value: 'pending', label: 'Gözləmədə', color: 'orange' }], visibleToUser: true, editableByUser: true, order: 2, sheetId: 'sheet-1' },
+      { id: 'col-3', name: 'Aylıq ödəniş', dataKey: 'monthlyPayment', type: 'number', visibleToUser: true, editableByUser: true, order: 3, sheetId: 'sheet-1' },
+      { id: 'col-4', name: 'Tarif', dataKey: 'tariff', type: 'text', visibleToUser: true, editableByUser: true, order: 4, sheetId: 'sheet-1' },
+    ], createdAt: '2024-01-05', updatedAt: '2024-01-05'
+  },
+  {
+    id: 'sheet-2', excelId: 'excel-1', projectId: 'proj-1', name: 'Fevral satışları', description: 'Fevral ayı satış cədvəli', agentIds: ['user-2'], columns: [
+      { id: 'col-5', name: 'Telefon', dataKey: 'phone', type: 'phone', visibleToUser: true, editableByUser: false, order: 1, sheetId: 'sheet-2' },
+      { id: 'col-6', name: 'Müştəri statusu', dataKey: 'customerStatus', type: 'select', options: [{ value: 'ok', label: 'OK' }, { value: 'not_ok', label: 'Uyğun deyil' }, { value: 'interested', label: 'Maraqlanır' }], visibleToUser: true, editableByUser: true, order: 2, sheetId: 'sheet-2' },
+    ], createdAt: '2024-02-05', updatedAt: '2024-02-05'
+  },
+  {
+    id: 'sheet-3', excelId: 'excel-2', projectId: 'proj-1', name: 'Əlaqə siyahısı', description: 'Müştəri əlaqə məlumatları', agentIds: ['user-2'], columns: [
+      { id: 'col-7', name: 'Telefon', dataKey: 'phone', type: 'phone', visibleToUser: true, editableByUser: false, order: 1, sheetId: 'sheet-3' },
+      { id: 'col-8', name: 'Ad', dataKey: 'name', type: 'text', visibleToUser: true, editableByUser: true, order: 2, sheetId: 'sheet-3' },
+    ], createdAt: '2024-02-10', updatedAt: '2024-02-10'
+  },
+  {
+    id: 'sheet-4', excelId: 'excel-3', projectId: 'proj-2', name: 'VIP müştərilər', description: 'VIP müştəri siyahısı', agentIds: ['user-3'], columns: [
+      { id: 'col-9', name: 'Telefon', dataKey: 'phone', type: 'phone', visibleToUser: true, editableByUser: false, order: 1, sheetId: 'sheet-4' },
+      { id: 'col-10', name: 'Bonus', dataKey: 'bonus', type: 'text', visibleToUser: true, editableByUser: true, order: 2, sheetId: 'sheet-4' },
+    ], createdAt: '2024-02-10', updatedAt: '2024-02-10'
+  },
 ];
 
 // Mock Supervisor Assignments
@@ -70,57 +78,57 @@ export const mockCrmUsers: CrmUser[] = [
 
 // Mock Tickets
 export const mockTickets: Ticket[] = [
-  { 
-    id: 'ticket-1', 
-    title: 'Müştəri şikayəti araşdır', 
-    description: 'Müştəri tarifin düzgün tətbiq edilmədiyini iddia edir', 
-    type: 'ticket', 
-    status: 'new', 
-    priority: 'high', 
+  {
+    id: 'ticket-1',
+    title: 'Müştəri şikayəti araşdır',
+    description: 'Müştəri tarifin düzgün tətbiq edilmədiyini iddia edir',
+    type: 'ticket',
+    status: 'new',
+    priority: 'high',
     channel: 'call',
-    tags: ['şikayət', 'tarif'], 
-    deadline: '2024-01-20', 
-    assignedAgentId: 'user-1', 
+    tags: ['şikayət', 'tarif'],
+    deadline: '2024-01-20',
+    assignedAgentId: 'user-1',
     assignedAgentName: 'Fərid Məmmədov',
     supervisorId: 'sup-1',
     notes: [],
     slaTime: '2 saat',
-    createdAt: '2024-01-18T10:00:00', 
-    updatedAt: '2024-01-18T10:00:00' 
+    createdAt: '2024-01-18T10:00:00',
+    updatedAt: '2024-01-18T10:00:00'
   },
-  { 
-    id: 'ticket-2', 
-    title: 'VIP müştəri ilə əlaqə', 
-    description: 'VIP müştəriyə yeni kampaniya haqqında məlumat ver', 
-    type: 'task', 
-    status: 'in_progress', 
-    priority: 'medium', 
+  {
+    id: 'ticket-2',
+    title: 'VIP müştəri ilə əlaqə',
+    description: 'VIP müştəriyə yeni kampaniya haqqında məlumat ver',
+    type: 'task',
+    status: 'in_progress',
+    priority: 'medium',
     channel: 'chat',
-    tags: ['VIP', 'kampaniya'], 
-    deadline: '2024-01-22', 
-    assignedAgentId: 'user-2', 
+    tags: ['VIP', 'kampaniya'],
+    deadline: '2024-01-22',
+    assignedAgentId: 'user-2',
     assignedAgentName: 'Aynur Qasımova',
     supervisorId: 'sup-1',
     notes: [
       { id: 'note-1', content: 'Müştəri ilə əlaqə saxlandı', authorId: 'user-2', authorName: 'Aynur Qasımova', isInternal: true, createdAt: '2024-01-19T14:00:00' }
     ],
-    createdAt: '2024-01-17T09:00:00', 
-    updatedAt: '2024-01-19T14:00:00' 
+    createdAt: '2024-01-17T09:00:00',
+    updatedAt: '2024-01-19T14:00:00'
   },
-  { 
-    id: 'ticket-3', 
-    title: 'Hesab problemi həll et', 
-    type: 'ticket', 
-    status: 'completed', 
-    priority: 'low', 
+  {
+    id: 'ticket-3',
+    title: 'Hesab problemi həll et',
+    type: 'ticket',
+    status: 'completed',
+    priority: 'low',
     channel: 'social',
-    tags: ['hesab'], 
-    assignedAgentId: 'user-1', 
+    tags: ['hesab'],
+    assignedAgentId: 'user-1',
     assignedAgentName: 'Fərid Məmmədov',
     supervisorId: 'sup-1',
     notes: [],
-    createdAt: '2024-01-15T11:00:00', 
-    updatedAt: '2024-01-16T16:00:00' 
+    createdAt: '2024-01-15T11:00:00',
+    updatedAt: '2024-01-16T16:00:00'
   },
 ];
 
