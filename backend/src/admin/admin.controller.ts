@@ -61,6 +61,15 @@ export class AdminController {
   }
 
 
+  @ApiOperation({ summary: 'Şirkətə məxsus layihənin agent və supervisor-larını gətir' })
+  @Get('company-project-members/:companyId')
+  @HttpCode(HttpStatus.OK)
+  async getCompanyProjectMembers(@Param('companyId') companyId: string) {
+    return await this.adminService.getCompanyProjectMembers(companyId);
+  }
+
+  
+
   // -----------------------------------------Channel Functions ---------------------------//
 
   @ApiOperation({ summary: 'Yeni kanal yarat' })

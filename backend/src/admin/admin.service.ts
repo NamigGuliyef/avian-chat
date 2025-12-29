@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateChannelDto } from 'src/channel/dto/create-channel.dto';
 import { Channel } from 'src/channel/model/channel.schema';
 import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
@@ -60,6 +60,44 @@ export class AdminService {
   async getCompanyById(_id: string): Promise<Company | null> {
     return this.companyModel.findById(_id).exec();
   }
+
+
+  // Şirkətə məxsus layihənin agent və supervisor-larını gətirən funksiya
+  async getCompanyProjectMembers(companyId: string): Promise<{ count: number, agents: Types.ObjectId[], supervisors: Types.ObjectId[] }> {
+
+    // Şirkətə məxsus layihələri tapırıq və onların agent və supervisor-larını yükləyirik
+    const projects = await this.projectModel.find({ companyId: companyId })
+      .populate({ path: 'agents', select: 'name surname email' }).populate({ path: 'supervisors', select: 'name surname email' }).exec();
+
+    // Bütün agent və supervisor-lar üçün boş massivlər yaradırıq
+    let agents: Types.ObjectId[] = [];
+    let supervisors: Types.ObjectId[] = [];
+
+    // Hər bir layihənin agent və supervisor-larını ayrıca yığırıq
+  
+    projects.forEach(project => {
+      project.agents.forEach(agentId => {
+        if (!agents.includes(agentId)) {
+          agents.push(agentId);
+        }
+      });
+
+      project.supervisors.forEach(supervisorId => {
+        if (!supervisors.includes(supervisorId)) {
+          supervisors.push(supervisorId);
+        }
+      });
+    });
+
+    // agents və supervisors massivlərinin uzunluğunu və özlərini qaytarırıq  
+    return {
+      count: agents.length + supervisors.length,
+      supervisors: supervisors,
+      agents: agents,
+    };
+  }
+
+
 
 
   // ----------------------------------Channel Funtions -------------------------------//
