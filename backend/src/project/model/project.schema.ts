@@ -28,4 +28,4 @@ export class Project {
 
 }
 
-export const CompanySchema = SchemaFactory.createForClass(Company);
+export const ProjectSchema = SchemaFactory.createForClass(Project);

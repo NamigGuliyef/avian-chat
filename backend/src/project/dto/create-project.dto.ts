@@ -1,7 +1,6 @@
-import { ApiOperation, ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsArray, IsMongoId, IsNotEmpty } from 'class-validator';
-import { Channel } from 'diagnostics_channel';
-import mongoose, { Types } from 'mongoose';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 import { Company } from 'src/company/model/company.schema';
 import { ProjectDirection, ProjectName, ProjectType } from 'src/enum/enum';
 

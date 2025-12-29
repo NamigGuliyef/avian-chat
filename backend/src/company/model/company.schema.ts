@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
-import { Channel } from 'src/channel/model/channel.schema';
+import mongoose, { Types } from 'mongoose';
 
 @Schema({ versionKey: false, timestamps: true })
 
@@ -12,8 +11,8 @@ export class Company {
   @Prop({ required: false })
   domain: string;
 
-  @Prop({ default: false, ref: 'Channel', type: [mongoose.Schema.Types.ObjectId] })
-  channels: Channel[];
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Channel' }], default: [] })
+  channels: Types.ObjectId[];
 
 }
 
