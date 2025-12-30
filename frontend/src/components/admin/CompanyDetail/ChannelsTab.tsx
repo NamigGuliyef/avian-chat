@@ -1,4 +1,4 @@
-import { addChannel, deleteChannel, getChannels, toggleChannelActive } from '@/api/company';
+import { addChannel, getChannels, updateChannel } from '@/api/company';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -9,8 +9,7 @@ import { cn } from '@/lib/utils';
 import { IChannel } from '@/types/types';
 import {
     Plus,
-    Radio,
-    Trash2
+    Radio
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -48,12 +47,14 @@ const ChannelsTabs = ({ companyId }: { companyId: string }) => {
     };
 
     const handleToggleChannel = async (channelId: string, isActive: boolean) => {
-        const d = await toggleChannelActive(channelId);
-        toast.success(isActive ? 'Kanal deaktiv edildi' : 'Kanal aktiv edildi');
+        const d = await updateChannel(channelId, { isActive }).then(() => {
+            setChannels((pre) => pre.map((ch) => ch._id === channelId ? { ...ch, isActive } : ch))
+            toast.success(isActive ? 'Kanal deaktiv edildi' : 'Kanal aktiv edildi');
+        });
     };
 
     const handleDeleteChannel = (channelId: string) => {
-        deleteChannel(channelId);
+        // deleteChannel(channelId);
         toast.success('Kanal silindi');
     };
     return (
@@ -115,16 +116,16 @@ const ChannelsTabs = ({ companyId }: { companyId: string }) => {
                             <div className="flex items-center gap-3">
                                 <Switch
                                     checked={channel.isActive}
-                                    onCheckedChange={() => handleToggleChannel(channel._id, channel.isActive)}
+                                    onCheckedChange={() => handleToggleChannel(channel._id, !channel.isActive)}
                                 />
-                                <Button
+                                {/* <Button
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => handleDeleteChannel(channel._id)}
                                     className="text-destructive hover:text-destructive"
                                 >
                                     <Trash2 className="h-4 w-4" />
-                                </Button>
+                                </Button> */}
                             </div>
                         </CardContent>
                     </Card>

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
+import React, { useEffect, useState } from 'react';
+import {
+  Plus,
+  Edit,
+  Trash2,
   FolderKanban,
   Eye,
   Users,
@@ -27,29 +27,33 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { mockProjects, mockCrmUsers, mockExcels, mockSheets, mockLeads, mockCompanies } from '@/data/mockData';
 import { Project, Excel, Sheet, Lead, ColumnConfig } from '@/types/crm';
+import { ICompany, IProject, ProjectDirection, ProjectName, ProjectType } from '@/types/types';
+import { getCompanies } from '@/api/company';
 
 const LeadManagement: React.FC = () => {
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const [projects, setProjects] = useState<IProject[]>([]);
   const [excels] = useState<Excel[]>(mockExcels);
   const [sheets] = useState<Sheet[]>(mockSheets);
   const [leads] = useState<Lead[]>(mockLeads);
-  
+  const [companies, setCompanies] = useState<ICompany[]>([])
+
+
   // View state
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedExcelFilter, setSelectedExcelFilter] = useState<string>('');
   const [selectedSheetFilter, setSelectedSheetFilter] = useState<string>('');
-  const [selectedAgentFilter, setSelectedAgentFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Dialogs
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingProject, setEditingProject] = useState<IProject>({} as IProject);
 
   // Forms
-  const [projectForm, setProjectForm] = useState({ companyId: '', description: '', supervisorIds: [] as string[] });
+  const [projectForm, setProjectForm] = useState({ companyId: '', description: '' });
 
-  const supervisors = mockCrmUsers.filter(u => u.role === 'supervayzer');
-  const companies = mockCompanies;
+  useEffect(() => {
+    getCompanies().then((d) => setCompanies(d))
+  }, [])
 
   // Project CRUD
   const handleAddProject = () => {
@@ -57,26 +61,23 @@ const LeadManagement: React.FC = () => {
       toast.error('Şirkət seçin');
       return;
     }
-    const selectedCompany = companies.find(c => c.id === projectForm.companyId);
-    const newProject: Project = {
-      id: `proj-${Date.now()}`,
+    const selectedCompany = companies.find(c => c._id === projectForm.companyId);
+    const newProject: Partial<IProject> = {
+      _id: `proj-${Date.now()}`,
       name: selectedCompany?.name || '',
       description: projectForm.description,
-      supervisorIds: projectForm.supervisorIds,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
     };
     setProjects([...projects, newProject]);
-    setProjectForm({ companyId: '', description: '', supervisorIds: [] });
+    setProjectForm({ companyId: '', description: '' });
     setIsProjectDialogOpen(false);
     toast.success('Layihə yaradıldı');
   };
 
   const handleUpdateProject = () => {
     if (!editingProject) return;
-    const selectedCompany = companies.find(c => c.id === projectForm.companyId);
-    setProjects(projects.map(p => 
-      p.id === editingProject.id 
+    const selectedCompany = companies.find(c => c._id === projectForm.companyId);
+    setProjects(projects.map(p =>
+      p.id === editingProject._id
         ? { ...p, name: selectedCompany?.name || p.name, description: projectForm.description, supervisorIds: projectForm.supervisorIds, updatedAt: new Date().toISOString() }
         : p
     ));
@@ -91,9 +92,9 @@ const LeadManagement: React.FC = () => {
     toast.success('Layihə silindi');
   };
 
-  const startEditProject = (project: Project) => {
+  const startEditProject = (project: IProject) => {
     const company = companies.find(c => c.name === project.name);
-    setProjectForm({ companyId: company?.id || '', description: project.description || '', supervisorIds: project.supervisorIds });
+    setProjectForm({ companyId: company?._id || '', description: project.description || '', supervisorIds: project.supervisorIds });
     setEditingProject(project);
     setIsProjectDialogOpen(true);
   };
@@ -121,13 +122,13 @@ const LeadManagement: React.FC = () => {
     }
     const sheetLeads = getSheetLeads(selectedSheetFilter);
     const columns = getSheetColumns(selectedSheetFilter);
-    
+
     // Create CSV content
     const headers = columns.map(c => c.name).join(',');
-    const rows = sheetLeads.map(lead => 
+    const rows = sheetLeads.map(lead =>
       columns.map(col => (lead as any)[col.dataKey] || '').join(',')
     ).join('\n');
-    
+
     const csv = `${headers}\n${rows}`;
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -147,19 +148,19 @@ const LeadManagement: React.FC = () => {
   };
 
   // Filter leads
-  const filteredLeads = selectedSheetFilter 
+  const filteredLeads = selectedSheetFilter
     ? getSheetLeads(selectedSheetFilter).filter(lead => {
-        const matchesSearch = searchTerm ? lead.phone.includes(searchTerm) || lead.maskedPhone.includes(searchTerm) : true;
-        const matchesAgent = selectedAgentFilter ? lead.assignedUser === selectedAgentFilter : true;
-        return matchesSearch && matchesAgent;
-      })
+      const matchesSearch = searchTerm ? lead.phone.includes(searchTerm) || lead.maskedPhone.includes(searchTerm) : true;
+      const matchesAgent = selectedAgentFilter ? lead.assignedUser === selectedAgentFilter : true;
+      return matchesSearch && matchesAgent;
+    })
     : [];
 
   // Project Detail View
   if (selectedProject) {
     const projectExcels = getProjectExcels(selectedProject.id);
-    const availableSheets = selectedExcelFilter 
-      ? getExcelSheets(selectedExcelFilter) 
+    const availableSheets = selectedExcelFilter
+      ? getExcelSheets(selectedExcelFilter)
       : projectExcels.flatMap(e => getExcelSheets(e.id));
     const columns = selectedSheetFilter ? getSheetColumns(selectedSheetFilter) : [];
 
@@ -233,9 +234,9 @@ const LeadManagement: React.FC = () => {
                   </Select>
                   <div className="flex items-center gap-2 ml-auto">
                     <Search className="h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      placeholder="Axtarış..." 
-                      value={searchTerm} 
+                    <Input
+                      placeholder="Axtarış..."
+                      value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-48"
                     />
@@ -358,25 +359,46 @@ const LeadManagement: React.FC = () => {
                   placeholder="Layihə haqqında qısa məlumat"
                 />
               </div>
-              <div>
-                <Label className="mb-2 block">Supervayzerlər</Label>
-                <p className="text-xs text-muted-foreground mb-2">Bu layihəni hansı supervayzerlər görəcək?</p>
-                <ScrollArea className="h-32 border rounded-lg p-2">
-                  {supervisors.map((sup) => (
-                    <div key={sup.id} className="flex items-center gap-2 py-1">
-                      <Checkbox
-                        id={`sup-${sup.id}`}
-                        checked={projectForm.supervisorIds.includes(sup.id)}
-                        onCheckedChange={() => toggleSupervisor(sup.id)}
-                      />
-                      <label htmlFor={`sup-${sup.id}`} className="text-sm cursor-pointer">{sup.name}</label>
-                    </div>
-                  ))}
-                  {supervisors.length === 0 && (
-                    <p className="text-sm text-muted-foreground">Supervayzer yoxdur</p>
-                  )}
-                </ScrollArea>
+              <div className="space-y-2">
+                <Label>Layihə tipi</Label>
+                <Select value={String(editingProject.projectType)} onValueChange={(v: ProjectType) => setEditingProject({ ...editingProject, projectType: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Layihə tipi seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={String(ProjectType.Outbound)}>Outbound</SelectItem>
+                    <SelectItem value={String(ProjectType.Inbound)}>Inbound</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label>Layihənin növü</Label>
+                <Select value={String(editingProject.projectDirection)} onValueChange={(v: ProjectDirection) => setEditingProject({ ...editingProject, projectDirection: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Layihənin növünü seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={String(ProjectDirection.Call)}>Call</SelectItem>
+                    <SelectItem value={String(ProjectDirection.Social)}>Sosial şəbəkə</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Layihənin adı</Label>
+                <Select value={String(editingProject.projectName)} onValueChange={(v: ProjectName) => setEditingProject({ ...editingProject, projectName: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Layihənin adını seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={String(ProjectName.Survey)}>Survey</SelectItem>
+                    <SelectItem value={String(ProjectName.Telesales)}>Telesales</SelectItem>
+                    <SelectItem value={String(ProjectName.Telemarketing)}>Tele Marketing</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <Button className="w-full" onClick={editingProject ? handleUpdateProject : handleAddProject}>
                 {editingProject ? 'Yenilə' : 'Yarat'}
               </Button>
@@ -388,7 +410,6 @@ const LeadManagement: React.FC = () => {
       {/* Projects List */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => {
-          const projectSupervisors = supervisors.filter(s => project.supervisorIds.includes(s.id));
           const projectExcels = getProjectExcels(project.id);
           const totalLeads = projectExcels.flatMap(e => getExcelSheets(e.id)).flatMap(s => getSheetLeads(s.id)).length;
 

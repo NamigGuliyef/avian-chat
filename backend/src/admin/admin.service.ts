@@ -208,27 +208,7 @@ export class AdminService {
 
   // Yeni layihə yaratmaq funksiyası
   async createProject(createProjectData: CreateProjectDto): Promise<{ message: string, project: Project }> {
-
-    let agents: string[] = [];
-    let supervisors: string[] = [];
-
-    // supervisor və agent id-lərini ayrılıqda yığırıq
-    for (let i = 0; i < createProjectData.agents.length; i++) {
-      const agentId = createProjectData.agents[i];
-      agents.push(agentId);
-    }
-
-
-    for (let j = 0; j < createProjectData.supervisors.length; j++) {
-      const supervisorId = createProjectData.supervisors[j];
-      supervisors.push(supervisorId);
-    }
-
-    const newProject = new this.projectModel({
-      ...createProjectData,
-      supervisors: supervisors,
-      agents: agents,
-    });
+    const newProject = new this.projectModel(createProjectData);
     return { message: "Yeni layihə uğurla yaradıldı", project: await newProject.save() };
   }
 

@@ -1,7 +1,8 @@
 import _axios from "axios";
 
 const axios = _axios.create({
-    url: ""
+    // url: import.meta.env.REACT_BACKEND_URL
+    baseURL: "http://localhost:8004"
 });
 
 export const LS_ACCESS_TOKEN_NAME = "token_sidbfehfdb"
