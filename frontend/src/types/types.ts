@@ -142,7 +142,7 @@ export interface IProject {
 
 
 // ---------------------------------------------------
-const supervisorUser: IUser = {
+export const supervisorUser: IUser = {
     _id: "user_supervisor_1",
     name: "Elvin",
     surname: "Mammadov",
@@ -155,7 +155,7 @@ const supervisorUser: IUser = {
     role: Roles.Supervisor,
     assignedAgents: []
 };
-const supervisors: IUser[] = [
+export const supervisors: IUser[] = [
     supervisorUser,
     {
         _id: "user_supervisor_2",

@@ -83,8 +83,8 @@ export const addProject = async (data: Partial<IProject>): Promise<IProject> => 
     const res = await axios.post("/admin/create-project", data)
     return res.data.project;
 }
-export const updateProject = async (data: any) => {
-    const d = await axios.patch(`/admin/update-project/${data._id}`, data)
+export const updateProject = async (projectId, data: any) => {
+    const d = await axios.patch(`/admin/update-project/${projectId}`, data)
     return d.data.project
 }
 

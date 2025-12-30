@@ -111,13 +111,13 @@ const CompanyManagement = ({ setSelectedCompany }: any) => {
                                     <div><p className="font-semibold text-lg">{_company.name}</p><p className="text-sm text-muted-foreground">{_company.domain || 'Domain yoxdur'}</p></div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <Popover>
+                                    {/* <Popover>
                                         <PopoverTrigger asChild><Button variant="ghost" size="sm" className="gap-2 text-muted-foreground"><Eye className="h-4 w-4" />{_company.agents?.length}</Button></PopoverTrigger>
                                         <PopoverContent className="w-64 p-0" align="end">
                                             <div className="p-3 border-b"><p className="font-medium text-sm">Agentlər</p></div>
                                             <ScrollArea className="max-h-48">{_company.agents?.length > 0 ? <div className="p-2 space-y-1">{_company.agents.map((agent) => (<div key={agent._id} className="flex items-center gap-2 p-2 rounded hover:bg-muted"><div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-medium">{agent.name.charAt(0)}</div><div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{agent.name}</p><p className="text-xs text-muted-foreground truncate">{agent.email}</p></div></div>))}</div> : <div className="p-4 text-center text-sm text-muted-foreground">Agent yoxdur</div>}</ScrollArea>
                                         </PopoverContent>
-                                    </Popover>
+                                    </Popover> */}
                                     <div className="flex gap-1">
                                         <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); startEditCompany(_company); }}><Edit className="h-4 w-4" /></Button>
                                         <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDeleteCompany(_company._id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
