@@ -15,19 +15,19 @@ export enum OnlineStatus {
 
 
 export enum ProjectType {
-  outbound = "outbound",
-  inbound = "inbound"
+  outbound = "0",
+  inbound = "1"
 }
 
 
 export enum ProjectDirection {
-  call = "call",
-  social = "social"
+  call = "0",
+  social = "1"
 }
 
 
 export enum ProjectName {
-  survey = "survey",
-  telesales = "telesales",
-  telemarketing = "telemarketing",
+  survey = "0",
+  telesales = "1",
+  telemarketing = "2",
 }

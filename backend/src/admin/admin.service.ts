@@ -7,6 +7,7 @@ import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
 import { Company } from 'src/company/model/company.schema';
 import { CreateProjectDto } from 'src/project/dto/create-project.dto';
 import { Project } from 'src/project/model/project.schema';
+import { User } from 'src/user/model/user.schema';
 
 @Injectable()
 export class AdminService {
@@ -15,6 +16,7 @@ export class AdminService {
     @InjectModel(Company.name) private readonly companyModel: Model<Company>,
     @InjectModel(Project.name) private readonly projectModel: Model<Project>,
     @InjectModel(Channel.name) private readonly channelModel: Model<Channel>,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
   ) { }
 
 
@@ -74,7 +76,7 @@ export class AdminService {
     let supervisors: Types.ObjectId[] = [];
 
     // Hər bir layihənin agent və supervisor-larını ayrıca yığırıq
-  
+
     projects.forEach(project => {
       project.agents.forEach(agentId => {
         if (!agents.includes(agentId)) {
@@ -96,7 +98,6 @@ export class AdminService {
       agents: agents,
     };
   }
-
 
 
 
@@ -135,30 +136,31 @@ export class AdminService {
 
 
   // Kanal silmə funksiyası
-  async deleteChannel(_id: string): Promise<{ message: string }> {
-    // Kanal silmək üçün tətbiq olunan məntiq
-    // İlk öncə sildiyimiz kanal hansı şirkətə aid olduğunu tapırıq
-    const channel = await this.channelModel.findById(_id);
-    // Kanal mövcuddursa, 
-    if (channel) {
-      // Şirkəti tapırıq
-      const company = await this.companyModel.findById({ _id: channel.companyId });
-      // Şirkət mövcuddursa,
-      if (company) {
-        // Şirkətin channel-lərindən silinən kanalı çıxarırıq
-        company.channels = company.channels.filter(chId => chId.toString() !== _id);
-        await company.save();
-      }
-    }
-    await this.channelModel.findByIdAndDelete(_id);
-    return { message: "Kanal uğurla ləğv edildi" };
-  }
+
+  // async deleteChannel(_id: string): Promise<{ message: string }> {
+  //   // Kanal silmək üçün tətbiq olunan məntiq
+  //   // İlk öncə sildiyimiz kanal hansı şirkətə aid olduğunu tapırıq
+  //   const channel = await this.channelModel.findById(_id);
+  //   // Kanal mövcuddursa, 
+  //   if (channel) {
+  //     // Şirkəti tapırıq
+  //     const company = await this.companyModel.findById({ _id: channel.companyId });
+  //     // Şirkət mövcuddursa,
+  //     if (company) {
+  //       // Şirkətin channel-lərindən silinən kanalı çıxarırıq
+  //       company.channels = company.channels.filter(chId => chId.toString() !== _id);
+  //       await company.save();
+  //     }
+  //   }
+  //   await this.channelModel.findByIdAndDelete(_id);
+  //   return { message: "Kanal uğurla ləğv edildi" };
+  // }
 
 
   // Bütün kanalları gətirən funksiyası
-  async getAllChannels(): Promise<Channel[]> {
+  async getAllChannels(companyId: string): Promise<Channel[]> {
     // Kanal gətirmək üçün tətbiq olunan məntiq
-    return this.channelModel.find().exec();
+    return this.channelModel.find({ companyId: companyId }).exec();
   }
 
 
@@ -167,6 +169,39 @@ export class AdminService {
     // Kanalı id-ə görə gətirmək üçün tətbiq olunan məntiq
     return this.channelModel.findById(_id).exec();
   }
+
+
+  // istədiyim user-e birdən çox kanal icazəsi vermək funksiyası
+  async assignChannelToUser(userId: string, channels: Types.ObjectId[]): Promise<{ message: string }> {
+    // user-e kanal icazəsi vermək üçün tətbiq olunan məntiq
+    // ilk öncə user-in mövcudluğunu yoxlayırıq
+    const userExist = await this.userModel.findById(userId);
+    if (!userExist) {
+      return { message: "İstifadəçi tapılmadı" };
+    }
+
+    // user-in channels massivinə kanalId-ni əlavə edirik
+    // Birdən çox seçilmiş kanalların id-sini dongu ile tapib user-in channels massivinə əlavə edirik
+    for (let i = 0; i < channels.length; i++) {
+      const channelId = channels[i];
+      const channelExist = await this.channelModel.findById(channelId);
+      if (channelExist) {
+        // Əgər kanal mövcuddursa, user-in channels massivinə əlavə edirik
+        if (!userExist.channelIds.includes(channelId)) {
+          userExist.channelIds.push(channelId);
+          channels.push(channelId);
+        }
+      }
+    }
+    await userExist.save();
+    // kanalın mövcudluğunu yoxlayırıq
+    const channelExist = await this.channelModel.findById(channels[0]);
+    if (!channelExist) {
+      return { message: "Kanal tapılmadı" };
+    }
+    return { message: "Kanal icazəsi uğurla verildi" };
+  }
+
 
 
   //-------------------------------------------- Project Functions ---------------------------//
@@ -217,8 +252,8 @@ export class AdminService {
 
 
   // Bütün layihələri gətirən funksiyası
-  async getAllProjects(): Promise<Project[]> {
-    return this.projectModel.find().exec();
+  async getAllProjects(companyId: string): Promise<Project[]> {
+    return this.projectModel.find({ companyId: companyId }).exec();
   }
 
 

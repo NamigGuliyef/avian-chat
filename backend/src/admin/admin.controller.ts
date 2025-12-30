@@ -4,6 +4,7 @@ import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateProjectDto } from 'src/project/dto/create-project.dto';
 import { CreateChannelDto } from 'src/channel/dto/create-channel.dto';
+import { Types } from 'mongoose';
 
 @ApiTags('admin')
 @Controller('admin')
@@ -68,7 +69,7 @@ export class AdminController {
     return await this.adminService.getCompanyProjectMembers(companyId);
   }
 
-  
+
 
   // -----------------------------------------Channel Functions ---------------------------//
 
@@ -96,20 +97,19 @@ export class AdminController {
   }
 
 
-  @ApiOperation({ summary: "Kanal ləğv edilməsi" })
-  @Delete('delete-channel/:_id')
-  @HttpCode(HttpStatus.OK)
-  async deleteChannel(@Param("_id") _id: string) {
-    return await this.adminService.deleteChannel(_id)
-
-  }
+  // @ApiOperation({ summary: "Kanal ləğv edilməsi" })
+  // @Delete('delete-channel/:_id')
+  // @HttpCode(HttpStatus.OK)
+  // async deleteChannel(@Param("_id") _id: string) {
+  //   return await this.adminService.deleteChannel(_id)
+  // }
 
 
   @ApiOperation({ summary: "Bütün kanalları gətir" })
-  @Get('channel')
+  @Get('channel/company/:companyId')
   @HttpCode(HttpStatus.OK)
-  async getAllChannels() {
-    return await this.adminService.getAllChannels()
+  async getAllChannels(@Param('companyId') companyId: string) {
+    return await this.adminService.getAllChannels(companyId)
   }
 
 
@@ -120,6 +120,19 @@ export class AdminController {
     return await this.adminService.getChannelById(_id)
   }
 
+
+
+  @ApiOperation({ summary: 'İstifadəçiyə kanal icazəsi ver' })
+  @ApiBody({
+    type: [String],
+    description: 'Kanal ID-lərinin siyahısı',
+  })
+  @Post('assign-channel-to-user/:userId')
+  @HttpCode(HttpStatus.CREATED)
+  async assignChannelToUser(
+    @Param('userId') userId: string, @Body() channels: Types.ObjectId[]) {
+    return await this.adminService.assignChannelToUser(userId, channels);
+  }
 
 
   // ------------------------------- Project Functions ---------------------------//
@@ -158,10 +171,10 @@ export class AdminController {
 
 
   @ApiOperation({ summary: "Bütün layihələri gətir" })
-  @Get('project')
+  @Get('project/company/:companyId')
   @HttpCode(HttpStatus.OK)
-  async getAllProjects() {
-    return await this.adminService.getAllProjects()
+  async getAllProjects(@Param('companyId') companyId: string) {
+    return await this.adminService.getAllProjects(companyId)
   }
 
 

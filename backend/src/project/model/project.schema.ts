@@ -6,6 +6,12 @@ import { ProjectDirection, ProjectName, ProjectType } from 'src/enum/enum';
 
 export class Project {
 
+    @Prop({ required: true })
+    name: string;
+
+    @Prop({ required: true })
+    description: string;
+
     @Prop({ required: true, ref: 'Company', type: mongoose.Schema.Types.ObjectId })
     companyId: Types.ObjectId;
 

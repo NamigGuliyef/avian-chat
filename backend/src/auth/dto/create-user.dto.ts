@@ -12,6 +12,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { UserRole, OnlineStatus } from '../../enum/enum';
+import { Types } from 'mongoose';
 
 
 export class CreateUserDto {
@@ -60,5 +61,11 @@ export class CreateUserDto {
   @IsOptional()
   @Type(() => Boolean)
   chatbotEnabled: boolean;
+
+  @ApiProperty()
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  channelIds: Types.ObjectId[]; // user-e aid channel-lerin id-lerinin massivi
 
 }

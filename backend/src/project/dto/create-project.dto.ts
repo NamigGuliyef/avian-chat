@@ -6,6 +6,16 @@ import { ProjectDirection, ProjectName, ProjectType } from 'src/enum/enum';
 
 export class CreateProjectDto {
 
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsString()
+    name: string;
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsString()
+    description: string;
+
     @ApiProperty({ example: '64f3b2e...', required: true, type: Types.ObjectId })
     @IsMongoId()
     @IsNotEmpty()
