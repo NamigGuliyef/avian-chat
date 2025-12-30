@@ -8,23 +8,18 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
-import { mockAgentKPIs, mockCrmUsers, mockExcels, mockLeads, mockProjects, mockSheets, mockSupervisorAssignments, mockTickets } from '@/data/mockData';
+import { mockAgentKPIs, mockCrmUsers, mockExcels, mockLeads, mockProjects, mockSheets, mockSupervisorAssignments } from '@/data/mockData';
 import { cn } from '@/lib/utils';
-import { ColumnConfig, ColumnOption, ColumnType, User as CrmUser, Excel, Project, Sheet, TicketPriority, TicketStatus, Ticket as TicketType, UserStatus } from '@/types/crm';
+import { ColumnConfig, ColumnOption, ColumnType, User as CrmUser, Excel, Project, Sheet, UserStatus } from '@/types/crm';
 import {
-  AlertCircle,
-  CheckCircle,
   ChevronLeft,
   ChevronRight,
-  Clock,
   Edit,
   FileSpreadsheet,
   FolderKanban,
   LogOut,
   Plus,
   Table2,
-  Ticket,
   Trash2,
   User as UserIcon,
   X
@@ -47,42 +42,21 @@ const statusLabels: Record<UserStatus, string> = {
   offline: 'Offline'
 };
 
-const ticketStatusColors: Record<TicketStatus, string> = {
-  new: 'bg-blue-500',
-  in_progress: 'bg-yellow-500',
-  pending: 'bg-orange-500',
-  completed: 'bg-green-500'
-};
-
-const ticketStatusLabels: Record<TicketStatus, string> = {
-  new: 'Yeni',
-  in_progress: 'Davam edir',
-  pending: 'Gözləmədə',
-  completed: 'Tamamlandı'
-};
-
-const priorityColors: Record<TicketPriority, string> = {
-  low: 'text-green-600',
-  medium: 'text-yellow-600',
-  high: 'text-orange-600',
-  urgent: 'text-red-600'
-};
 
 const SupervisorPanel: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState('agents');
-  
+
   // Data state
   const [excels, setExcels] = useState<Excel[]>(mockExcels);
   const [sheets, setSheets] = useState<Sheet[]>(mockSheets);
-  const [tickets, setTickets] = useState<TicketType[]>(mockTickets);
-  
+
   // Navigation state
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedExcel, setSelectedExcel] = useState<Excel | null>(null);
   const [selectedSheet, setSelectedSheet] = useState<Sheet | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<CrmUser | null>(null);
-  
+
   // Dialog state
   const [isExcelDialogOpen, setIsExcelDialogOpen] = useState(false);
   const [isSheetDialogOpen, setIsSheetDialogOpen] = useState(false);
@@ -91,26 +65,23 @@ const SupervisorPanel: React.FC = () => {
   const [editingExcel, setEditingExcel] = useState<Excel | null>(null);
   const [editingSheet, setEditingSheet] = useState<Sheet | null>(null);
   const [editingColumn, setEditingColumn] = useState<ColumnConfig | null>(null);
-  
+
   // Form state
   const [excelForm, setExcelForm] = useState({ name: '', description: '', agentIds: [] as string[] });
-  const [sheetForm, setSheetForm] = useState<{ name: string; description: string; agentIds: string[]; agentRowPermissions: { agentId: string; startRow: number; endRow: number }[] }>({ 
-    name: '', description: '', agentIds: [], agentRowPermissions: [] 
+  const [sheetForm, setSheetForm] = useState<{ name: string; description: string; agentIds: string[]; agentRowPermissions: { agentId: string; startRow: number; endRow: number }[] }>({
+    name: '', description: '', agentIds: [], agentRowPermissions: []
   });
-  const [columnForm, setColumnForm] = useState<Partial<ColumnConfig> & { options?: ColumnOption[]; phoneNumbers?: string[] }>({ 
+  const [columnForm, setColumnForm] = useState<Partial<ColumnConfig> & { options?: ColumnOption[]; phoneNumbers?: string[] }>({
     name: '', dataKey: '', type: 'text' as ColumnType, visibleToUser: true, editableByUser: true, isRequired: false, options: [], phoneNumbers: []
   });
-  const [ticketForm, setTicketForm] = useState({
-    title: '', description: '', type: 'task' as 'task' | 'ticket', priority: 'medium' as TicketPriority, 
-    tags: [] as string[], deadline: '', assignedAgentId: ''
-  });
+
   const [newOptionLabel, setNewOptionLabel] = useState('');
   const [newOptionColor, setNewOptionColor] = useState('#3B82F6');
   const [newPhoneNumber, setNewPhoneNumber] = useState('');
   const [newTag, setNewTag] = useState('');
 
   const currentSupervisor = mockCrmUsers.find(u => u.id === 'sup-1');
-  
+
   if (!currentSupervisor || currentSupervisor.role !== 'supervayzer') {
     return <Navigate to="/login" replace />;
   }
@@ -164,7 +135,7 @@ const SupervisorPanel: React.FC = () => {
     if (!sheetForm.name || !selectedExcel || !selectedProject) { toast.error('Sheet adını daxil edin'); return; }
     const newSheet: Sheet = {
       id: `sheet-${Date.now()}`, excelId: selectedExcel.id, projectId: selectedProject.id, name: sheetForm.name,
-      description: sheetForm.description, agentIds: sheetForm.agentIds, 
+      description: sheetForm.description, agentIds: sheetForm.agentIds,
       agentRowPermissions: sheetForm.agentRowPermissions,
       columns: [],
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
@@ -178,10 +149,10 @@ const SupervisorPanel: React.FC = () => {
 
   const handleUpdateSheet = () => {
     if (!editingSheet || !sheetForm.name) { toast.error('Sheet adını daxil edin'); return; }
-    setSheets(sheets.map(s => s.id === editingSheet.id ? { 
-      ...s, name: sheetForm.name, description: sheetForm.description, 
+    setSheets(sheets.map(s => s.id === editingSheet.id ? {
+      ...s, name: sheetForm.name, description: sheetForm.description,
       agentIds: sheetForm.agentIds, agentRowPermissions: sheetForm.agentRowPermissions,
-      updatedAt: new Date().toISOString() 
+      updatedAt: new Date().toISOString()
     } : s));
     setSheetForm({ name: '', description: '', agentIds: [], agentRowPermissions: [] });
     setIsSheetDialogOpen(false);
@@ -191,9 +162,9 @@ const SupervisorPanel: React.FC = () => {
 
   const startEditSheet = (sheet: Sheet) => {
     setEditingSheet(sheet);
-    setSheetForm({ 
-      name: sheet.name, 
-      description: sheet.description || '', 
+    setSheetForm({
+      name: sheet.name,
+      description: sheet.description || '',
       agentIds: sheet.agentIds,
       agentRowPermissions: sheet.agentRowPermissions || []
     });
@@ -253,9 +224,9 @@ const SupervisorPanel: React.FC = () => {
 
   const startEditColumn = (column: ColumnConfig) => {
     setEditingColumn(column);
-    setColumnForm({ 
-      name: column.name, dataKey: column.dataKey, type: column.type, 
-      visibleToUser: column.visibleToUser, editableByUser: column.editableByUser, 
+    setColumnForm({
+      name: column.name, dataKey: column.dataKey, type: column.type,
+      visibleToUser: column.visibleToUser, editableByUser: column.editableByUser,
       isRequired: column.isRequired, options: column.options || [],
       phoneNumbers: column.phoneNumbers || []
     });
@@ -272,8 +243,8 @@ const SupervisorPanel: React.FC = () => {
 
   const handleAddOption = () => {
     if (!newOptionLabel.trim()) return;
-    const newOption: ColumnOption = { 
-      value: newOptionLabel.toLowerCase().replace(/\s+/g, '_'), 
+    const newOption: ColumnOption = {
+      value: newOptionLabel.toLowerCase().replace(/\s+/g, '_'),
       label: newOptionLabel.trim(),
       color: newOptionColor
     };
@@ -299,15 +270,15 @@ const SupervisorPanel: React.FC = () => {
   const toggleAgentSheet = (agentId: string) => {
     if (sheetForm.agentIds.includes(agentId)) {
       // Remove agent
-      setSheetForm(prev => ({ 
-        ...prev, 
+      setSheetForm(prev => ({
+        ...prev,
         agentIds: prev.agentIds.filter(id => id !== agentId),
         agentRowPermissions: prev.agentRowPermissions.filter(p => p.agentId !== agentId)
       }));
     } else {
       // Add agent with default row permission
-      setSheetForm(prev => ({ 
-        ...prev, 
+      setSheetForm(prev => ({
+        ...prev,
         agentIds: [...prev.agentIds, agentId],
         agentRowPermissions: [...prev.agentRowPermissions, { agentId, startRow: 1, endRow: 100 }]
       }));
@@ -317,32 +288,10 @@ const SupervisorPanel: React.FC = () => {
   const updateAgentRowPermission = (agentId: string, startRow: number, endRow: number) => {
     setSheetForm(prev => ({
       ...prev,
-      agentRowPermissions: prev.agentRowPermissions.map(p => 
+      agentRowPermissions: prev.agentRowPermissions.map(p =>
         p.agentId === agentId ? { ...p, startRow, endRow } : p
       )
     }));
-  };
-
-  // Ticket CRUD
-  const handleAddTicket = () => {
-    if (!ticketForm.title || !ticketForm.assignedAgentId) { toast.error('Başlıq və agent seçin'); return; }
-    const agent = assignedAgents.find(a => a.id === ticketForm.assignedAgentId);
-    const newTicket: TicketType = {
-      id: `ticket-${Date.now()}`, title: ticketForm.title, description: ticketForm.description,
-      type: ticketForm.type, status: 'new', priority: ticketForm.priority, tags: ticketForm.tags,
-      deadline: ticketForm.deadline, assignedAgentId: ticketForm.assignedAgentId, assignedAgentName: agent?.name,
-      supervisorId: currentSupervisor.id, notes: [],
-      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
-    };
-    setTickets([...tickets, newTicket]);
-    setTicketForm({ title: '', description: '', type: 'task', priority: 'medium', tags: [], deadline: '', assignedAgentId: '' });
-    setIsTicketDialogOpen(false);
-    toast.success('Ticket yaradıldı');
-  };
-
-  const handleUpdateTicketStatus = (ticketId: string, status: TicketStatus) => {
-    setTickets(tickets.map(t => t.id === ticketId ? { ...t, status, updatedAt: new Date().toISOString() } : t));
-    toast.success('Status yeniləndi');
   };
 
   const toggleAgentExcel = (agentId: string) => {
@@ -350,19 +299,11 @@ const SupervisorPanel: React.FC = () => {
   };
 
 
-  const handleAddTag = () => {
-    if (!newTag.trim()) return;
-    setTicketForm(prev => ({ ...prev, tags: [...prev.tags, newTag.trim()] }));
-    setNewTag('');
-  };
-
   const menuItems = [
     { id: 'agents', icon: UserIcon, label: 'Dashboard' },
     { id: 'sheets', icon: FileSpreadsheet, label: 'Layihələrim' },
   ];
 
-  // Get agent's tickets
-  const getAgentTickets = (agentId: string) => tickets.filter(t => t.assignedAgentId === agentId);
   const getAgentKPI = (agentId: string) => mockAgentKPIs.find(k => k.agentId === agentId);
 
   return (
@@ -401,7 +342,6 @@ const SupervisorPanel: React.FC = () => {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {assignedAgents.map((agent) => {
                 const kpi = getAgentKPI(agent.id);
-                const agentTickets = getAgentTickets(agent.id);
                 return (
                   <Card key={agent.id} className="cursor-pointer hover:border-primary" onClick={() => setSelectedAgent(agent)}>
                     <CardContent className="p-4">
@@ -418,9 +358,6 @@ const SupervisorPanel: React.FC = () => {
                           <div className="p-2 bg-muted rounded"><p className="text-muted-foreground text-xs">SLA %</p><p className="font-semibold">{kpi.slaCompliance}%</p></div>
                         </div>
                       )}
-                      <div className="mt-3 flex items-center gap-2">
-                        <Badge variant="outline">{agentTickets.length} ticket</Badge>
-                      </div>
                     </CardContent>
                   </Card>
                 );
@@ -458,38 +395,6 @@ const SupervisorPanel: React.FC = () => {
                 </div>
               );
             })()}
-
-            {/* Agent Tickets */}
-            <h3 className="text-lg font-semibold mb-4">Açıq ticketlər</h3>
-            <div className="space-y-3">
-              {getAgentTickets(selectedAgent.id).filter(t => t.status !== 'completed').map((ticket) => (
-                <Card key={ticket.id}>
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{ticket.title}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className={ticketStatusColors[ticket.status].replace('bg-', 'border-')}>{ticketStatusLabels[ticket.status]}</Badge>
-                        <Badge variant="outline">{ticket.channel}</Badge>
-                        <span className={cn("text-sm font-medium", priorityColors[ticket.priority])}>{ticket.priority}</span>
-                        {ticket.slaTime && <span className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{ticket.slaTime}</span>}
-                      </div>
-                    </div>
-                    <Select value={ticket.status} onValueChange={(v: TicketStatus) => handleUpdateTicketStatus(ticket.id, v)}>
-                      <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">Yeni</SelectItem>
-                        <SelectItem value="in_progress">Davam edir</SelectItem>
-                        <SelectItem value="pending">Gözləmədə</SelectItem>
-                        <SelectItem value="completed">Tamamlandı</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </CardContent>
-                </Card>
-              ))}
-              {getAgentTickets(selectedAgent.id).filter(t => t.status !== 'completed').length === 0 && (
-                <p className="text-center text-muted-foreground py-8">Açıq ticket yoxdur</p>
-              )}
-            </div>
           </div>
         )}
 
@@ -501,10 +406,10 @@ const SupervisorPanel: React.FC = () => {
               <h2 className="text-2xl font-bold">Layihələrim</h2>
               <p className="text-sm text-muted-foreground">Layihə → Excel → Sheet → Sütunlar</p>
             </div>
-            
+
             {/* Excel Summary Cards */}
             <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mb-8">
-              {supervisorProjects.flatMap(project => 
+              {supervisorProjects.flatMap(project =>
                 excels.filter(e => e.projectId === project.id).map(excel => {
                   const agentCount = excel.agentIds.length;
                   return (
@@ -518,7 +423,7 @@ const SupervisorPanel: React.FC = () => {
                 })
               )}
             </div>
-            
+
             {/* Detailed Table */}
             <Card className="mb-6">
               <CardHeader className="pb-2">
@@ -585,7 +490,7 @@ const SupervisorPanel: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             {/* Project Cards */}
             <h3 className="text-lg font-semibold mb-4">Layihələr</h3>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -684,17 +589,17 @@ const SupervisorPanel: React.FC = () => {
                               {isSelected && (
                                 <div className="mt-2 ml-6 flex items-center gap-2 text-sm">
                                   <span className="text-muted-foreground">Sətir aralığı:</span>
-                                  <Input 
-                                    type="number" 
-                                    value={permission?.startRow || 1} 
+                                  <Input
+                                    type="number"
+                                    value={permission?.startRow || 1}
                                     onChange={(e) => updateAgentRowPermission(agent.id, parseInt(e.target.value) || 1, permission?.endRow || 100)}
                                     className="w-20 h-8"
                                     min={1}
                                   />
                                   <span>-</span>
-                                  <Input 
-                                    type="number" 
-                                    value={permission?.endRow || 100} 
+                                  <Input
+                                    type="number"
+                                    value={permission?.endRow || 100}
                                     onChange={(e) => updateAgentRowPermission(agent.id, permission?.startRow || 1, parseInt(e.target.value) || 100)}
                                     className="w-20 h-8"
                                     min={1}
@@ -755,18 +660,18 @@ const SupervisorPanel: React.FC = () => {
                         <SelectContent><SelectItem value="text">Mətn</SelectItem><SelectItem value="number">Rəqəm</SelectItem><SelectItem value="date">Tarix</SelectItem><SelectItem value="select">Seçim</SelectItem><SelectItem value="phone">Telefon</SelectItem></SelectContent>
                       </Select>
                     </div>
-                    
+
                     {/* Phone type - Number list */}
                     {columnForm.type === 'phone' && (
                       <div>
                         <Label className="mb-2 block">Telefon nömrələri</Label>
                         <div className="space-y-2">
                           <div className="flex gap-2">
-                            <Input 
-                              value={newPhoneNumber} 
-                              onChange={(e) => setNewPhoneNumber(e.target.value)} 
-                              placeholder="+994 XX XXX XX XX" 
-                              onKeyDown={(e) => e.key === 'Enter' && handleAddPhoneNumber()} 
+                            <Input
+                              value={newPhoneNumber}
+                              onChange={(e) => setNewPhoneNumber(e.target.value)}
+                              placeholder="+994 XX XXX XX XX"
+                              onKeyDown={(e) => e.key === 'Enter' && handleAddPhoneNumber()}
                             />
                             <Button type="button" size="sm" onClick={handleAddPhoneNumber}><Plus className="h-4 w-4" /></Button>
                           </div>
@@ -791,16 +696,16 @@ const SupervisorPanel: React.FC = () => {
                         <Label className="mb-2 block">Seçim variantları</Label>
                         <div className="space-y-2">
                           <div className="flex gap-2">
-                            <Input 
-                              value={newOptionLabel} 
-                              onChange={(e) => setNewOptionLabel(e.target.value)} 
-                              placeholder="Variant adı" 
+                            <Input
+                              value={newOptionLabel}
+                              onChange={(e) => setNewOptionLabel(e.target.value)}
+                              placeholder="Variant adı"
                               onKeyDown={(e) => e.key === 'Enter' && handleAddOption()}
                               className="flex-1"
                             />
-                            <input 
-                              type="color" 
-                              value={newOptionColor} 
+                            <input
+                              type="color"
+                              value={newOptionColor}
                               onChange={(e) => setNewOptionColor(e.target.value)}
                               className="w-10 h-9 rounded border border-input cursor-pointer"
                               title="Rəng seçin"
@@ -811,8 +716,8 @@ const SupervisorPanel: React.FC = () => {
                             {(columnForm.options || []).map((opt, index) => (
                               <div key={index} className="flex items-center justify-between py-1.5 px-2 bg-muted/50 rounded mb-1">
                                 <div className="flex items-center gap-2">
-                                  <div 
-                                    className="w-4 h-4 rounded-full border" 
+                                  <div
+                                    className="w-4 h-4 rounded-full border"
                                     style={{ backgroundColor: opt.color || '#3B82F6' }}
                                   />
                                   <span className="text-sm">{opt.label}</span>
@@ -827,7 +732,7 @@ const SupervisorPanel: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="flex items-center justify-between"><Label>Məcburi</Label><Switch checked={columnForm.isRequired} onCheckedChange={(c) => setColumnForm({ ...columnForm, isRequired: c })} /></div>
                     <div className="flex items-center justify-between"><Label>Görünən</Label><Switch checked={columnForm.visibleToUser} onCheckedChange={(c) => setColumnForm({ ...columnForm, visibleToUser: c })} /></div>
                     <div className="flex items-center justify-between"><Label>Redaktə edilə bilən</Label><Switch checked={columnForm.editableByUser} onCheckedChange={(c) => setColumnForm({ ...columnForm, editableByUser: c })} /></div>

@@ -13,7 +13,7 @@ export enum ProjectName {
 }
 
 export interface ICompany {
-    _id: string;
+    _id?: string;
     name: string;
     channels: IChannel[]; // channel Id-leri
     domain: string;
@@ -126,6 +126,18 @@ export const roleLabels: Record<Roles, string> = {
     Partner: 'Partner',
 };
 
+
+export interface IProject {
+    _id: string;
+    name: string;
+    description: string;
+    companyId: string;
+    projectType: ProjectType;
+    projectDirection: ProjectDirection;
+    projectName: ProjectName
+    supervisors: IUser[];
+    agents: IUser[];
+}
 
 
 

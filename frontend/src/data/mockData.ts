@@ -1,11 +1,12 @@
 import { Company, User, Visitor, Trigger, Conversation, Message, WidgetConfig, Folder, Channel } from '@/types/chat';
-import { Lead, OperationLog, User as CrmUser, Stats, Project, Excel, Sheet, SupervisorAssignment, Ticket, TicketNote, AgentKPI } from '@/types/crm';
+import { Lead, OperationLog, User as CrmUser, Stats, Project, Excel, Sheet, SupervisorAssignment, AgentKPI } from '@/types/crm';
+import { IProject } from '@/types/types';
 
 // Mock Projects
-export const mockProjects: Project[] = [
-  { id: 'proj-1', name: 'Azercell', description: 'Azercell CRM layihəsi', supervisorIds: ['sup-1'], createdAt: '2024-01-01', updatedAt: '2024-01-01' },
-  { id: 'proj-2', name: 'Bakcell', description: 'Bakcell satış layihəsi', supervisorIds: ['sup-2'], createdAt: '2024-02-01', updatedAt: '2024-02-01' },
-  { id: 'proj-3', name: 'Nar', description: 'Nar müştəri xidmətləri', supervisorIds: ['sup-1', 'sup-2'], createdAt: '2024-03-01', updatedAt: '2024-03-01' },
+export const mockProjects: any[] = [
+  { _id: 'proj-1', name: 'Azercell', description: 'Azercell CRM layihəsi', },
+  { _id: 'proj-2', name: 'Bakcell', description: 'Bakcell satış layihəsi', },
+  { _id: 'proj-3', name: 'Nar', description: 'Nar müştəri xidmətləri', },
 ];
 
 // Mock Excels (Workbooks)
@@ -76,61 +77,6 @@ export const mockCrmUsers: CrmUser[] = [
   { id: 'partner-1', name: 'Şirkət A Partner', email: 'partner@partnerA.az', password: 'demo123', role: 'partner', companyId: 'company-1', isActive: true, status: 'available', createdAt: '2024-02-01' },
 ];
 
-// Mock Tickets
-export const mockTickets: Ticket[] = [
-  {
-    id: 'ticket-1',
-    title: 'Müştəri şikayəti araşdır',
-    description: 'Müştəri tarifin düzgün tətbiq edilmədiyini iddia edir',
-    type: 'ticket',
-    status: 'new',
-    priority: 'high',
-    channel: 'call',
-    tags: ['şikayət', 'tarif'],
-    deadline: '2024-01-20',
-    assignedAgentId: 'user-1',
-    assignedAgentName: 'Fərid Məmmədov',
-    supervisorId: 'sup-1',
-    notes: [],
-    slaTime: '2 saat',
-    createdAt: '2024-01-18T10:00:00',
-    updatedAt: '2024-01-18T10:00:00'
-  },
-  {
-    id: 'ticket-2',
-    title: 'VIP müştəri ilə əlaqə',
-    description: 'VIP müştəriyə yeni kampaniya haqqında məlumat ver',
-    type: 'task',
-    status: 'in_progress',
-    priority: 'medium',
-    channel: 'chat',
-    tags: ['VIP', 'kampaniya'],
-    deadline: '2024-01-22',
-    assignedAgentId: 'user-2',
-    assignedAgentName: 'Aynur Qasımova',
-    supervisorId: 'sup-1',
-    notes: [
-      { id: 'note-1', content: 'Müştəri ilə əlaqə saxlandı', authorId: 'user-2', authorName: 'Aynur Qasımova', isInternal: true, createdAt: '2024-01-19T14:00:00' }
-    ],
-    createdAt: '2024-01-17T09:00:00',
-    updatedAt: '2024-01-19T14:00:00'
-  },
-  {
-    id: 'ticket-3',
-    title: 'Hesab problemi həll et',
-    type: 'ticket',
-    status: 'completed',
-    priority: 'low',
-    channel: 'social',
-    tags: ['hesab'],
-    assignedAgentId: 'user-1',
-    assignedAgentName: 'Fərid Məmmədov',
-    supervisorId: 'sup-1',
-    notes: [],
-    createdAt: '2024-01-15T11:00:00',
-    updatedAt: '2024-01-16T16:00:00'
-  },
-];
 
 // Mock Agent KPIs
 export const mockAgentKPIs: AgentKPI[] = [
