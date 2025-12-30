@@ -53,24 +53,14 @@ export class AdminService {
   }
 
   // Bütün şirkətləri gətirən funksiyası
-  async getAllCompanies() {
+  async getAllCompanies(): Promise<Company[]> {
+    return this.companyModel.find().exec();
+  }
 
-    let companiesData: Array<{ count: number, supervisors: Types.ObjectId[], agents: Types.ObjectId[], company: Company }> = [];
-    const companies = await this.companyModel.find().select('-channels').exec();
-    // Hər bir şirkət üçün ona məxsus layihələrin agent və supervisor-larını da yükləyirik
-    for (let i = 0; i < companies.length; i++) {
-      const company = companies[i];
-      const projectMembers = await this.getCompanyProjectMembers(company._id.toString());
-      companiesData.push({
-        company: company,
-        count: projectMembers.count,
-        supervisors: projectMembers.supervisors,
-        agents: projectMembers.agents,
-      });
-    }
-    return {
-      companiesData
-    }
+
+  // Şirkəti id-ə görə gətirən funksiyası
+  async getCompanyById(_id: string): Promise<Company | null> {
+    return this.companyModel.findById(_id).exec();
   }
 
 
@@ -108,14 +98,6 @@ export class AdminService {
       agents: agents,
     };
   }
-
-
-
-  // Şirkəti id-ə görə gətirən funksiyası
-  async getCompanyById(_id: string): Promise<Company | null> {
-    return this.companyModel.findById(_id).exec();
-  }
-
 
 
 
