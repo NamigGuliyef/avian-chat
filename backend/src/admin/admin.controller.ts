@@ -62,13 +62,12 @@ export class AdminController {
   }
 
 
-  @ApiOperation({ summary: 'Şirkətə məxsus layihənin agent və supervisor-larını gətir' })
-  @Get('company-project-members/:companyId')
-  @HttpCode(HttpStatus.OK)
-  async getCompanyProjectMembers(@Param('companyId') companyId: string) {
-    return await this.adminService.getCompanyProjectMembers(companyId);
-  }
-
+  // @ApiOperation({ summary: 'Şirkətə məxsus layihənin agent və supervisor-larını gətir' })
+  // @Get('company-project-members/:companyId')
+  // @HttpCode(HttpStatus.OK)
+  // async getCompanyProjectMembers(@Param('companyId') companyId: string) {
+  //   return await this.adminService.getCompanyProjectMembers(companyId);
+  // }
 
 
   // -----------------------------------------Channel Functions ---------------------------//
@@ -146,6 +145,18 @@ export class AdminController {
   @HttpCode(HttpStatus.CREATED)
   async createProject(@Body() createProjectData: CreateProjectDto) {
     return await this.adminService.createProject(createProjectData);
+  }
+
+
+  @ApiOperation({ summary: 'Layihəyə üzv əlavə et' })
+  @ApiBody({
+    type: CreateProjectDto,
+    description: 'Layihəyə üzv əlavə etmək üçün məlumatlar',
+  })
+  @Patch('add-project-members/:projectId')
+  @HttpCode(HttpStatus.OK)
+  async addProjectMembers(@Param('projectId') projectId: string, @Body() createProjectData: CreateProjectDto) {
+    return await this.adminService.addProjectMembers(projectId, createProjectData);
   }
 
 

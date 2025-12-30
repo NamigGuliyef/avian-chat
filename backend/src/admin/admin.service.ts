@@ -65,39 +65,39 @@ export class AdminService {
 
 
   // Şirkətə məxsus layihənin agent və supervisor-larını gətirən funksiya
-  async getCompanyProjectMembers(companyId: string): Promise<{ count: number, agents: Types.ObjectId[], supervisors: Types.ObjectId[] }> {
+  // async getCompanyProjectMembers(companyId: string): Promise<{ count: number, agents: Types.ObjectId[], supervisors: Types.ObjectId[] }> {
 
-    // Şirkətə məxsus layihələri tapırıq və onların agent və supervisor-larını yükləyirik
-    const projects = await this.projectModel.find({ companyId: companyId })
-      .populate({ path: 'agents', select: 'name surname email' }).populate({ path: 'supervisors', select: 'name surname email' }).exec();
+  //   // Şirkətə məxsus layihələri tapırıq və onların agent və supervisor-larını yükləyirik
+  //   const projects = await this.projectModel.find({ companyId: companyId })
+  //     .populate({ path: 'agents', select: 'name surname email' }).populate({ path: 'supervisors', select: 'name surname email' }).exec();
 
-    // Bütün agent və supervisor-lar üçün boş massivlər yaradırıq
-    let agents: Types.ObjectId[] = [];
-    let supervisors: Types.ObjectId[] = [];
+  //   // Bütün agent və supervisor-lar üçün boş massivlər yaradırıq
+  //   let agents: Types.ObjectId[] = [];
+  //   let supervisors: Types.ObjectId[] = [];
 
-    // Hər bir layihənin agent və supervisor-larını ayrıca yığırıq
+  //   // Hər bir layihənin agent və supervisor-larını ayrıca yığırıq
 
-    projects.forEach(project => {
-      project.agents.forEach(agentId => {
-        if (!agents.includes(agentId)) {
-          agents.push(agentId);
-        }
-      });
+  //   projects.forEach(project => {
+  //     project.agents.forEach(agentId => {
+  //       if (!agents.includes(agentId)) {
+  //         agents.push(agentId);
+  //       }
+  //     });
 
-      project.supervisors.forEach(supervisorId => {
-        if (!supervisors.includes(supervisorId)) {
-          supervisors.push(supervisorId);
-        }
-      });
-    });
+  //     project.supervisors.forEach(supervisorId => {
+  //       if (!supervisors.includes(supervisorId)) {
+  //         supervisors.push(supervisorId);
+  //       }
+  //     });
+  //   });
 
-    // agents və supervisors massivlərinin uzunluğunu və özlərini qaytarırıq  
-    return {
-      count: agents.length + supervisors.length,
-      supervisors: supervisors,
-      agents: agents,
-    };
-  }
+  //   // agents və supervisors massivlərinin uzunluğunu və özlərini qaytarırıq  
+  //   return {
+  //     count: agents.length + supervisors.length,
+  //     supervisors: supervisors,
+  //     agents: agents,
+  //   };
+  // }
 
 
 
@@ -211,6 +211,43 @@ export class AdminService {
     const newProject = new this.projectModel(createProjectData);
     return { message: "Yeni layihə uğurla yaradıldı", project: await newProject.save() };
   }
+
+
+  // proyektin id-sine görə supervisor ve agent elave etmek funksiyasi
+  async addProjectMembers(porjectId: string , createProjectData: CreateProjectDto): Promise<{ message: string, project: Project | null }> {
+
+    let agents: string[] = [];
+    let supervisors: string[] = [];
+
+    // proyektin id-sine gore melumatlari tapiriq
+    const project = await this.projectModel.findById(porjectId);
+
+    // proyekt tapilmadiqda
+    if (!project) {
+      return { message: "Layihə tapılmadı", project: null };
+    }
+    // proyekt tapildiqda supervisor ve agent elave edirik
+
+    for (let i = 0; i < createProjectData.agents.length; i++) {
+      const agentId = createProjectData.agents[i];
+      agents.push(agentId);
+    }
+
+
+    for (let j = 0; j < createProjectData.supervisors.length; j++) {
+      const supervisorId = createProjectData.supervisors[j];
+      supervisors.push(supervisorId);
+    }
+
+    const updateProject = new this.projectModel({
+      ...createProjectData,
+      supervisors: supervisors,
+      agents: agents,
+    });
+    return { message: "Lahiyəyə üzvlər uğurla əlavə edildi", project: await updateProject.save() };
+  }
+
+
 
 
   // Layihə yeniləmə funksiyası
