@@ -243,12 +243,12 @@ export class AdminService {
 
 
   // Layihə silmə funksiyası
-  async deleteProject(_id: string): Promise<{ message: string }> {
-    const deletedProject = await this.projectModel.findByIdAndDelete(_id);
-    return {
-      message: "Layihə uğurla ləğv edildi",
-    }
-  }
+  // async deleteProject(_id: string): Promise<{ message: string }> {
+  //   const deletedProject = await this.projectModel.findByIdAndDelete(_id);
+  //   return {
+  //     message: "Layihə uğurla ləğv edildi",
+  //   }
+  // }
 
 
   // Bütün layihələri gətirən funksiyası

@@ -161,13 +161,12 @@ export class AdminController {
   }
 
 
-  @ApiOperation({ summary: "Layihə ləğv edilməsi" })
-  @Delete('delete-project/:_id')
-  @HttpCode(HttpStatus.OK)
-  async deleteProject(@Param("_id") _id: string) {
-    return await this.adminService.deleteProject(_id)
-
-  }
+  // @ApiOperation({ summary: "Layihə ləğv edilməsi" })
+  // @Delete('delete-project/:_id')
+  // @HttpCode(HttpStatus.OK)
+  // async deleteProject(@Param("_id") _id: string) {
+  //   return await this.adminService.deleteProject(_id)
+  // }
 
 
   @ApiOperation({ summary: "Bütün layihələri gətir" })
