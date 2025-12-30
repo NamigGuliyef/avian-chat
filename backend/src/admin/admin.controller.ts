@@ -153,10 +153,10 @@ export class AdminController {
     type: CreateProjectDto,
     description: 'Layihəyə üzv əlavə etmək üçün məlumatlar',
   })
-  @Patch('add-project-members/:projectId')
+  @Patch('add-project-members/:projectId/:userId/:type')
   @HttpCode(HttpStatus.OK)
-  async addProjectMembers(@Param('projectId') projectId: string, @Body() createProjectData: CreateProjectDto) {
-    return await this.adminService.addProjectMembers(projectId, createProjectData);
+  async addProjectMembers(@Param('projectId') projectId: string, @Param('userId') userId: string, @Param('type') type: string) {
+    return await this.adminService.addProjectMembers(projectId, userId, type);
   }
 
 

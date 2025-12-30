@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 import { CreateChannelDto } from 'src/channel/dto/create-channel.dto';
 import { Channel } from 'src/channel/model/channel.schema';
 import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
@@ -214,35 +214,27 @@ export class AdminService {
 
 
   // proyektin id-sine görə supervisor ve agent elave etmek funksiyasi
-  async addProjectMembers(porjectId: string , createProjectData: CreateProjectDto): Promise<{ message: string, project: Project | null }> {
-
-    let agents: string[] = [];
-    let supervisors: string[] = [];
-
+  async addProjectMembers(projectId: string, userId: any, type: string): Promise<{ message: string, project: Project | null }> {
     // proyektin id-sine gore melumatlari tapiriq
-    const project = await this.projectModel.findById(porjectId);
+    const project = await this.projectModel.findById(projectId);
 
     // proyekt tapilmadiqda
     if (!project) {
       return { message: "Layihə tapılmadı", project: null };
-    }
-    // proyekt tapildiqda supervisor ve agent elave edirik
-
-    for (let i = 0; i < createProjectData.agents.length; i++) {
-      const agentId = createProjectData.agents[i];
-      agents.push(agentId);
-    }
+    };
 
 
-    for (let j = 0; j < createProjectData.supervisors.length; j++) {
-      const supervisorId = createProjectData.supervisors[j];
-      supervisors.push(supervisorId);
+    if (type === "A") {
+      // proyekt tapildiqda supervisor ve agent elave edirik
+      project.agents.push(userId);
+    } else if (type === "S") {
+      project.supervisors.push(userId);
     }
 
     const updateProject = new this.projectModel({
-      ...createProjectData,
-      supervisors: supervisors,
-      agents: agents,
+      ...project,
+      supervisors: project.supervisors,
+      agents: project.agents,
     });
     return { message: "Lahiyəyə üzvlər uğurla əlavə edildi", project: await updateProject.save() };
   }
