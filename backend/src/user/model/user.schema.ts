@@ -47,8 +47,8 @@ export class User {
   channelIds: Types.ObjectId[]; // user-e aid channel-lerin id-lerinin massivi
 
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: false })
-  projectId: Types.ObjectId;
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Project', required: false })
+  projectIds: Types.ObjectId[];
 
   @Prop({ type: Boolean, default: false })
   isDeleted: boolean;

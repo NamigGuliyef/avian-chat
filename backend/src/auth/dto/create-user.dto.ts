@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiOperation, ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -68,10 +68,12 @@ export class CreateUserDto {
   @IsOptional()
   channelIds: Types.ObjectId[]; // user-e aid channel-lerin id-lerinin massivi
 
+
   @ApiProperty({ required: false })
-  @IsMongoId()
+  @IsArray()
+  @IsMongoId({ each: true })
   @IsOptional()
-  projectId: Types.ObjectId;
+  projectIds: Types.ObjectId[];
 
   @ApiProperty({ required: false })
   @IsBoolean()
