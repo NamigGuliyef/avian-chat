@@ -5,6 +5,7 @@ import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateProjectDto } from 'src/project/dto/create-project.dto';
 import { CreateChannelDto } from 'src/channel/dto/create-channel.dto';
 import { Types } from 'mongoose';
+import { CreateUserDto } from 'src/auth/dto/create-user.dto';
 
 @ApiTags('admin')
 @Controller('admin')
@@ -264,4 +265,18 @@ export class AdminController {
     return await this.adminService.updateUserDeletionStatus(userId, isDeleted);
   }
 
+
+  @ApiOperation({ summary: "İstifadəçi məlumatlarını yenilə" })
+  @ApiBody({
+    type: CreateUserDto,
+    description: 'Yenilənəcək istifadəçi məlumatları',
+  })
+  @Patch('update-user-info/:userId')
+  @HttpCode(HttpStatus.OK)
+  async updateUserInfo(
+    @Param('userId') userId: string,
+    @Body() updateData: Partial<CreateUserDto>
+  ) {
+    return await this.adminService.updateUserInfo(userId, updateData);
+  }
 }

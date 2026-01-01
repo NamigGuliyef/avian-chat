@@ -6,6 +6,7 @@ import { CreateChannelDto } from 'src/channel/dto/create-channel.dto';
 import { Channel } from 'src/channel/model/channel.schema';
 import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
 import { Company } from 'src/company/model/company.schema';
+import { hashPassword } from 'src/helper/hashpass';
 import { CreateProjectDto } from 'src/project/dto/create-project.dto';
 import { Project } from 'src/project/model/project.schema';
 import { User } from 'src/user/model/user.schema';
@@ -200,32 +201,33 @@ export class AdminService {
 
 
   // proyektin id-sine görə supervisor ve agent elave etmek funksiyasi
-  async addProjectMembers(projectId: string, userId: any, type: string): Promise<{ message: string, project: Project | null }> {
-    // proyektin id-sine gore melumatlari tapiriq
+  async addProjectMembers(projectId: string, userId: any, type: string): Promise<{ message: string; project: Project | null }> {
+
     const project = await this.projectModel.findById(projectId);
 
-    // proyekt tapilmadiqda
     if (!project) {
       return { message: "Layihə tapılmadı", project: null };
-    };
-
-
-    if (type === "A") {
-      // proyekt tapildiqda supervisor ve agent elave edirik
-      project.agents.push(userId);
-      await this.userModel.findByIdAndUpdate(userId, { $set: { projectId: projectId } });
-    } else if (type === "S") {
-      project.supervisors.push(userId);
-      await this.userModel.findByIdAndUpdate(userId, { $set: { projectId: projectId } });
     }
 
-    const updateProject = new this.projectModel({
-      ...project,
-      supervisors: project.supervisors,
-      agents: project.agents,
-    });
-    return { message: "Lahiyəyə üzvlər uğurla əlavə edildi", project: await updateProject.save() };
+    if (type === "A") {
+      // artıq varsa, təkrar əlavə etməsin
+      if (!project.agents.includes(userId)) {
+        project.agents.push(userId);
+      }
+    }
+    else if (type === "S") {
+      if (!project.supervisors.includes(userId)) {
+        project.supervisors.push(userId);
+      }
+    }
+    await project.save();
+
+    return {
+      message: "Layihəyə üzvlər uğurla əlavə edildi",
+      project,
+    };
   }
+
 
 
   // proyektden agent və ya supervisor silme funksiyasi
@@ -393,16 +395,16 @@ export class AdminService {
 
   // İstifadəçinin məlumatlarını yeniləyən funksiyası
   async updateUserInfo(userId: string, updateData: Partial<CreateUserDto>): Promise<{ message: string, user: User | null }> {
-
-
-
+    // əgər password yenilənirsə, onu hash edirik
+    if (updateData.password) {
+      const hashedPassword = await hashPassword(updateData.password);
+      updateData.password = hashedPassword;
+    }
     const updatedUser = await this.userModel.findByIdAndUpdate(userId, { $set: updateData }, { new: true });
     return {
-      message: "İstifadəçi məlumatları uğurla yeniləndi",
-      user: updatedUser
-    };
+      message: "İstifadəçi məlumatları uğurla yeniləndi", user: updatedUser
+    }
+
   }
-
-
 
 }
