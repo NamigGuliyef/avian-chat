@@ -31,3 +31,4 @@ export enum ProjectName {
   telesales = "1",
   telemarketing = "2",
 }
+

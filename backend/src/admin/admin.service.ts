@@ -213,11 +213,13 @@ export class AdminService {
       // artıq varsa, təkrar əlavə etməsin
       if (!project.agents.includes(userId)) {
         project.agents.push(userId);
+        await this.userModel.findByIdAndUpdate(userId, { $push: { projectIds: projectId } });
       }
     }
     else if (type === "S") {
       if (!project.supervisors.includes(userId)) {
         project.supervisors.push(userId);
+        await this.userModel.findByIdAndUpdate(userId, { $push: { projectIds: projectId } });
       }
     }
     await project.save();
@@ -375,7 +377,8 @@ export class AdminService {
     }
 
     const [data, total] = await Promise.all([
-      this.userModel.find(filter).select('-password').skip(skip).limit(limit).sort({ createdAt: -1 }).exec(),
+      this.userModel.find(filter).select('-password').skip(skip).limit(limit).sort({ createdAt: -1 })
+        .populate({ path: 'projectIds', select: ' name createdAt' }).exec(),
       this.userModel.countDocuments(filter),
     ]);
 
