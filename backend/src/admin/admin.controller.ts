@@ -138,7 +138,7 @@ export class AdminController {
     return await this.adminService.removeChannelsFromUser(userId, channels);
   }
 
-  
+
 
   // ------------------------------- Project Functions ---------------------------//
 
@@ -193,12 +193,12 @@ export class AdminController {
   }
 
 
-  // @ApiOperation({ summary: "Layihə ləğv edilməsi" })
-  // @Delete('delete-project/:_id')
-  // @HttpCode(HttpStatus.OK)
-  // async deleteProject(@Param("_id") _id: string) {
-  //   return await this.adminService.deleteProject(_id)
-  // }
+  @ApiOperation({ summary: "Layihə ləğv edilməsi" })
+  @Delete('delete-project/:_id')
+  @HttpCode(HttpStatus.OK)
+  async deleteProject(@Param("_id") _id: string) {
+    return await this.adminService.deleteProject(_id)
+  }
 
 
   @ApiOperation({ summary: "Bütün layihələri gətir" })
@@ -225,7 +225,7 @@ export class AdminController {
     return await this.adminService.filterProjectMembers(projectId, role, email);
   }
 
-  
+
 
 
   @ApiOperation({ summary: 'Layihələri İD görə gətir' })
@@ -235,5 +235,20 @@ export class AdminController {
     return await this.adminService.getProjectById(_id)
   }
 
+
+  @ApiOperation({ summary: 'Supervisor-a aid agentləri gətir' })
+  @Get('supervisor/:supervisorId/agents')
+  @HttpCode(HttpStatus.OK)
+  async getAgentsBySupervisor(@Param('supervisorId') supervisorId: string) {
+    return await this.adminService.getAgentsBySupervisor(supervisorId);
+  }
+
+
+  @ApiOperation({ summary: "Bütün istifadəçiləri gətir" })
+  @Get('users')
+  @HttpCode(HttpStatus.OK)
+  async getAllUsers() {
+    return await this.adminService.getAllUsers()
+  }
 
 }

@@ -322,4 +322,35 @@ export class AdminService {
     return this.projectModel.findById(_id).exec();
   }
 
+
+
+  // --------------------------------------- Supervisor ----------------------------// 
+
+  // supervisor-lara aid olan agent-lari getirir
+  // proyektlerden asagidaki kimi filterleyir
+  async getAgentsBySupervisor(supervisorId: string): Promise<User[]> {
+    // ilk once supervisor-a aid olan proyektleri tapiriq
+    const projects = await this.projectModel.find({ supervisors: supervisorId }).exec();
+    const agentIdsSet = new Set<string>();
+
+    // sonra o proyektlere aid olan agentlerin id-lərini toplayiriq
+    for (const project of projects) {
+      project.agents.forEach(agentId => agentIdsSet.add(agentId.toString()));
+    }
+    const agentIds = Array.from(agentIdsSet);
+
+    // toplanan agent id-lərinə əsasən user-ları gətiririk
+    return this.userModel.find({ _id: { $in: agentIds } }).select("-password").exec();
+  }
+
+
+  // -------------------------------- User functions -------------------------------//
+
+  // Bütün istifadəçiləri gətirən və company-ə görə filterləyən funksiyası
+  async getAllUsers(): Promise<User[]> {
+    // həmin user-lerin company-lerini tapırıq
+    return this.userModel.find({ isDeleted: false }).select("-password").exec();
+  }
+
+
 }
