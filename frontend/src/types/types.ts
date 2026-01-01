@@ -1,3 +1,5 @@
+import { Shield, UserCog, UserIcon } from "lucide-react";
+
 export enum ProjectType {
     Outbound = "0",
     Inbound = "1"
@@ -38,6 +40,9 @@ export interface IUser {
     status: UserStatus;
     email: string;
     password: string;
+    isActive?: boolean;
+    isDeleted?: boolean;
+    createdAt?: string;
     supervisor: IUser; // assigned supervisor id
     assignedChannels: IChannel[]; // company-ye bagli channel-lerin id-lerinin massivi
     role: Roles;
@@ -119,12 +124,24 @@ export interface IMessage {
     createdAt: Date;
 }
 
+export const roleColors: Record<Roles, string> = {
+    Admin: 'bg-primary text-primary-foreground',
+    Supervisor: 'bg-purple-500 text-white',
+    Agent: 'bg-blue-500 text-white',
+    Partner: 'bg-orange-500 text-white',
+};
 export const roleLabels: Record<Roles, string> = {
     Admin: 'Admin',
     Supervisor: 'Supervisor',
     Agent: 'Agent',
     Partner: 'Partner',
 };
+export const roleIcons: Record<Roles, any> = {
+    Admin: Shield,
+    Supervisor: UserCog,
+    Agent: UserIcon,
+    Partner: UserIcon
+}
 
 
 export interface IProject {
