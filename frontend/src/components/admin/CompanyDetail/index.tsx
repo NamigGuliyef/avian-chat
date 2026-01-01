@@ -22,6 +22,7 @@ interface CompanyDetailProps {
 
 const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack }) => {
 
+
     return (
         <div className="space-y-6">
             {/* Header */}

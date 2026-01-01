@@ -25,11 +25,12 @@ interface OperationLogsProps {
   users: User[];
 }
 
-export function OperationLogs({ logs, users }: OperationLogsProps) {
+export function OperationLogs() {
   const [selectedUser, setSelectedUser] = useState<string>('all');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
-
+  const logs = []
+  const users = []
   const filteredLogs = logs.filter((log) => {
     const matchesUser = selectedUser === 'all' || log.userId === selectedUser;
     const matchesDate =

@@ -23,17 +23,18 @@ import {
     X
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const initialCompany: Partial<ICompany> = {
     name: '',
     domain: ''
 }
-const CompanyManagement = ({ setSelectedCompany }: any) => {
+const AdminCompanies = () => {
     const [companies, setCompanies] = useState<ICompany[]>([])
     const [isCompanyDialogOpen, setIsCompanyDialogOpen] = useState(false);
     const [editingCompany, setEditingCompany] = useState<Partial<ICompany>>(initialCompany);
-
+    const navigate = useNavigate();
 
     useEffect(() => {
         getCompanies().then((d) => setCompanies(d))
@@ -106,7 +107,7 @@ const CompanyManagement = ({ setSelectedCompany }: any) => {
                     return (
                         <Card key={_company._id} className="hover:bg-muted/30 transition-colors">
                             <CardContent className="flex items-center justify-between p-4">
-                                <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => setSelectedCompany(_company)}>
+                                <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => navigate(`/admin/companies/${_company._id}`)}>
                                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><Building2 className="h-6 w-6" /></div>
                                     <div><p className="font-semibold text-lg">{_company.name}</p><p className="text-sm text-muted-foreground">{_company.domain || 'Domain yoxdur'}</p></div>
                                 </div>
@@ -131,4 +132,4 @@ const CompanyManagement = ({ setSelectedCompany }: any) => {
         </div >
     )
 }
-export default CompanyManagement
+export default AdminCompanies
