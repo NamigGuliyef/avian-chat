@@ -247,8 +247,19 @@ export class AdminController {
   @ApiOperation({ summary: "Bütün istifadəçiləri gətir" })
   @Get('users')
   @HttpCode(HttpStatus.OK)
-  async getAllUsers() {
-    return await this.adminService.getAllUsers()
+  async getAllUsers(role: string) {
+    return await this.adminService.getAllUsers(role)
+  }
+
+
+  @ApiOperation({ summary: "İstifadəçinin statusunu yenilə" })
+  @Patch('update-user-deletion-status/:userId/:isDeleted')
+  @HttpCode(HttpStatus.OK)
+  async updateUserDeletionStatus(
+    @Param('userId') userId: string,
+    @Param('isDeleted') isDeleted: boolean
+  ) {
+    return await this.adminService.updateUserDeletionStatus(userId, isDeleted);
   }
 
 }

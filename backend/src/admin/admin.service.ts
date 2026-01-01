@@ -319,7 +319,7 @@ export class AdminService {
 
   // Layihəni id-ə görə gətirən funksiyası
   async getProjectById(_id: string): Promise<Project | null> {
-    return this.projectModel.findById(_id).exec();
+    return this.projectModel.findById(_id).populate({ path: 'agents supervisors', select: 'name surname email' }).exec();
   }
 
 
@@ -346,11 +346,24 @@ export class AdminService {
 
   // -------------------------------- User functions -------------------------------//
 
-  // Bütün istifadəçiləri gətirən və company-ə görə filterləyən funksiyası
-  async getAllUsers(): Promise<User[]> {
-    // həmin user-lerin company-lerini tapırıq
-    return this.userModel.find({ isDeleted: false }).select("-password").exec();
+  // Bütün istifadəçiləri gətirən və rolara görə filterləyən funksiyası
+  async getAllUsers(role: string): Promise<User[]> {
+    // həmin user-lerin rollarina görə filterləyir
+    const filter: any = { isDeleted: false };
+    role ? filter.role = role : null;
+    return this.userModel.find(filter).select("-password").exec();
   }
+
+
+  // İstifadəçinin isDeleted sahəsini yeniləyən funksiyası
+  async updateUserDeletionStatus(userId: string, isDeleted: boolean): Promise<{ message: string, user: User | null }> {
+    const updatedUser = await this.userModel.findByIdAndUpdate(userId, { $set: { isDeleted: isDeleted } }, { new: true });
+    return {
+      message: isDeleted ? "İstifadəçi uğurla ləğv edildi" : "İstifadəçi uğurla bərpa edildi",
+      user: updatedUser
+    };
+  }
+
 
 
 }
