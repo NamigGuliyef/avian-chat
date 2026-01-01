@@ -255,17 +255,7 @@ export class AdminController {
   }
 
 
-  @ApiOperation({ summary: "İstifadəçinin statusunu yenilə" })
-  @Patch('update-user-deletion-status/:userId/:isDeleted')
-  @HttpCode(HttpStatus.OK)
-  async updateUserDeletionStatus(
-    @Param('userId') userId: string,
-    @Param('isDeleted') isDeleted: boolean
-  ) {
-    return await this.adminService.updateUserDeletionStatus(userId, isDeleted);
-  }
-
-
+  
   @ApiOperation({ summary: "İstifadəçi məlumatlarını yenilə" })
   @ApiBody({
     type: CreateUserDto,

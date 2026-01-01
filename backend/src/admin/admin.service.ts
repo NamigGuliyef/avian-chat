@@ -390,16 +390,6 @@ export class AdminService {
 
 
 
-  // İstifadəçinin isDeleted sahəsini yeniləyən funksiyası
-  async updateUserDeletionStatus(userId: string, isDeleted: boolean): Promise<{ message: string, user: User | null }> {
-    const updatedUser = await this.userModel.findByIdAndUpdate(userId, { $set: { isDeleted: isDeleted } }, { new: true });
-    return {
-      message: isDeleted ? "İstifadəçi uğurla ləğv edildi" : "İstifadəçi uğurla bərpa edildi",
-      user: updatedUser
-    };
-  }
-
-
   // İstifadəçinin məlumatlarını yeniləyən funksiyası
   async updateUserInfo(userId: string, updateData: Partial<CreateUserDto>): Promise<{ message: string, user: User | null }> {
     // əgər password yenilənirsə, onu hash edirik

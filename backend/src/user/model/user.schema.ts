@@ -50,6 +50,10 @@ export class User {
   @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Project', required: false })
   projectIds: Types.ObjectId[];
 
+  @Prop({ type: Boolean, default: true })
+  isActive: boolean;
+
+  
   @Prop({ type: Boolean, default: false })
   isDeleted: boolean;
 

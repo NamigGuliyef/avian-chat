@@ -75,6 +75,11 @@ export class CreateUserDto {
   @IsOptional()
   projectIds: Types.ObjectId[];
 
+  @ApiProperty({ required: true })
+  @IsBoolean()
+  @IsOptional()
+  isActive: boolean;
+
   @ApiProperty({ required: false })
   @IsBoolean()
   @IsOptional()

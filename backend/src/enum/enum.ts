@@ -1,8 +1,8 @@
 export enum UserRole {
-  admin = 'admin',
-  supervisor = 'supervisor',
-  agent = 'agent',
-  partner = 'partner',
+  admin = 'Admin',
+  supervisor = 'Supervisor',
+  agent = 'Agent',
+  partner = 'Partner',
 }
 
 
