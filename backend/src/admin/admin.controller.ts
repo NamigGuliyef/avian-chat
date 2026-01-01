@@ -247,8 +247,10 @@ export class AdminController {
   @ApiOperation({ summary: "Bütün istifadəçiləri gətir" })
   @Get('users')
   @HttpCode(HttpStatus.OK)
-  async getAllUsers(role: string) {
-    return await this.adminService.getAllUsers(role)
+  @ApiQuery({ name: 'query', required: false, type: String, description: 'Axtarış sorğusu' })
+  @ApiQuery({ name: 'role', required: false, type: String, description: 'İstifadəçi rolu' })
+  async getAllUsers(@Query('query') query: string, @Query('role') role: string) {
+    return await this.adminService.getAllUsers(query, role)
   }
 
 

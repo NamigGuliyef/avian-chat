@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Types } from 'mongoose';
+import { CreateUserDto } from 'src/auth/dto/create-user.dto';
 import { CreateChannelDto } from 'src/channel/dto/create-channel.dto';
 import { Channel } from 'src/channel/model/channel.schema';
 import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
@@ -347,12 +348,37 @@ export class AdminService {
   // -------------------------------- User functions -------------------------------//
 
   // Bütün istifadəçiləri gətirən və rolara görə filterləyən funksiyası
-  async getAllUsers(role: string): Promise<User[]> {
-    // həmin user-lerin rollarina görə filterləyir
+  async getAllUsers(query: string, role: string, page = 1,
+  ): Promise<{
+    data: User[]; total: number; totalPages: number; currentPage: number;
+  }> {
+    const limit = 10;
+    const skip = (page - 1) * limit;
     const filter: any = { isDeleted: false };
-    role ? filter.role = role : null;
-    return this.userModel.find(filter).select("-password").exec();
+
+    if (role) {
+      filter.role = role;
+    }
+
+    if (query) {
+      filter.$or = [
+        { name: { $regex: query, $options: 'i' } },
+        { surname: { $regex: query, $options: 'i' } },
+        { email: { $regex: query, $options: 'i' } },
+      ];
+    }
+
+    const [data, total] = await Promise.all([
+      this.userModel.find(filter).select('-password').skip(skip).limit(limit).sort({ createdAt: -1 }).exec(),
+      this.userModel.countDocuments(filter),
+    ]);
+
+    return {
+      data, total, totalPages: Math.ceil(total / limit), currentPage: page,
+    };
   }
+
+
 
 
   // İstifadəçinin isDeleted sahəsini yeniləyən funksiyası
@@ -360,6 +386,19 @@ export class AdminService {
     const updatedUser = await this.userModel.findByIdAndUpdate(userId, { $set: { isDeleted: isDeleted } }, { new: true });
     return {
       message: isDeleted ? "İstifadəçi uğurla ləğv edildi" : "İstifadəçi uğurla bərpa edildi",
+      user: updatedUser
+    };
+  }
+
+
+  // İstifadəçinin məlumatlarını yeniləyən funksiyası
+  async updateUserInfo(userId: string, updateData: Partial<CreateUserDto>): Promise<{ message: string, user: User | null }> {
+
+
+
+    const updatedUser = await this.userModel.findByIdAndUpdate(userId, { $set: updateData }, { new: true });
+    return {
+      message: "İstifadəçi məlumatları uğurla yeniləndi",
       user: updatedUser
     };
   }
