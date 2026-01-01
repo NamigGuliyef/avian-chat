@@ -18,4 +18,8 @@ export class CreateCompanyDto {
   @IsOptional()
   channels: Channel[];
 
+  @ApiProperty({ example: false, required: false })
+  @IsOptional()
+  isDeleted: boolean;
+
 }

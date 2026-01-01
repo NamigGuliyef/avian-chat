@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateProjectDto } from 'src/project/dto/create-project.dto';
 import { CreateChannelDto } from 'src/channel/dto/create-channel.dto';
 import { Types } from 'mongoose';
@@ -60,14 +60,6 @@ export class AdminController {
   async getCompanyById(@Param('_id') _id: string) {
     return await this.adminService.getCompanyById(_id)
   }
-
-
-  // @ApiOperation({ summary: 'Şirkətə məxsus layihənin agent və supervisor-larını gətir' })
-  // @Get('company-project-members/:companyId')
-  // @HttpCode(HttpStatus.OK)
-  // async getCompanyProjectMembers(@Param('companyId') companyId: string) {
-  //   return await this.adminService.getCompanyProjectMembers(companyId);
-  // }
 
 
   // -----------------------------------------Channel Functions ---------------------------//
@@ -134,8 +126,23 @@ export class AdminController {
   }
 
 
+  @ApiOperation({ summary: 'İstifadəçidən kanal icazəsi götür' })
+  @ApiBody({
+    type: [String],
+    description: 'Kanal ID-lərinin siyahısı',
+  })
+  @Post('remove-channel-from-user/:userId')
+  @HttpCode(HttpStatus.OK)
+  async removeChannelsFromUser(
+    @Param('userId') userId: string, @Body() channels: Types.ObjectId[]) {
+    return await this.adminService.removeChannelsFromUser(userId, channels);
+  }
+
+  
+
   // ------------------------------- Project Functions ---------------------------//
 
+  
   @ApiOperation({ summary: 'Yeni layihə yarat' })
   @ApiBody({
     type: CreateProjectDto,
@@ -183,9 +190,28 @@ export class AdminController {
   @ApiOperation({ summary: "Bütün layihələri gətir" })
   @Get('project/company/:companyId')
   @HttpCode(HttpStatus.OK)
-  async getAllProjects(@Param('companyId') companyId: string) {
+  // filter mentiqi ile Query parametri olaraq companyId gonderile biler
+  @ApiQuery({ name: 'companyId', required: false, type: String, description: 'Şirkət İD-si' })
+  async GetAllProjects(@Query('companyId') companyId: string) {
     return await this.adminService.getAllProjects(companyId)
   }
+
+
+  @ApiOperation({ summary: 'Layihə üzvlərini filterlə' })
+  @Get('project-members/:projectId/filter')
+  @HttpCode(HttpStatus.OK)
+  // filter mentiqi ile Query parametri olaraq role ve email gonderile biler
+  @ApiQuery({ name: 'role', required: false, type: String, description: 'İstifadəçi rolu' })
+  @ApiQuery({ name: 'email', required: false, type: String, description: 'İstifadəçi emaili' })
+  async filterProjectMembers(
+    @Param('projectId') projectId: string,
+    @Query('role') role: string,
+    @Query('email') email: string,
+  ) {
+    return await this.adminService.filterProjectMembers(projectId, role, email);
+  }
+
+  
 
 
   @ApiOperation({ summary: 'Layihələri İD görə gətir' })

@@ -14,6 +14,9 @@ export class Company {
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Channel' }], default: [] })
   channels: Types.ObjectId[];
 
+  @Prop({ default: false })
+  isDeleted: boolean;
+
 }
 
 export const CompanySchema = SchemaFactory.createForClass(Company);

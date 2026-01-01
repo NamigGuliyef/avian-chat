@@ -46,5 +46,8 @@ export class CreateProjectDto {
     @IsOptional()
     agents: string[];
 
+    @ApiProperty({ example: false, required: false })
+    @IsOptional()
+    isDeleted: boolean;
 
 }

@@ -30,6 +30,8 @@ export class Project {
     @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] })
     agents: [Types.ObjectId];
 
+    @Prop({ default: false })
+    isDeleted: boolean;
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);

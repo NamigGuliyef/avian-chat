@@ -44,7 +44,11 @@ export class User {
 
 
   @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Channel', default: [] })
-  channelIds:Types.ObjectId[]; // user-e aid channel-lerin id-lerinin massivi
+  channelIds: Types.ObjectId[]; // user-e aid channel-lerin id-lerinin massivi
+
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Project',  required: false })
+  projectId: Types.ObjectId;
 
 }
 

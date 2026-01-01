@@ -46,7 +46,7 @@ export class AdminService {
 
   //Şirkət silmə funksiyası
   async deleteCompany(_id: string): Promise<{ message: string }> {
-    await this.companyModel.findByIdAndDelete(_id);
+    await this.companyModel.findByIdAndUpdate(_id, { $set: { isDeleted: true } });
     return {
       message: "Şirkət uğurla ləğv edildi",
     }
@@ -54,7 +54,7 @@ export class AdminService {
 
   // Bütün şirkətləri gətirən funksiyası
   async getAllCompanies(): Promise<Company[]> {
-    return this.companyModel.find().exec();
+    return this.companyModel.find({ isDeleted: false }).exec();
   }
 
 
@@ -63,41 +63,6 @@ export class AdminService {
     return this.companyModel.findById(_id).exec();
   }
 
-
-  // Şirkətə məxsus layihənin agent və supervisor-larını gətirən funksiya
-  // async getCompanyProjectMembers(companyId: string): Promise<{ count: number, agents: Types.ObjectId[], supervisors: Types.ObjectId[] }> {
-
-  //   // Şirkətə məxsus layihələri tapırıq və onların agent və supervisor-larını yükləyirik
-  //   const projects = await this.projectModel.find({ companyId: companyId })
-  //     .populate({ path: 'agents', select: 'name surname email' }).populate({ path: 'supervisors', select: 'name surname email' }).exec();
-
-  //   // Bütün agent və supervisor-lar üçün boş massivlər yaradırıq
-  //   let agents: Types.ObjectId[] = [];
-  //   let supervisors: Types.ObjectId[] = [];
-
-  //   // Hər bir layihənin agent və supervisor-larını ayrıca yığırıq
-
-  //   projects.forEach(project => {
-  //     project.agents.forEach(agentId => {
-  //       if (!agents.includes(agentId)) {
-  //         agents.push(agentId);
-  //       }
-  //     });
-
-  //     project.supervisors.forEach(supervisorId => {
-  //       if (!supervisors.includes(supervisorId)) {
-  //         supervisors.push(supervisorId);
-  //       }
-  //     });
-  //   });
-
-  //   // agents və supervisors massivlərinin uzunluğunu və özlərini qaytarırıq  
-  //   return {
-  //     count: agents.length + supervisors.length,
-  //     supervisors: supervisors,
-  //     agents: agents,
-  //   };
-  // }
 
 
 
@@ -203,6 +168,25 @@ export class AdminService {
   }
 
 
+  // istədiyim user-in kanallarını silmək funksiyası
+  async removeChannelsFromUser(userId: string, channels: Types.ObjectId[]): Promise<{ message: string }> {
+    // user-in kanallarını silmək üçün tətbiq olunan məntiq
+    // ilk öncə user-in mövcudluğunu yoxlayırıq
+    const userExist = await this.userModel.findById(userId);
+    if (!userExist) {
+      return { message: "İstifadəçi tapılmadı" };
+    }
+    // user-in channels masssivinden hemin kanalın ObjectId-sini çıxarırıq
+    for (let i = 0; i < channels.length; i++) {
+      const channelId = channels[i];
+      userExist.channelIds = userExist.channelIds.filter(chId => chId.toString() !== channelId.toString());
+    }
+    await userExist.save();
+    return { message: "Kanal icazəsi uğurla götürüldü" };
+
+  }
+
+
 
   //-------------------------------------------- Project Functions ---------------------------//
 
@@ -227,8 +211,10 @@ export class AdminService {
     if (type === "A") {
       // proyekt tapildiqda supervisor ve agent elave edirik
       project.agents.push(userId);
+      await this.userModel.findByIdAndUpdate(userId, { $set: { projectId: projectId } });
     } else if (type === "S") {
       project.supervisors.push(userId);
+      await this.userModel.findByIdAndUpdate(userId, { $set: { projectId: projectId } });
     }
 
     const updateProject = new this.projectModel({
@@ -251,19 +237,43 @@ export class AdminService {
   }
 
 
-  // Layihə silmə funksiyası
-  // async deleteProject(_id: string): Promise<{ message: string }> {
-  //   const deletedProject = await this.projectModel.findByIdAndDelete(_id);
-  //   return {
-  //     message: "Layihə uğurla ləğv edildi",
-  //   }
-  // }
+  // Layihə silmə funksiyası - isDeleted true edilir
+  async deleteProject(_id: string): Promise<{ message: string }> {
+    await this.projectModel.findByIdAndUpdate(_id, { $set: { isDeleted: true } });
+    return { message: "Layihə uğurla ləğv edildi" };
+  }
 
 
   // Bütün layihələri gətirən funksiyası
-  async getAllProjects(companyId: string): Promise<Project[]> {
-    return this.projectModel.find({ companyId: companyId }).exec();
+  // Layihəyə məxsus agent və supervisor-ları gətirən və saylarını qaytaran funksiyası
+  async getAllProjects(companyId: string): Promise<any[]> {
+    let filter = {};
+    companyId ? filter = { companyId: companyId, isDeleted: false } : filter = { isDeleted: false };
+
+    // Layihəyə məxsus agent və supervisor-ları gətirən və saylarını qaytaran funksiyası
+    const projects = await this.projectModel.find(filter).
+      populate({ path: 'agents', select: 'name surname email' }).populate({ path: 'supervisors', select: 'name surname email' }).lean();
+    return projects.map(project => ({
+      ...project,
+      agentsCount: project.agents.length || 0,
+      supervisorsCount: project.supervisors.length || 0
+    }));
   }
+
+
+  // Supervisor və agent-ları role və emaillərinə görə filterləyən funksiyası
+  async filterProjectMembers(projectId: string, role: string, email: string): Promise<User[]> {
+
+    // hansi company-e aiddirse o company-in user-larini filterleyir
+    const filter: any = { projectId };
+
+    role ? filter.role = { $regex: role, $options: 'i' } : null;
+    email ? filter.email = { $regex: email, $options: 'i' } : null;
+    filter.projectId = projectId;
+
+    return this.userModel.find(filter).exec();
+  }
+
 
 
   // Layihəni id-ə görə gətirən funksiyası
@@ -271,6 +281,4 @@ export class AdminService {
     return this.projectModel.findById(_id).exec();
   }
 
-
 }
-
