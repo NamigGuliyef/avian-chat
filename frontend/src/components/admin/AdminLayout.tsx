@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
-import Sidebar from './Sidebar';
-import ConversationList from './ConversationList';
-import ChatPanel from './ChatPanel';
-import VisitorDetails from './VisitorDetails';
-import UsersManagement from './UsersManagement';
-import CompaniesManagement from './CompaniesManagement';
-import ContactsPage from './ContactsPage';
-import ReportsPage from './ReportsPage';
-import ChatbotsManagement from './ChatbotsManagement';
 import { useChat } from '@/contexts/ChatContext';
+import React, { useState } from 'react';
+import ChatbotsManagement from './ChatbotsManagement';
+import ChatPanel from './ChatPanel';
+import ContactsPage from './ContactsPage';
+import ConversationList from './ConversationList';
+import ReportsPage from './ReportsPage';
+import Sidebar from './Sidebar';
+import UsersManagement from './UsersManagement';
+import VisitorDetails from './VisitorDetails';
 
 const AdminLayout: React.FC = () => {
   const { activeSection, folders } = useChat();
@@ -18,8 +17,6 @@ const AdminLayout: React.FC = () => {
     switch (activeSection) {
       case 'users':
         return <UsersManagement />;
-      case 'companies':
-        return <CompaniesManagement />;
       case 'contacts':
         return <ContactsPage />;
       case 'reports':

@@ -1,4 +1,4 @@
-import { addProject, deleteProject, getProjects, updateProject } from '@/api/company';
+import { addProject, addProjectMember, deleteProject, getProjects, removeProjectMember, updateProject } from '@/api/company';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,6 +22,7 @@ import {
     Folder
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 
@@ -35,18 +36,14 @@ const initial: Partial<IProject> = {
 }
 const ProjectsTab = ({ companyId }: { companyId: string }) => {
     const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
+    const [userModal, setUserModal] = useState(false);
     const [projectForm, setProjectForm] = useState(initial);
     const [projects, setProjects] = useState<IProject[]>([])
-
+    const navigate = useNavigate()
 
     useEffect(() => {
         getProjects(companyId).then((d) => {
-            const a = d.map((e) => ({
-                ...e,
-                supervisors: mokko.supervisors,
-                agents: mokko.agents
-            }))
-            setProjects(a)
+            setProjects(d)
         })
     }, [])
 
@@ -73,6 +70,7 @@ const ProjectsTab = ({ companyId }: { companyId: string }) => {
 
     const handleDeleteProject = (projectId: string) => {
         deleteProject(projectId).then(() => {
+            setProjects((pre) => pre.filter((pr) => pr._id !== projectId))
             toast.success('Layihə silindi');
         });
     };
@@ -89,7 +87,7 @@ const ProjectsTab = ({ companyId }: { companyId: string }) => {
             }
             return pr;
         })
-        updateProject(projectId, newProjects).then(() => {
+        removeProjectMember(projectId, agent._id, type).then(() => {
             setProjects(newProjects)
         })
     }
@@ -104,7 +102,7 @@ const ProjectsTab = ({ companyId }: { companyId: string }) => {
             }
             return pr;
         })
-        updateProject(projectId, newProjects).then(() => {
+        addProjectMember(projectId, agent._id, type).then(() => {
             setProjects(newProjects)
         })
     }
@@ -196,7 +194,7 @@ const ProjectsTab = ({ companyId }: { companyId: string }) => {
 
             <div className="space-y-3">
                 {projects.map((project) => (
-                    <Card key={project._id} className="hover:border-primary/50 transition-colors cursor-pointer">
+                    <Card onClick={() => navigate("/admin/projects/" + project._id)} key={project._id} className="hover:border-primary/50 transition-colors cursor-pointer">
                         <CardContent className="flex items-center justify-between p-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -219,76 +217,23 @@ const ProjectsTab = ({ companyId }: { companyId: string }) => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
-                                            <Eye />{project.supervisors?.length}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-72 p-0" align="end">
-                                        <div className="p-3 border-b"><p className="font-medium text-sm">Supervisor</p></div>
-                                        <ScrollArea className="max-h-48">
-                                            {project.supervisors?.length > 0 ?
-                                                <div className="p-2 space-y-1">
-                                                    {project.supervisors.map((agent) => (
-                                                        <div key={agent._id} className="flex items-center gap-2 p-2 rounded hover:bg-muted">
-                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-medium">
-                                                                {agent.name.charAt(0)}
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="text-sm font-medium truncate">{agent.name}</p>
-                                                                <p className="text-xs text-muted-foreground truncate">{agent.email}</p>
-                                                            </div>
-                                                            <Button onClick={() => removeUserFromProject(project._id, agent, "S")} variant="ghost" size="sm" className="gap-2 text-muted-foreground">
-                                                                <Trash />
-                                                            </Button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                :
-                                                <div className="p-4 text-center text-sm text-muted-foreground">Supervisor yoxdur</div>
-                                            }</ScrollArea>
-                                    </PopoverContent>
-                                </Popover>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground">
-                                            <Eye />{project.agents?.length}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-72 p-0" align="end">
-                                        <div className="p-3 border-b"><p className="font-medium text-sm">Agent</p></div>
-                                        <ScrollArea className="max-h-48">
-                                            {
-                                                project.agents?.length > 0 ?
-                                                    <div className="p-2 space-y-1">{
-                                                        project.agents.map((agent) => (
-                                                            <div key={agent._id} className="flex items-center gap-2 p-2 rounded hover:bg-muted">
-                                                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-medium">
-                                                                    {agent.name.charAt(0)}
-                                                                </div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <p className="text-sm font-medium truncate">{agent.name}</p>
-                                                                    <p className="text-xs text-muted-foreground truncate">{agent.email}</p>
-                                                                </div>
-                                                                <Button onClick={() => removeUserFromProject(project._id, agent, "A")} variant="ghost" size="sm" className="gap-2 text-muted-foreground">
-                                                                    <Trash />
-                                                                </Button>
-                                                            </div>
-                                                        ))}
-                                                    </div> :
-                                                    <div className="p-4 text-center text-sm text-muted-foreground">Agent yoxdur</div>
-                                            }</ScrollArea>
-                                    </PopoverContent>
-                                </Popover>
-                                {/* <Button
+                                <p className="gap-2 text-sm text-muted-foreground">
+                                    {project.supervisors?.length} Supervisors
+                                </p>
+                                <p className="gap-2 text-sm text-muted-foreground">
+                                    {project.agents?.length} Agents
+                                </p>
+                                <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => handleDeleteProject(project._id)}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleDeleteProject(project._id)
+                                    }}
                                     className="text-destructive hover:text-destructive"
                                 >
                                     <Trash2 className="h-4 w-4" />
-                                </Button> */}
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>

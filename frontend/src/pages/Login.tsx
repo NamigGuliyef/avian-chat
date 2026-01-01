@@ -13,7 +13,7 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const { login, currentUser } = useChat();
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,7 +40,7 @@ const Login: React.FC = () => {
         } else {
           // Check user role from mock data (admin goes to /admin, agent goes to /user)
           const isAdmin = email === 'admin@culture.gov.az';
-          navigate(isAdmin ? '/admin' : '/user');
+          navigate(isAdmin ? '/admin/companies' : '/user');
         }
       } else {
         setError('Email və ya şifrə yanlışdır');

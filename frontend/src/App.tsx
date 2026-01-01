@@ -4,13 +4,23 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import AdminPanel from "./pages/AdminPanel";
+
+// pages
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import SingleProject from "./pages/SingleProject";
 import SupervisorPanel from "./pages/SupervisorPanel";
 import UserDashboard from "./pages/UserDashboard";
 import UserLogin from "./pages/UserLogin";
 import WidgetDemo from "./pages/WidgetDemo";
+
+import AdminOutlet from "./components/admin/AdminOutlet";
+import ChatbotsManagement from "./components/admin/ChatbotsManagement";
+import { OperationLogs } from "./components/admin/OperationLogs";
+import ReportsPage from "./components/admin/ReportsPage";
+import AdminSingleCompany from "./pages/AdminSingleCompany";
+import { AdminUsers } from "./pages/AdminUsers";
+import AdminCompanies from "./components/admin/AdminCompanies";
 
 const queryClient = new QueryClient();
 
@@ -20,15 +30,35 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+
         <BrowserRouter>
           <Routes>
-            {/*+*/} <Route path="/" element={<Login />} />
-            {/*-*/} <Route path="/admin" element={<AdminPanel />} />
-            {/*-*/} <Route path="/user/login" element={<UserLogin />} />
-            {/*-*/} <Route path="/user/dashboard" element={<UserDashboard />} />
-            {/*-*/} <Route path="/supervisor" element={<SupervisorPanel />} />
-            {/*-*/} <Route path="/widget" element={<WidgetDemo />} />
-            {/*-*/} <Route path="*" element={<NotFound />} />
+            {/* Public */}
+            <Route path="/" element={<Login />} />
+            <Route path="/user/login" element={<UserLogin />} />
+
+            {/* Admin */}
+            <Route path="/admin" element={<AdminOutlet />}>
+              <Route path="companies" element={<AdminCompanies />} />
+              <Route path="companies/:companyId" element={<AdminSingleCompany />} />
+              <Route path="projects/:projectId" element={<SingleProject />} />
+              <Route path="chatbots" element={<ChatbotsManagement />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="reports" element={<ReportsPage />} />
+              <Route path="logs" element={<OperationLogs />} />
+            </Route>
+
+            {/* User */}
+            <Route path="/user/dashboard" element={<UserDashboard />} />
+
+            {/* Supervisor */}
+            <Route path="/supervisor" element={<SupervisorPanel />} />
+
+            {/* Widget */}
+            <Route path="/widget" element={<WidgetDemo />} />
+
+            {/* 404 */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
