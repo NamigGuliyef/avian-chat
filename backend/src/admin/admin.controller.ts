@@ -142,7 +142,7 @@ export class AdminController {
 
   // ------------------------------- Project Functions ---------------------------//
 
-  
+
   @ApiOperation({ summary: 'Yeni layihə yarat' })
   @ApiBody({
     type: CreateProjectDto,
@@ -165,6 +165,20 @@ export class AdminController {
   async addProjectMembers(@Param('projectId') projectId: string, @Param('userId') userId: string, @Param('type') type: string) {
     return await this.adminService.addProjectMembers(projectId, userId, type);
   }
+
+
+
+  @ApiOperation({ summary: 'Layihədən üzv çıxar' })
+  @ApiBody({
+    type: CreateProjectDto,
+    description: 'Layihədən üzv çıxarmaq üçün məlumatlar',
+  })
+  @Delete('remove-project-members/:projectId/:userId/:type')
+  @HttpCode(HttpStatus.OK)
+  async deleteProjectMember(@Param('projectId') projectId: string, @Param('userId') userId: string, @Param('type') type: string) {
+    return await this.adminService.deleteProjectMember(projectId, userId, type);
+  }
+
 
 
   @ApiOperation({ summary: 'Layihəni yenilə' })

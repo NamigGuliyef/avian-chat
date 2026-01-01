@@ -168,6 +168,7 @@ export class AdminService {
   }
 
 
+
   // istədiyim user-in kanallarını silmək funksiyası
   async removeChannelsFromUser(userId: string, channels: Types.ObjectId[]): Promise<{ message: string }> {
     // user-in kanallarını silmək üçün tətbiq olunan məntiq
@@ -225,6 +226,46 @@ export class AdminService {
     return { message: "Lahiyəyə üzvlər uğurla əlavə edildi", project: await updateProject.save() };
   }
 
+
+  // proyektden agent və ya supervisor silme funksiyasi
+  async deleteProjectMember(
+    projectId: string,
+    userId: string,
+    type: string,
+  ): Promise<{ message: string; project: Project | null }> {
+
+    // project tapılır
+    const project = await this.projectModel.findById(projectId);
+
+    if (!project) {
+      return { message: 'Layihə tapılmadı', project: null };
+    }
+
+    // type-a görə silmə
+    if (type === 'A') {
+      project.agents = project.agents.filter(
+        id => id.toString() !== userId,
+      );
+    } else if (type === 'S') {
+      project.supervisors = project.supervisors.filter(
+        id => id.toString() !== userId,
+      );
+    }
+
+    // user-dən projectId tam silinir
+    await this.userModel.findByIdAndUpdate(
+      userId,
+      { $unset: { projectId: 1 } }
+    );
+
+    // project save
+    await project.save();
+
+    return {
+      message: 'Layihə üzvü uğurla silindi',
+      project,
+    };
+  }
 
 
 

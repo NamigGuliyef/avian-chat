@@ -25,10 +25,10 @@ export class Project {
     projectName: ProjectName
 
     @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] })
-    supervisors: [Types.ObjectId];
+    supervisors: Types.ObjectId[]
 
     @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] })
-    agents: [Types.ObjectId];
+    agents: Types.ObjectId[]
 
     @Prop({ default: false })
     isDeleted: boolean;
