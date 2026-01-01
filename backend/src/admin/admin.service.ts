@@ -327,7 +327,8 @@ export class AdminService {
 
 
 
-  // --------------------------------------- Supervisor ----------------------------// 
+  // --------------------------------------- Supervisor functions -------------------------------// 
+
 
   // supervisor-lara aid olan agent-lari getirir
   // proyektlerden asagidaki kimi filterleyir
@@ -345,6 +346,9 @@ export class AdminService {
     // toplanan agent id-lərinə əsasən user-ları gətiririk
     return this.userModel.find({ _id: { $in: agentIds } }).select("-password").exec();
   }
+
+
+
 
 
   // -------------------------------- User functions -------------------------------//
@@ -406,5 +410,7 @@ export class AdminService {
     }
 
   }
+
+
 
 }
