@@ -68,7 +68,6 @@ export function ColumnBuilder({ columns, onColumnsChange, users }: ColumnBuilder
   const [optionsDialogOpen, setOptionsDialogOpen] = useState<string | null>(null);
   const [newOptionLabel, setNewOptionLabel] = useState('');
   const [newOptionValue, setNewOptionValue] = useState('');
-  const [newOptionColor, setNewOptionColor] = useState('gray');
 
   const userList = users.filter(u => u.role === 'agent');
 
@@ -169,7 +168,6 @@ export function ColumnBuilder({ columns, onColumnsChange, users }: ColumnBuilder
     const newOption: ColumnOption = {
       value: newOptionValue.trim().toLowerCase().replace(/\s+/g, '_'),
       label: newOptionLabel.trim(),
-      color: newOptionColor,
     };
 
     const updatedOptions = [...(column.options || []), newOption];
@@ -177,7 +175,6 @@ export function ColumnBuilder({ columns, onColumnsChange, users }: ColumnBuilder
 
     setNewOptionLabel('');
     setNewOptionValue('');
-    setNewOptionColor('gray');
 
     toast({
       title: "Seçim əlavə edildi",
@@ -197,10 +194,7 @@ export function ColumnBuilder({ columns, onColumnsChange, users }: ColumnBuilder
     });
   };
 
-  const getColorClass = (color?: string) => {
-    const found = statusColors.find(c => c.value === color);
-    return found?.class || 'bg-muted text-muted-foreground';
-  };
+  const getColorClass = () => 'bg-muted text-muted-foreground';
 
   return (
     <motion.div
@@ -341,7 +335,7 @@ export function ColumnBuilder({ columns, onColumnsChange, users }: ColumnBuilder
                             {column.options?.map((option) => (
                               <div key={option.value} className="flex items-center justify-between p-2 bg-muted rounded-md">
                                 <div className="flex items-center gap-2">
-                                  <span className={cn('px-2 py-1 rounded text-xs font-medium', getColorClass(option.color))}>
+                                  <span className={cn('px-2 py-1 rounded text-xs font-medium', getColorClass())}>
                                     {option.label}
                                   </span>
                                   <code className="text-xs text-muted-foreground">{option.value}</code>
@@ -379,22 +373,7 @@ export function ColumnBuilder({ columns, onColumnsChange, users }: ColumnBuilder
                               />
                             </div>
                             <div className="flex items-center gap-2">
-                              <Label className="text-sm">Rəng:</Label>
-                              <Select value={newOptionColor} onValueChange={setNewOptionColor}>
-                                <SelectTrigger className="w-32 h-8">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="bg-popover border border-border shadow-lg z-50">
-                                  {statusColors.map((color) => (
-                                    <SelectItem key={color.value} value={color.value}>
-                                      <div className="flex items-center gap-2">
-                                        <span className={cn('w-3 h-3 rounded-full', color.class)} />
-                                        {color.label}
-                                      </div>
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <div className="flex-1" />
                               <Button
                                 size="sm"
                                 onClick={() => handleAddOption(column.id)}

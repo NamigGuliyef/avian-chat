@@ -227,8 +227,6 @@ export class AdminController {
   }
 
 
-
-
   @ApiOperation({ summary: 'Layihələri İD görə gətir' })
   @Get('project/:_id')
   @HttpCode(HttpStatus.OK)
@@ -255,7 +253,7 @@ export class AdminController {
   }
 
 
-  
+
   @ApiOperation({ summary: "İstifadəçi məlumatlarını yenilə" })
   @ApiBody({
     type: CreateUserDto,
@@ -269,4 +267,13 @@ export class AdminController {
   ) {
     return await this.adminService.updateUserInfo(userId, updateData);
   }
+
+
+  @ApiOperation({ summary: "İstifadəçini sil" })
+  @Delete('delete-user/:userId')
+  @HttpCode(HttpStatus.OK)
+  async deleteUser(@Param('userId') userId: string) {
+    return this.adminService.deleteUser(userId);
+  }
+
 }

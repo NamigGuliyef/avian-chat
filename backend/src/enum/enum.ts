@@ -32,3 +32,10 @@ export enum ProjectName {
   telemarketing = "2",
 }
 
+export enum ColumnType {
+  TEXT = 'text',
+  NUMBER = 'number',
+  DATE = 'date',
+  SELECT = 'select',
+  PHONE = 'phone',
+}

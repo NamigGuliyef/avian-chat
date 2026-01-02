@@ -42,7 +42,6 @@ export type ColumnType = 'text' | 'number' | 'date' | 'select' | 'phone';
 export interface ColumnOption {
   value: string;
   label: string;
-  color?: string;
 }
 
 export interface ColumnConfig {

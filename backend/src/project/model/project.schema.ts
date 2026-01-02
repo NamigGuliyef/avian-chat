@@ -32,6 +32,15 @@ export class Project {
 
     @Prop({ default: false })
     isDeleted: boolean;
+
+    @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: 'Excel', default: [] })
+    excelIds: Types.ObjectId[];
+
+    @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: 'Sheet', default: [] })
+    sheetIds: Types.ObjectId[];
+
+    @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: 'Column', default: [] })
+    columnIds: Types.ObjectId[];
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);

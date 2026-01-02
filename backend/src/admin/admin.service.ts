@@ -302,7 +302,10 @@ export class AdminService {
     return projects.map(project => ({
       ...project,
       agentsCount: project.agents.length || 0,
-      supervisorsCount: project.supervisors.length || 0
+      supervisorsCount: project.supervisors.length || 0,
+      excelsCount: project.excelIds.length || 0,
+      sheetsCount: project.sheetIds.length || 0,
+      columnsCount: project.columnIds.length || 0,
     }));
   }
 
@@ -324,7 +327,13 @@ export class AdminService {
 
   // Layihəni id-ə görə gətirən funksiyası
   async getProjectById(_id: string): Promise<Project | null> {
-    return this.projectModel.findById(_id).populate({ path: 'agents supervisors', select: 'name surname email' }).exec();
+    return this.projectModel.findById(_id)
+      .populate([
+        {
+          path: 'agents', select: 'name surname email channelIds', populate: { path: 'channelIds', select: 'name' }
+        }, {
+          path: 'supervisors', select: 'name surname email channelIds', populate: { path: 'channelIds', select: 'name' }
+        }])
   }
 
 
@@ -389,7 +398,6 @@ export class AdminService {
 
 
 
-
   // İstifadəçinin məlumatlarını yeniləyən funksiyası
   async updateUserInfo(userId: string, updateData: Partial<CreateUserDto>): Promise<{ message: string, user: User | null }> {
     // əgər password yenilənirsə, onu hash edirik
@@ -404,6 +412,14 @@ export class AdminService {
 
   }
 
+  // İstifadəçini silən funksiyası
+  async deleteUser(userId: string): Promise<{ message: string }> {
+    await this.userModel.findByIdAndUpdate(userId, { $set: { isDeleted: true } });
+    return {
+      message: "İstifadəçi uğurla ləğv edildi",
+    }
+  }
 
 
 }
+

@@ -21,7 +21,7 @@ export const mockSheets: Sheet[] = [
   {
     id: 'sheet-1', excelId: 'excel-1', projectId: 'proj-1', name: 'Yanvar satışları', description: 'Yanvar ayı satış cədvəli', agentIds: ['user-1', 'user-2'], columns: [
       { id: 'col-1', name: 'Telefon', dataKey: 'phone', type: 'phone', visibleToUser: true, editableByUser: false, order: 1, sheetId: 'sheet-1' },
-      { id: 'col-2', name: 'Zəng statusu', dataKey: 'callStatus', type: 'select', options: [{ value: 'successful', label: 'Uğurlu', color: 'green' }, { value: 'unsuccessful', label: 'Uğursuz', color: 'red' }, { value: 'pending', label: 'Gözləmədə', color: 'orange' }], visibleToUser: true, editableByUser: true, order: 2, sheetId: 'sheet-1' },
+      { id: 'col-2', name: 'Zəng statusu', dataKey: 'callStatus', type: 'select', options: [{ value: 'successful', label: 'Uğurlu' }, { value: 'unsuccessful', label: 'Uğursuz' }, { value: 'pending', label: 'Gözləmədə' }], visibleToUser: true, editableByUser: true, order: 2, sheetId: 'sheet-1' },
       { id: 'col-3', name: 'Aylıq ödəniş', dataKey: 'monthlyPayment', type: 'number', visibleToUser: true, editableByUser: true, order: 3, sheetId: 'sheet-1' },
       { id: 'col-4', name: 'Tarif', dataKey: 'tariff', type: 'text', visibleToUser: true, editableByUser: true, order: 4, sheetId: 'sheet-1' },
     ], createdAt: '2024-01-05', updatedAt: '2024-01-05'
