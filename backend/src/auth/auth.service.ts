@@ -37,7 +37,7 @@ export class AuthService {
 
 
   // User login logic
-  
+
   async loginUser(loginData: LoginUserDto): Promise<{ token: string, user: any }> {
     const { email, password } = loginData;
     const user = await this.userModel.findOne({ email });
@@ -49,7 +49,7 @@ export class AuthService {
     if (!password) {
       throw new BadRequestException('Şifrə tələb olunur');
     }
-    
+
     const comparePass = await comparePassword(password, user.password);
     if (!comparePass) {
       throw new BadRequestException('Yanlış şifrə');

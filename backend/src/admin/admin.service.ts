@@ -369,6 +369,7 @@ export class AdminService {
   ): Promise<{
     data: User[]; total: number; totalPages: number; currentPage: number;
   }> {
+  
     const limit = 10;
     const skip = (page - 1) * limit;
     const filter: any = { isDeleted: false };
@@ -384,10 +385,10 @@ export class AdminService {
         { email: { $regex: query, $options: 'i' } },
       ];
     }
-
+    
     const [data, total] = await Promise.all([
       this.userModel.find(filter).select('-password').skip(skip).limit(limit).sort({ createdAt: -1 })
-        .populate({ path: 'projectIds', select: ' name createdAt' }).exec(),
+        .populate({ path: 'projectIds', select: 'name createdAt' }).exec(),
       this.userModel.countDocuments(filter),
     ]);
 

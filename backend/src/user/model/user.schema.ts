@@ -57,6 +57,7 @@ export class User {
   @Prop({ type: Boolean, default: false })
   isDeleted: boolean;
 
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -5,6 +5,7 @@ import { Types } from 'mongoose';
 export class CreateExcelDto {
   @ApiProperty()
   @IsString()
+  @IsOptional()
   projectId: string;
 
   @ApiProperty()
@@ -16,9 +17,15 @@ export class CreateExcelDto {
   @IsString()
   description: string;
 
-
   @ApiProperty()
   @IsOptional()
   @IsArray()
   agentIds: Types.ObjectId[];
+
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsArray()
+  sheetIds: Types.ObjectId[];
+
 }
