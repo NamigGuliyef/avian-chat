@@ -44,7 +44,7 @@ export interface IUser {
     isDeleted?: boolean;
     createdAt?: string;
     supervisor: IUser; // assigned supervisor id
-    assignedChannels: IChannel[]; // company-ye bagli channel-lerin id-lerinin massivi
+    channelIds: IChannel[]; // company-ye bagli channel-lerin id-lerinin massivi
     role: Roles;
     assignedAgents: IUser[]; // ancaq supervisor-larda olacaq
 }
@@ -55,9 +55,9 @@ export enum Roles {
     Supervisor = "Supervisor",
     Partner = "Partner"
 }
-enum UserStatus {
-    Active,
-    Deactive,
+export enum UserStatus {
+    Active = "active",
+    Deactive = "deactive",
     // Fired // isden cixmis
 }
 
@@ -125,7 +125,7 @@ export interface IMessage {
 }
 
 export const roleColors: Record<Roles, string> = {
-    Admin: 'bg-primary text-primary-foreground',
+    Admin: 'bg-primary bg-green-500 text-primary-foreground',
     Supervisor: 'bg-purple-500 text-white',
     Agent: 'bg-blue-500 text-white',
     Partner: 'bg-orange-500 text-white',
@@ -168,7 +168,7 @@ export const supervisorUser: IUser = {
     email: "elvin.supervisor@company.com",
     password: "hashed_password",
     supervisor: null as any,
-    assignedChannels: [],
+    channelIds: [],
     role: Roles.Supervisor,
     assignedAgents: []
 };
@@ -183,7 +183,7 @@ export const supervisors: IUser[] = [
         email: "elvin.supervisor@company.com",
         password: "hashed_password",
         supervisor: null as any,
-        assignedChannels: [],
+        channelIds: [],
         role: Roles.Supervisor,
         assignedAgents: []
     }
@@ -197,7 +197,7 @@ const agentUser: IUser = {
     email: "aysel.agent@company.com",
     password: "hashed_password",
     supervisor: supervisorUser,
-    assignedChannels: [],
+    channelIds: [],
     role: Roles.Agent,
     assignedAgents: []
 };
@@ -212,7 +212,7 @@ const agents: IUser[] = [
         email: "aysel.agent@company.com",
         password: "hashed_password",
         supervisor: supervisorUser,
-        assignedChannels: [],
+        channelIds: [],
         role: Roles.Agent,
         assignedAgents: []
     }
@@ -246,8 +246,8 @@ const whatsappChannel: IChannel = {
 };
 
 company.channels = [websiteChannel, whatsappChannel];
-agentUser.assignedChannels = [websiteChannel, whatsappChannel];
-supervisorUser.assignedChannels = [websiteChannel];
+agentUser.channelIds = [websiteChannel, whatsappChannel];
+supervisorUser.channelIds = [websiteChannel];
 
 const conversation: IConversation = {
     _id: "conversation_1",
