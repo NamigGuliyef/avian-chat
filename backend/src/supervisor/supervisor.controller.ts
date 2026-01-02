@@ -1,45 +1,30 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
-import { SupervisorService } from './supervisor.service';
-import { CreateSupervisorDto } from './dto/create-supervisor.dto';
-import { UpdateSupervisorDto } from './dto/update-supervisor.dto';
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { CreateExcelDto } from "src/excel/dto/create-excel.dto";
+import { SupervisorService } from "./supervisor.service";
 
+@ApiTags("supervisor")
 @Controller('supervisor')
 export class SupervisorController {
-  constructor(private readonly supervisorService: SupervisorService) {}
+  constructor(private readonly supervisorService: SupervisorService) { }
 
-  @Post()
-  create(@Body() createSupervisorDto: CreateSupervisorDto) {
-    return this.supervisorService.create(createSupervisorDto);
+  
+  // Yeni Excel yaratmaq üçün endpoint
+  @ApiOperation({ summary: 'Proyket üçün yeni Excel yaradın' })
+  @ApiBody(
+    { type: CreateExcelDto }
+  )
+  @Post('excel')
+  createExcel(@Body() createExcelData: CreateExcelDto) {
+    return this.supervisorService.createExcel(createExcelData);
   }
 
-  @Get()
-  findAll() {
-    return this.supervisorService.findAll();
+  
+  @ApiOperation({ summary: 'Proyektə aid bütün Excelleri gətir' })
+  @Get('excel/:projectId')
+  getExcels(@Param('projectId') projectId: string) {
+    return this.supervisorService.getExcels(projectId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.supervisorService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateSupervisorDto: UpdateSupervisorDto,
-  ) {
-    return this.supervisorService.update(+id, updateSupervisorDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.supervisorService.remove(+id);
-  }
+ 
 }

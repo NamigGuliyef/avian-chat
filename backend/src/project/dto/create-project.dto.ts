@@ -50,4 +50,19 @@ export class CreateProjectDto {
     @IsOptional()
     isDeleted: boolean;
 
+    @ApiProperty({ type: [String], description: 'Excel ids', required: false, example: ['64f3b2e...'] })
+    @IsArray()
+    @IsOptional()
+    excelIds: Types.ObjectId[];
+
+    @ApiProperty({ type: [String], description: 'Sheet ids', required: false, example: ['64f3b2e...'] })
+    @IsArray()
+    @IsOptional()
+    sheetIds: Types.ObjectId[];
+
+    @ApiProperty({ type: [String], description: 'Column ids', required: false, example: ['64f3b2e...'] })
+    @IsArray()
+    @IsOptional()
+    columnIds: Types.ObjectId[];
+
 }

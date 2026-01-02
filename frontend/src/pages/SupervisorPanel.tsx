@@ -76,7 +76,6 @@ const SupervisorPanel: React.FC = () => {
   });
 
   const [newOptionLabel, setNewOptionLabel] = useState('');
-  const [newOptionColor, setNewOptionColor] = useState('#3B82F6');
   const [newPhoneNumber, setNewPhoneNumber] = useState('');
   const [newTag, setNewTag] = useState('');
 
@@ -195,7 +194,6 @@ const SupervisorPanel: React.FC = () => {
     setIsColumnDialogOpen(false);
     setEditingColumn(null);
     setNewOptionLabel('');
-    setNewOptionColor('#3B82F6');
     setNewPhoneNumber('');
     toast.success('Sütun əlavə edildi');
   };
@@ -217,7 +215,6 @@ const SupervisorPanel: React.FC = () => {
     setIsColumnDialogOpen(false);
     setEditingColumn(null);
     setNewOptionLabel('');
-    setNewOptionColor('#3B82F6');
     setNewPhoneNumber('');
     toast.success('Sütun yeniləndi');
   };
@@ -246,11 +243,9 @@ const SupervisorPanel: React.FC = () => {
     const newOption: ColumnOption = {
       value: newOptionLabel.toLowerCase().replace(/\s+/g, '_'),
       label: newOptionLabel.trim(),
-      color: newOptionColor
     };
     setColumnForm(prev => ({ ...prev, options: [...(prev.options || []), newOption] }));
     setNewOptionLabel('');
-    setNewOptionColor('#3B82F6');
   };
 
   const handleRemoveOption = (index: number) => {
@@ -647,7 +642,7 @@ const SupervisorPanel: React.FC = () => {
                 <Button variant="ghost" size="sm" onClick={() => setSelectedSheet(null)} className="mb-2">← Geri</Button>
                 <h2 className="text-2xl font-bold">{selectedSheet.name} - Sütunlar</h2>
               </div>
-              <Dialog open={isColumnDialogOpen} onOpenChange={(open) => { setIsColumnDialogOpen(open); if (!open) { setEditingColumn(null); setColumnForm({ name: '', dataKey: '', type: 'text', visibleToUser: true, editableByUser: true, isRequired: false, options: [], phoneNumbers: [] }); setNewOptionLabel(''); setNewOptionColor('#3B82F6'); setNewPhoneNumber(''); } }}>
+              <Dialog open={isColumnDialogOpen} onOpenChange={(open) => { setIsColumnDialogOpen(open); if (!open) { setEditingColumn(null); setColumnForm({ name: '', dataKey: '', type: 'text', visibleToUser: true, editableByUser: true, isRequired: false, options: [], phoneNumbers: [] }); setNewOptionLabel(''); setNewPhoneNumber(''); } }}>
                 <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Yeni Sütun</Button></DialogTrigger>
                 <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                   <DialogHeader><DialogTitle>{editingColumn ? 'Sütunu Redaktə Et' : 'Yeni Sütun'}</DialogTitle></DialogHeader>
@@ -703,23 +698,13 @@ const SupervisorPanel: React.FC = () => {
                               onKeyDown={(e) => e.key === 'Enter' && handleAddOption()}
                               className="flex-1"
                             />
-                            <input
-                              type="color"
-                              value={newOptionColor}
-                              onChange={(e) => setNewOptionColor(e.target.value)}
-                              className="w-10 h-9 rounded border border-input cursor-pointer"
-                              title="Rəng seçin"
-                            />
                             <Button type="button" size="sm" onClick={handleAddOption}><Plus className="h-4 w-4" /></Button>
                           </div>
                           <ScrollArea className="h-32 border rounded-lg p-2">
                             {(columnForm.options || []).map((opt, index) => (
                               <div key={index} className="flex items-center justify-between py-1.5 px-2 bg-muted/50 rounded mb-1">
                                 <div className="flex items-center gap-2">
-                                  <div
-                                    className="w-4 h-4 rounded-full border"
-                                    style={{ backgroundColor: opt.color || '#3B82F6' }}
-                                  />
+                                  <div className="w-4 h-4 rounded-full border bg-primary" />
                                   <span className="text-sm">{opt.label}</span>
                                 </div>
                                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveOption(index)}><X className="h-3 w-3" /></Button>
