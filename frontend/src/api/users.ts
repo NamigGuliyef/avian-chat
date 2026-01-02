@@ -10,3 +10,11 @@ export const searchUsers = async (params?: {
     });
     return data.data;
 };
+export const signUp = async (_data: Partial<IUser>): Promise<IUser[]> => {
+    const { data } = await axios.post("/auth/signup", _data);
+    return data.data;
+};
+export const getSupervisorAgents = async (supId) => {
+    const { data } = await axios.get(`/admin/supervisor/${supId}/agents`);
+    return data;
+}

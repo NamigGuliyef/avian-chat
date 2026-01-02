@@ -73,7 +73,7 @@ const UsersTab = ({ companyId }: { companyId: string }) => {
                                         <Badge variant="secondary" className="text-xs">
                                             {roleLabels[user.role]}
                                         </Badge>
-                                        {(user.assignedChannels).map((ch) => <Badge key={ch._id} variant="outline" className="text-xs">
+                                        {(user.channelIds).map((ch) => <Badge key={ch._id} variant="outline" className="text-xs">
                                             {ch.name}
                                         </Badge>
                                         )}
@@ -83,7 +83,7 @@ const UsersTab = ({ companyId }: { companyId: string }) => {
                             <div className="flex items-center gap-2">
                                 <Button variant="ghost" size="icon" onClick={() => {
                                     setIsUserDialogOpen(user._id)
-                                    setSelectedChannelIds(user.assignedChannels.map((ch) => ch._id))
+                                    setSelectedChannelIds(user.channelIds.map((ch) => ch._id))
                                 }}>
                                     <Edit className="h-4 w-4" />
                                 </Button>

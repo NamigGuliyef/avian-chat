@@ -1,17 +1,8 @@
-import { addProjectMember, getProjectById, removeProjectMember } from "@/api/company";
+import { addProjectMember, addUserToChannel, getChannels, getProjectById, removeChannelFromUser, removeProjectMember } from "@/api/company";
+import { searchUsers } from "@/api/users";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from "@/components/ui/dialog";
 import {
     Command,
     CommandEmpty,
@@ -20,24 +11,23 @@ import {
     CommandItem,
     CommandList
 } from "@/components/ui/command";
-import { IProject, IUser, ProjectDirection, ProjectName, ProjectType, Roles } from "@/types/types";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle
+} from "@/components/ui/dialog";
+import { useDebounce } from "@/hooks/useDebounce";
+import { getEnumKeyByValue } from "@/lib/utils";
+import { IChannel, IProject, IUser, ProjectDirection, ProjectName, ProjectType, Roles } from "@/types/types";
 import {
     ArrowLeft,
-    Download,
-    FileSpreadsheet,
-    Filter,
-    Search,
-    Table2,
-    Plus,
-    UserPlus,
     Check,
-    Trash2
+    Edit,
+    UserPlus
 } from 'lucide-react';
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getEnumKeyByValue } from "@/lib/utils";
-import { useDebounce } from "@/hooks/useDebounce";
-import { searchUsers } from "@/api/users";
 
 
 const mockSupervisors = [
@@ -51,12 +41,13 @@ const SingleProject = () => {
         supervisors: [] as Partial<IUser>[],
         agents: [] as Partial<IUser>[]
     } as IProject);
-    const [supervisors, setSupervisors] = useState<IUser[]>([])
-    const [agents, setAgents] = useState<IUser[]>([])
+    const [isUserChannelDialog, setIsUserChannelDialog] = useState(['', ''])
+    const [selectedChannels, setSelectedChannels] = useState([])
     const [isMemberDialogOpen, setIsMemberDialogOpen] = useState<"A" | "S" | null>(null);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<IUser[]>([]);
+    const [channels, setChannels] = useState<IChannel[]>([]);
     const debouncedSearch = useDebounce(search, 400);
     const { projectId } = useParams();
 
@@ -72,17 +63,21 @@ const SingleProject = () => {
 
         searchUsers({
             query: debouncedSearch.toLowerCase(),
-            role: (isMemberDialogOpen === "S" ? Roles.Supervisor : Roles.Agent).toLowerCase()
+            role: (isMemberDialogOpen === "S" ? Roles.Supervisor : Roles.Agent)
         })
             .then(setResults)
             .finally(() => setLoading(false));
-        setSupervisors(mockSupervisors as any)
     }, [debouncedSearch, isMemberDialogOpen, projectId]);
 
     const navigate = useNavigate();
 
     useEffect(() => {
-        getProjectById(projectId).then((d) => setProject(d));
+        getProjectById(projectId).then((d) => {
+            getChannels(d.companyId).then((c) => {
+                setChannels(c)
+            })
+            setProject(d)
+        });
     }, [projectId]);
 
     const handleAddMember = (member: Partial<IUser>, type: "S" | "A") => {
@@ -115,6 +110,21 @@ const SingleProject = () => {
 
     const memberName = isMemberDialogOpen === "S" ? "Supervisor" : "Agent"
 
+    const handleAddChannel = (userId, channelId) => {
+        addUserToChannel(userId, channelId).then(() => {
+            getProjectById(projectId).then((d) => {
+                setProject(d)
+            });
+        })
+    }
+    const handleRemoveChannel = (userId, channelId) => {
+        removeChannelFromUser(userId, channelId).then(() => {
+            getProjectById(projectId).then((d) => {
+                setProject(d)
+            });
+        })
+    }
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -137,12 +147,6 @@ const SingleProject = () => {
                             {getEnumKeyByValue(ProjectName, project.projectName)}
                         </Badge>
                     </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => { }} disabled={false}>
-                        <Download className="h-4 w-4 mr-2" />
-                        Export
-                    </Button>
                 </div>
             </div>
 
@@ -210,18 +214,81 @@ const SingleProject = () => {
 
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div className="md:col-span-2">
-                        <strong>Supervisors:</strong>
+                        <strong className="text-base">Supervisors:</strong>
                         <div className="flex gap-2 flex-wrap mt-1">
                             {project.supervisors.length ? (
                                 project.supervisors.map((s) => (
-                                    <Badge key={s._id} variant="secondary">
-                                        <p>
-                                            {s.name} {s.surname}
-                                        </p>
-                                        <Button variant="ghost" onClick={() => removeUserFromProject(project._id, s._id, "S")}>
-                                            <Trash2 />
-                                        </Button>
-                                    </Badge>
+                                    <Card key={s._id} style={{ minWidth: 300 }}>
+                                        <CardContent className="flex items-center justify-between p-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                                                    {s.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium">{s.name}</p>
+                                                    <p className="text-sm text-muted-foreground">{s.email}</p>
+                                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                        {(s.channelIds).map((ch) => <Badge key={ch._id} variant="outline" className="text-xs">
+                                                            {ch.name}
+                                                        </Badge>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Dialog open={Boolean(isUserChannelDialog[0])} onOpenChange={() => setIsUserChannelDialog(['', ''])}>
+                                                    <div>
+                                                        <Button variant="ghost" size="icon" onClick={() => {
+                                                            setIsUserChannelDialog([s._id, "S"])
+                                                        }}>
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                    <DialogContent>
+                                                        <DialogHeader>
+                                                            <DialogTitle>{s.name} {s.surname} üçün kanal icazələri</DialogTitle>
+                                                        </DialogHeader>
+                                                        <Command>
+                                                            <CommandList>
+                                                                <CommandGroup>
+                                                                    {channels.map((channel) => {
+                                                                        const isExist = s.channelIds.some((ch) => channel._id === ch._id)
+                                                                        return (
+                                                                            (
+                                                                                <CommandItem
+                                                                                    key={channel._id}
+                                                                                    value={`${channel.name}`}
+                                                                                    onSelect={() => isExist ? handleRemoveChannel(s._id, channel._id) : handleAddChannel(s._id, channel._id)}
+                                                                                    className="flex justify-between"
+                                                                                >
+                                                                                    <span>
+                                                                                        {channel.name}
+                                                                                    </span>
+
+                                                                                    {
+                                                                                        isExist && <Check />
+                                                                                    }
+
+                                                                                </CommandItem>
+                                                                            )
+                                                                        )
+                                                                    })}
+                                                                </CommandGroup>
+                                                            </CommandList>
+                                                        </Command>
+                                                    </DialogContent>
+                                                </Dialog>
+                                                {/* <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => removeUserFromProject(project._id, s._id, "S")}
+                                                    className="text-destructive hover:text-destructive"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button> */}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 ))
                             ) : (
                                 <span className="text-muted-foreground">No supervisors</span>
@@ -230,29 +297,92 @@ const SingleProject = () => {
                     </div>
 
                     <div className="md:col-span-2">
-                        <strong>Agents:</strong>
+                        <strong className="text-base">Agents:</strong>
                         <div className="flex gap-2 flex-wrap mt-1">
                             {project.agents?.length ? (
                                 project.agents.map((a) => (
-                                    <Badge key={a._id} variant="outline">
-                                        <p>
-                                            {a.name} {a.surname}
-                                        </p>
-                                        <Button variant="ghost" onClick={() => removeUserFromProject(project._id, a._id, "A")}>
-                                            <Trash2 />
-                                        </Button>
-                                    </Badge>
+                                    <Card key={a._id} style={{ minWidth: 300 }}>
+                                        <CardContent className="flex items-center justify-between p-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                                                    {a.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium">{a.name}</p>
+                                                    <p className="text-sm text-muted-foreground">{a.email}</p>
+                                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                        {(a.channelIds).map((ch) => <Badge key={ch._id} variant="outline" className="text-xs">
+                                                            {ch.name}
+                                                        </Badge>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Dialog open={Boolean(isUserChannelDialog[0])} onOpenChange={() => setIsUserChannelDialog(['', ''])}>
+                                                    <div>
+                                                        <Button variant="ghost" size="icon" onClick={() => {
+                                                            setIsUserChannelDialog([a._id, "A"])
+                                                        }}>
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                    <DialogContent>
+                                                        <DialogHeader>
+                                                            <DialogTitle>{a.name} {a.surname} üçün kanal icazələri</DialogTitle>
+                                                        </DialogHeader>
+                                                        <Command>
+                                                            <CommandList>
+                                                                <CommandGroup>
+                                                                    {channels.map((channel) => {
+                                                                        const isExist = a.channelIds.some((ch) => channel._id === ch._id)
+                                                                        return (
+                                                                            (
+                                                                                <CommandItem
+                                                                                    key={channel._id}
+                                                                                    value={`${channel.name}`}
+                                                                                    onSelect={() => isExist ? handleRemoveChannel(a._id, channel._id) : handleAddChannel(a._id, channel._id)}
+                                                                                    className="flex justify-between"
+                                                                                >
+                                                                                    <span>
+                                                                                        {channel.name}
+                                                                                    </span>
+
+                                                                                    {
+                                                                                        isExist && <Check />
+                                                                                    }
+
+                                                                                </CommandItem>
+                                                                            )
+                                                                        )
+                                                                    })}
+                                                                </CommandGroup>
+                                                            </CommandList>
+                                                        </Command>
+                                                    </DialogContent>
+                                                </Dialog>
+                                                {/* <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => removeUserFromProject(project._id, s._id, "S")}
+                                                    className="text-destructive hover:text-destructive"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button> */}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 ))
                             ) : (
                                 <span className="text-muted-foreground">No agents</span>
                             )}
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </CardContent >
+            </Card >
 
             {/* Filters */}
-            <Card>
+            {/* <Card>
                 <CardContent className="p-4">
                     <div className="flex items-center gap-4 flex-wrap">
                         <div className="flex items-center gap-2">
@@ -260,8 +390,7 @@ const SingleProject = () => {
                             <span className="text-sm font-medium">Filter:</span>
                         </div>
 
-                        {/* ALL YOUR COMMENTS ARE KEPT BELOW */}
-                        {/* <Select value={selectedExcelFilter} onValueChange={(v) => { setSelectedExcelFilter(v); setSelectedSheetFilter(''); setSelectedAgentFilter(''); }}>
+                        <Select value={selectedExcelFilter} onValueChange={(v) => { setSelectedExcelFilter(v); setSelectedSheetFilter(''); setSelectedAgentFilter(''); }}>
                             <SelectTrigger className="w-48">
                                 <SelectValue placeholder="Excel seçin" />
                             </SelectTrigger>
@@ -272,8 +401,8 @@ const SingleProject = () => {
                                     ))}
                                 </ScrollArea>
                             </SelectContent>
-                        </Select> */}
-                        {/* <Select value={selectedSheetFilter} onValueChange={(v) => { setSelectedSheetFilter(v); setSelectedAgentFilter(''); }} disabled={!selectedExcelFilter}>
+                        </Select> 
+                        <Select value={selectedSheetFilter} onValueChange={(v) => { setSelectedSheetFilter(v); setSelectedAgentFilter(''); }} disabled={!selectedExcelFilter}>
                             <SelectTrigger className="w-48">
                                 <SelectValue placeholder="Sheet seçin" />
                             </SelectTrigger>
@@ -284,8 +413,8 @@ const SingleProject = () => {
                                     ))}
                                 </ScrollArea>
                             </SelectContent>
-                        </Select> */}
-                        {/* {selectedSheetFilter && (
+                        </Select>
+                        {selectedSheetFilter && (
                             <>
                                 <Select value={selectedAgentFilter} onValueChange={(v) => setSelectedAgentFilter(v === '__all__' ? '' : v)}>
                                     <SelectTrigger className="w-48">
@@ -310,10 +439,10 @@ const SingleProject = () => {
                                     />
                                 </div>
                             </>
-                        )} */}
+                        )}
                     </div>
                 </CardContent>
-            </Card>
+            </Card> */}
 
             {/* {selectedSheetFilter ? (
                 <Card>

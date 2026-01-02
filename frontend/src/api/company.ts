@@ -42,7 +42,8 @@ export const addUser = async (data: any): Promise<IUser> => {
     return [] as any
 }
 export const updateUser = async (_id: string, data: any) => {
-    // await axios.put(`/user/${_id}`, data)
+    const d = await axios.patch(`/admin/update-user-info/${_id}`, data)
+    return d.data
 }
 export const deleteUser = async (userId) => {
     // await axios.delete(`/user/${userId}`)
@@ -58,12 +59,21 @@ export const removeAgentFromCompany = async (userId, companyId) => {
 // channels
 export const getChannels = async (companyId): Promise<IChannel[]> => {
     const res = await axios.get(`/admin/channel/company/${companyId}`)
+    console.log('dassa', res.data)
     return res.data;
     // return mokko.channels;
 }
 export const addChannel = async (data: { companyId: string; name: string; }): Promise<IChannel> => {
     const res = await axios.post("/admin/create-channel", data)
     return res.data.channel;
+}
+export const addUserToChannel = async (userId, channelId) => {
+    const res = await axios.post(`/admin/assign-channel-to-user/${userId}`, [channelId])
+    return res.data;
+}
+export const removeChannelFromUser = async (userId, channelId) => {
+    const res = await axios.post(`/admin/remove-channel-from-user/${userId}`, [channelId])
+    return res.data;
 }
 export const updateChannel = async (_id: string, data: Partial<IChannel>) => {
     const d = await axios.patch(`/admin/update-channel/${_id}`, data)

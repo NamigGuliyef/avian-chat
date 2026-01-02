@@ -1,4 +1,5 @@
-import { searchUsers } from '@/api/users';
+import { updateUser } from '@/api/company';
+import { getSupervisorAgents, searchUsers, signUp } from '@/api/users';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +11,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Select,
     SelectContent,
@@ -20,7 +23,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { IUser, Roles, roleColors, roleIcons, roleLabels } from '@/types/types';
+import { IUser, Roles, UserStatus, roleColors, roleIcons, roleLabels } from '@/types/types';
 import { motion } from 'framer-motion';
 import {
     Edit3,
@@ -28,11 +31,9 @@ import {
     EyeOff,
     Filter,
     Plus,
-    Shield,
     Trash2,
     UserCheck,
-    User as UserIcon,
-    UserX,
+    UserX
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -40,13 +41,15 @@ import { useEffect, useState } from 'react';
 
 export function AdminUsers() {
     const [users, setUsers] = useState<IUser[]>([])
+    const [agents, setAgents] = useState<IUser[]>([])
+    const [agentPopOver, setAgentPopOver] = useState(false)
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [roleFilter, setRoleFilter] = useState<Roles | null>(null)
     const [editingUser, setEditingUser] = useState<IUser | null>(null);
     const [showPassword, setShowPassword] = useState(false)
     const [formData, setFormData] = useState<Partial<IUser>>({
         name: '',
-        email: '',
+        surname: '',
         password: '',
         role: Roles.Agent
     });
@@ -59,22 +62,21 @@ export function AdminUsers() {
 
     const handleAddUser = () => {
         setEditingUser(null);
-        setFormData({ name: '', email: '', password: '', role: Roles.Agent });
+        setFormData({ name: '', password: '', role: Roles.Agent });
         setIsDialogOpen(true);
     };
     const handleEditUser = (user: IUser) => {
         setEditingUser(user);
         setFormData({
             name: user.name,
-            email: user.email,
-            password: user.password,
+            surname: user.surname,
             role: user.role,
         });
         setIsDialogOpen(true);
     };
 
     const handleSaveUser = () => {
-        if (!formData.name || !formData.email || !formData.password) {
+        if (!formData.name || !formData.surname || !formData.role) {
             toast({
                 title: "Xəta",
                 description: "Bütün sahələri doldurun",
@@ -84,17 +86,24 @@ export function AdminUsers() {
         }
 
         if (editingUser) {
-            // setUsers(
-            //     users.map((u) =>
-            //         u._id === editingUser._id
-            //             ? { ...u, name: formData.name, email: formData.email, password: formData.password, role: formData.role }
-            //             : u
-            //     )
-            // );
-            toast({
-                title: "User yeniləndi",
-                description: "User məlumatları uğurla yeniləndi",
-            });
+            const newFields = {
+                name: formData.name,
+                surname: formData.surname,
+                role: formData.role
+            }
+            updateUser(editingUser._id, newFields).then(() => {
+                setUsers(
+                    users.map((u) =>
+                        u._id === editingUser._id
+                            ? { ...u, ...newFields }
+                            : u
+                    )
+                );
+                toast({
+                    title: "User yeniləndi",
+                    description: "User məlumatları uğurla yeniləndi",
+                });
+            })
         } else {
             const existingEmail = users.find(u => u.email === formData.email);
             if (existingEmail) {
@@ -105,43 +114,49 @@ export function AdminUsers() {
                 });
                 return;
             }
-
             const newUser: Partial<IUser> = {
                 name: formData.name,
+                surname: formData.surname,
                 email: formData.email,
+                status: UserStatus.Active,
                 password: formData.password,
-                role: Roles.Agent,
+                role: formData.role,
                 isActive: true,
             };
-            setUsers([...users, newUser] as any);
-            toast({
-                title: "User yaradıldı",
-                description: "Yeni user uğurla yaradıldı",
-            });
+            signUp(newUser).then((d) => {
+                setUsers([...users, d] as any);
+                toast({
+                    title: "User yaradıldı",
+                    description: "Yeni user uğurla yaradıldı",
+                });
+            })
         }
 
         setIsDialogOpen(false);
     };
 
-    const handleToggleActive = (userId: string) => {
-        setUsers(
-            users.map((u) => (u._id === userId ? { ...u, isActive: !u.isActive } : u))
-        );
+    const handleToggleActive = (userId: string, isActive: boolean) => {
+        updateUser(userId, { isActive }).then(() => {
+            setUsers(
+                users.map((u) => (u._id === userId ? { ...u, isActive } : u))
+            );
+        })
     };
 
-    // const handleDeleteUser = (userId: string) => {
-    //     setUsers(users.filter((u) => u._id !== userId));
-    //     toast({
-    //         title: "User silindi",
-    //         description: "User uğurla silindi",
-    //     });
-    // };
+    const handleDeleteUser = (userId: string, isDeleted) => {
+        updateUser(userId, { isDeleted }).then(() => {
+            setUsers(users.filter((u) => u._id !== userId));
+            toast({
+                title: "User silindi",
+                description: "User uğurla silindi",
+            });
+        })
+    };
 
 
     const filteredUsers = roleFilter ?
-        users.filter((us) => us.role === roleFilter)
+        users.filter((us) => us && us.role === roleFilter)
         : users
-    // : users.filter(u => u.companyId === companyFilter);
 
 
     return (
@@ -182,37 +197,51 @@ export function AdminUsers() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label>Email</Label>
+                                <Label>Soyad</Label>
                                 <Input
-                                    type="email"
-                                    value={formData.email}
+                                    value={formData.surname}
                                     onChange={(e) =>
-                                        setFormData({ ...formData, email: e.target.value })
+                                        setFormData({ ...formData, surname: e.target.value })
                                     }
-                                    placeholder="email@company.az"
+                                    placeholder="İstifadəçi soyadı"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label>Şifrə</Label>
-                                <div className="relative">
-                                    <Input
-                                        type={showPassword ? 'text' : 'password'}
-                                        value={formData.password}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, password: e.target.value })
-                                        }
-                                        placeholder="Şifrə"
-                                        className="pr-10"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                    >
-                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                    </button>
-                                </div>
-                            </div>
+                            {
+                                !editingUser &&
+                                <>
+                                    <div className="space-y-2">
+                                        <Label>Email</Label>
+                                        <Input
+                                            value={formData.email}
+                                            onChange={(e) =>
+                                                setFormData({ ...formData, email: e.target.value })
+                                            }
+                                            placeholder="İstifadəçi emaili"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Şifrə</Label>
+                                        <div className="relative">
+                                            <Input
+                                                type={showPassword ? 'text' : 'password'}
+                                                value={formData.password}
+                                                onChange={(e) =>
+                                                    setFormData({ ...formData, password: e.target.value })
+                                                }
+                                                placeholder="Şifrə"
+                                                className="pr-10"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                            >
+                                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            }
                             <div className="space-y-2">
                                 <Label>Rol</Label>
                                 <Select
@@ -225,10 +254,10 @@ export function AdminUsers() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="bg-popover border border-border shadow-lg z-50">
-                                        <SelectItem value="admin">Admin</SelectItem>
-                                        <SelectItem value="supervayzer">Supervayzer</SelectItem>
-                                        <SelectItem value="agent">Agent</SelectItem>
-                                        <SelectItem value="partner">Partner</SelectItem>
+                                        <SelectItem value={Roles.Admin}>Admin</SelectItem>
+                                        <SelectItem value={Roles.Supervisor}>Supervisor</SelectItem>
+                                        <SelectItem value={Roles.Agent}>Agent</SelectItem>
+                                        <SelectItem value={Roles.Partner}>Partner</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -307,7 +336,8 @@ export function AdminUsers() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                        {filteredUsers.map((user, index) => {
+                        {filteredUsers.filter((user) => user?._id).map((user, index) => {
+                            console.log('user', user)
                             const UserRoleIcon = roleIcons[user.role]
                             return (
                                 <motion.tr
@@ -344,7 +374,7 @@ export function AdminUsers() {
                                         <div className="flex items-center gap-2">
                                             <Switch
                                                 checked={user.isActive}
-                                                onCheckedChange={() => handleToggleActive(user._id)}
+                                                onCheckedChange={() => handleToggleActive(user._id, !user.isActive)}
                                             />
                                             {user.isActive ? (
                                                 <span className="flex items-center gap-1 text-sm text-success">
@@ -364,6 +394,48 @@ export function AdminUsers() {
                                     </td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center justify-end gap-1">
+                                            {user?.role === Roles.Supervisor &&
+
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button
+                                                            onClick={() => {
+                                                                setAgentPopOver(true)
+                                                                getSupervisorAgents(user._id).then((d) => {
+                                                                    console.log('dasssaa', d)
+                                                                    setAgents(d)
+                                                                })
+                                                            }}
+                                                            variant="ghost" size="sm" className="gap-2 text-muted-foreground">
+                                                            <Eye className="h-4 w-4" />
+                                                            Agentlər
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    {
+                                                        agentPopOver && <PopoverContent className="w-64 p-0" align="end">
+                                                            <div className="p-3 border-b"><p className="font-medium text-sm">{user.name} agentləri</p></div>
+                                                            <ScrollArea className="max-h-48">
+                                                                <div className="p-2 space-y-1">
+                                                                    {agents.map((agent) => (
+                                                                        <div key={agent._id} className="flex items-center gap-2 p-2 rounded hover:bg-muted">
+                                                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-medium">
+                                                                                {agent.name.charAt(0)}
+                                                                            </div>
+                                                                            <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">
+                                                                                {agent.name} {agent.surname}
+                                                                            </p>
+                                                                                <p className="text-xs text-muted-foreground truncate">
+                                                                                    {agent.email}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </ScrollArea>
+                                                        </PopoverContent>
+                                                    }
+                                                </Popover>
+                                            }
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
@@ -372,14 +444,14 @@ export function AdminUsers() {
                                             >
                                                 <Edit3 className="w-4 h-4" />
                                             </Button>
-                                            {/* <Button
+                                            <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                onClick={() => handleDeleteUser(user._id)}
+                                                onClick={() => handleDeleteUser(user._id, !user.isDeleted)}
                                                 className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                                             >
                                                 <Trash2 className="w-4 h-4" />
-                                            </Button> */}
+                                            </Button>
                                         </div>
                                     </td>
                                 </motion.tr>

@@ -21,10 +21,12 @@ const ChannelsTabs = ({ companyId }: { companyId: string }) => {
     const [channels, setChannels] = useState<IChannel[]>([])
 
     useEffect(() => {
-        getChannels(companyId).then((d) => {
-            setChannels(d)
-        })
-    }, [])
+        if (companyId) {
+            getChannels(companyId).then((d) => {
+                setChannels(d)
+            })
+        }
+    }, [companyId])
 
     const resetChannelForm = () => {
         setChannelForm({ name: '' });
