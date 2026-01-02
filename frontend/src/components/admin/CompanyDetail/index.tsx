@@ -43,10 +43,10 @@ const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack }) => {
                         <Radio className="w-4 h-4" />
                         Kanallar
                     </TabsTrigger>
-                    <TabsTrigger value="users" className="gap-2">
+                    {/* <TabsTrigger value="users" className="gap-2">
                         <Users className="w-4 h-4" />
                         İstifadəçilər
-                    </TabsTrigger>
+                    </TabsTrigger> */}
                     <TabsTrigger value="projects" className="gap-2">
                         <Folder className="w-4 h-4" />
                         Layihələr
@@ -59,9 +59,9 @@ const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack }) => {
                 </TabsContent>
 
                 {/* Users Tab */}
-                <TabsContent value="users">
+                {/* <TabsContent value="users">
                     <UsersTab companyId={company._id} />
-                </TabsContent>
+                </TabsContent> */}
 
                 {/* Projects Tab - Updated with proper project cards */}
                 <TabsContent value="projects">
