@@ -5,7 +5,7 @@ import {
     Plus,
     Table2
 } from "lucide-react";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -27,6 +27,8 @@ import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
+import { getSupervisorProjects } from "@/api/supervisors";
+import { IProject } from "@/types/types";
 
 /* ---------------------------------- */
 
@@ -34,8 +36,9 @@ const SupervisorProjects: React.FC = () => {
     const { currentSupervisor, excels, setExcels, sheets, setSheets } =
         useContext(SupervisorContext);
 
+    const [supervisorProjects, setSupervisorProjects] = useState<IProject[]>([])
     /* navigation state */
-    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+    const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
     const [selectedExcel, setSelectedExcel] = useState<Excel | null>(null);
     const [selectedSheet, setSelectedSheet] = useState<Sheet | null>(null);
 
@@ -56,6 +59,13 @@ const SupervisorProjects: React.FC = () => {
         agentIds: [] as string[],
     });
 
+    useEffect(() => {
+        getSupervisorProjects('69511a96fb49f4fb17d67331').then((d) => {
+            console.log('dasssa', d)
+            setSupervisorProjects(d)
+        })
+    }, [])
+
     const [sheetForm, setSheetForm] = useState({
         name: "",
         description: "",
@@ -74,24 +84,6 @@ const SupervisorProjects: React.FC = () => {
         phoneNumbers: [],
     });
 
-    const [newOption, setNewOption] = useState("");
-
-    /* data */
-    const assignment = mockSupervisorAssignments.find(
-        a => a.supervisorId === currentSupervisor?.id
-    );
-
-    const assignedAgents = mockCrmUsers.filter(u =>
-        assignment?.agentIds.includes(u.id)
-    );
-
-    const supervisorProjects = mockProjects.filter(p =>
-        p.supervisorIds?.includes(currentSupervisor?.id)
-    );
-
-    /* ---------------------------------- */
-    /* Excel CRUD */
-
     const saveExcel = () => {
         if (!excelForm.name || !selectedProject) return;
 
@@ -107,7 +99,7 @@ const SupervisorProjects: React.FC = () => {
                 ...excels,
                 {
                     id: `excel-${Date.now()}`,
-                    projectId: selectedProject.id,
+                    projectId: selectedProject._id,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     ...excelForm,
@@ -215,7 +207,7 @@ const SupervisorProjects: React.FC = () => {
                     <div className="grid gap-4 md:grid-cols-3">
                         {supervisorProjects.map(project => (
                             <Card
-                                key={project.id}
+                                key={project._id}
                                 className="cursor-pointer hover:border-primary"
                                 onClick={() => setSelectedProject(project)}
                             >
@@ -229,7 +221,9 @@ const SupervisorProjects: React.FC = () => {
                                     <p className="text-sm text-muted-foreground">
                                         {project.description}
                                     </p>
+                                    <Badge variant="outline">{project.excelIds?.length} Excel</Badge>
                                 </CardContent>
+
                             </Card>
                         ))}
                     </div>
@@ -275,7 +269,7 @@ const SupervisorProjects: React.FC = () => {
 
                     <div className="grid gap-4 md:grid-cols-3">
                         {excels
-                            .filter(e => e.projectId === selectedProject.id)
+                            .filter(e => e.projectId === selectedProject._id)
                             .map(excel => (
                                 <Card
                                     key={excel.id}

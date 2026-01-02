@@ -1,7 +1,7 @@
 export type CallStatus = 'successful' | 'unsuccessful' | 'pending' | 'callback' | 'no_answer';
 export type CustomerStatus = 'ok' | 'not_ok' | 'pending' | 'interested';
 export type CrmUserRole = 'admin' | 'supervayzer' | 'agent' | 'partner';
-export type UserStatus = 'available' | 'busy' | 'break' | 'offline';
+
 
 export interface Lead {
   id: string;
@@ -30,7 +30,7 @@ export interface User {
   companyId?: string;
   supervisorId?: string;
   isActive: boolean;
-  status?: UserStatus;
+  status?: string;
   avatar?: string;
   activeChats?: number;
   activeCalls?: number;

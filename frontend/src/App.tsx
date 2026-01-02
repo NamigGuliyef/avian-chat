@@ -9,7 +9,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import SingleProject from "./pages/SingleProject";
-import UserDashboard from "./pages/UserDashboard";
+import UserOutlet from "./components/user/UserOutlet";
 import UserLogin from "./pages/UserLogin";
 import WidgetDemo from "./pages/WidgetDemo";
 
@@ -23,6 +23,8 @@ import SupervisorOutlet from "./components/supervisor/SupervisorOutlet";
 import SupervisorProjects from "./components/supervisor/SupervisorProjects";
 import AdminSingleCompany from "./pages/AdminSingleCompany";
 import { AdminUsers } from "./pages/AdminUsers";
+import UserProjects from "./components/user/UserProjects";
+import UserDashboard from "./components/user/UserDashboard";
 
 const queryClient = new QueryClient();
 
@@ -57,7 +59,10 @@ const App = () => (
             </Route>
 
             {/* User */}
-            <Route path="/user/dashboard" element={<UserDashboard />} />
+            <Route path="/user" element={<UserOutlet />}>
+              <Route path="dashboard" element={<UserDashboard />} />
+              <Route path="projects" element={<UserProjects />} />
+            </Route>
 
 
             {/* Widget */}

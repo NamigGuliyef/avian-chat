@@ -43,6 +43,7 @@ export interface IUser {
     isActive?: boolean;
     isDeleted?: boolean;
     createdAt?: string;
+    onlineStatus?: OnlineStatus;
     supervisor: IUser; // assigned supervisor id
     channelIds: IChannel[]; // company-ye bagli channel-lerin id-lerinin massivi
     role: Roles;
@@ -55,6 +56,12 @@ export enum Roles {
     Supervisor = "Supervisor",
     Partner = "Partner"
 }
+export enum OnlineStatus {
+    online = 'online',
+    busy = 'busy',
+    break = 'break',
+    offline = 'offline'
+};
 export enum UserStatus {
     Active = "active",
     Deactive = "deactive",
@@ -143,6 +150,22 @@ export const roleIcons: Record<Roles, any> = {
     Partner: UserIcon
 }
 
+export interface IExcel {
+    projectId: string;
+    name: string;
+    description: string;
+    agentIds: string[];
+    sheetIds: string[];
+}
+export interface ISheet {
+    projectId: string;
+    excelId: string;
+    name: string;
+    description: string;
+    agentIds: string[];
+    agentRowPermissions: string[];
+    columns: string[];
+}
 
 export interface IProject {
     _id: string;
@@ -154,6 +177,12 @@ export interface IProject {
     projectName: ProjectName
     supervisors: IUser[];
     agents: IUser[];
+    createdAt?: string;
+    updatedAt?: string;
+    isDeleted?: boolean;
+    columnIds: string[];
+    excelIds: string[];
+    sheetIds: string[];
 }
 
 

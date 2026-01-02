@@ -1,22 +1,19 @@
 import { useChat } from '@/contexts/ChatContext';
 import React, { useState } from 'react';
-import ChatbotsManagement from './ChatbotsManagement';
-import ChatPanel from './ChatPanel';
-import ContactsPage from './ContactsPage';
-import ConversationList from './ConversationList';
-import ReportsPage from './ReportsPage';
-import Sidebar from './Sidebar';
-import UsersManagement from './UsersManagement';
-import VisitorDetails from './VisitorDetails';
+import ChatbotsManagement from '../admin/ChatbotsManagement';
+import ChatPanel from '../admin/ChatPanel';
+import ContactsPage from '../admin/ContactsPage';
+import ConversationList from '../admin/ConversationList';
+import ReportsPage from '../admin/ReportsPage';
+import VisitorDetails from '../admin/VisitorDetails';
+import UserSidebar from './UserSidebar';
 
-const AdminLayout: React.FC = () => {
-  const { activeSection, folders } = useChat();
+const UserDashboard: React.FC = () => {
+  const { activeSection } = useChat();
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'users':
-        return <UsersManagement />;
       case 'contacts':
         return <ContactsPage />;
       case 'reports':
@@ -35,7 +32,6 @@ const AdminLayout: React.FC = () => {
     }
   };
 
-  // Handle folder section clicks
   React.useEffect(() => {
     if (activeSection.startsWith('folder-')) {
       const folderId = activeSection.replace('folder-', '');
@@ -46,11 +42,11 @@ const AdminLayout: React.FC = () => {
   }, [activeSection]);
 
   return (
-    <div className="h-full min-h-0 flex bg-background">
-      <Sidebar />
+    <>
+      <UserSidebar />
       {renderContent()}
-    </div>
+    </>
   );
 };
 
-export default AdminLayout;
+export default UserDashboard;

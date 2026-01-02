@@ -11,8 +11,8 @@ import { toast } from '@/hooks/use-toast';
 export default function UserLogin() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('user@culture.gov.az');
+  const [password, setPassword] = useState('demo123');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -21,18 +21,18 @@ export default function UserLogin() {
     setIsLoading(true);
 
     const result = login(email, password);
-    
+
     if (result.success) {
       toast({ title: "Uğurlu", description: "Daxil oldunuz" });
       navigate('/user/dashboard');
     } else {
-      toast({ 
-        title: "Xəta", 
+      toast({
+        title: "Xəta",
         description: result.error || "Daxil olmaq mümkün olmadı",
         variant: "destructive"
       });
     }
-    
+
     setIsLoading(false);
   };
 
