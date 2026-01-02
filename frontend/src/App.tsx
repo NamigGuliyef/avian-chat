@@ -9,18 +9,20 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import SingleProject from "./pages/SingleProject";
-import SupervisorPanel from "./pages/SupervisorPanel";
 import UserDashboard from "./pages/UserDashboard";
 import UserLogin from "./pages/UserLogin";
 import WidgetDemo from "./pages/WidgetDemo";
 
+import AdminCompanies from "./components/admin/AdminCompanies";
 import AdminOutlet from "./components/admin/AdminOutlet";
 import ChatbotsManagement from "./components/admin/ChatbotsManagement";
 import { OperationLogs } from "./components/admin/OperationLogs";
 import ReportsPage from "./components/admin/ReportsPage";
+import SupervisorDashboard from "./components/supervisor/SupervisorDashboard";
+import SupervisorOutlet from "./components/supervisor/SupervisorOutlet";
+import SupervisorProjects from "./components/supervisor/SupervisorProjects";
 import AdminSingleCompany from "./pages/AdminSingleCompany";
 import { AdminUsers } from "./pages/AdminUsers";
-import AdminCompanies from "./components/admin/AdminCompanies";
 
 const queryClient = new QueryClient();
 
@@ -48,11 +50,15 @@ const App = () => (
               <Route path="logs" element={<OperationLogs />} />
             </Route>
 
+            {/* Supervisor */}
+            <Route path="/supervisor" element={<SupervisorOutlet />}>
+              <Route path="dashboard" element={<SupervisorDashboard />} />
+              <Route path="projects" element={<SupervisorProjects />} />
+            </Route>
+
             {/* User */}
             <Route path="/user/dashboard" element={<UserDashboard />} />
 
-            {/* Supervisor */}
-            <Route path="/supervisor" element={<SupervisorPanel />} />
 
             {/* Widget */}
             <Route path="/widget" element={<WidgetDemo />} />
