@@ -151,6 +151,7 @@ export const roleIcons: Record<Roles, any> = {
 }
 
 export interface IExcel {
+    _id: string;
     projectId: string;
     name: string;
     description: string;
@@ -180,9 +181,9 @@ export interface IProject {
     createdAt?: string;
     updatedAt?: string;
     isDeleted?: boolean;
-    columnIds: string[];
-    excelIds: string[];
-    sheetIds: string[];
+    columnIds: any[];
+    excelIds: any[];
+    sheetIds: any[];
 }
 
 

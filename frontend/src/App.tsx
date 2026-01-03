@@ -25,6 +25,7 @@ import AdminSingleCompany from "./pages/AdminSingleCompany";
 import { AdminUsers } from "./pages/AdminUsers";
 import UserProjects from "./components/user/UserProjects";
 import UserDashboard from "./components/user/UserDashboard";
+import SupervisorSingleProject from "./components/supervisor/SupervisorSingleProject";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/supervisor" element={<SupervisorOutlet />}>
               <Route path="dashboard" element={<SupervisorDashboard />} />
               <Route path="projects" element={<SupervisorProjects />} />
+              <Route path="projects/:projectId/:projectName" element={<SupervisorSingleProject />} />
             </Route>
 
             {/* User */}
