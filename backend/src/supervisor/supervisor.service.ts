@@ -1,11 +1,16 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { ApiOperation } from "@nestjs/swagger";
+import strict from "assert/strict";
 import { Model, Types } from "mongoose";
+import { ColumnType } from "src/enum/enum";
+import { CreateColumnDto } from "src/excel/dto/create-column.dto";
 import { CreateExcelDto } from "src/excel/dto/create-excel.dto";
 import { CreateSheetDto } from "src/excel/dto/create-sheet.dto";
+import { UpdateColumnDto } from "src/excel/dto/update-column.dto";
 import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
 import { UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
+import { Column } from "src/excel/model/column.schema";
 import { Excel } from "src/excel/model/excel.schema";
 import { Sheet } from "src/excel/model/sheet.schema";
 import { Project } from "src/project/model/project.schema";
@@ -17,6 +22,7 @@ export class SupervisorService {
     @InjectModel(Excel.name) private excelModel: Model<Excel>,
     @InjectModel(Project.name) private projectModel: Model<Project>,
     @InjectModel(Sheet.name) private sheetModel: Model<Sheet>,
+    @InjectModel(Column.name) private columnModel: Model<Column>,
 
   ) { }
 
@@ -234,13 +240,57 @@ export class SupervisorService {
 
 
 
-
   //  -------------------------------------- Column functions --------------------------------------//
 
-  
+
+  // Sheet-ə column əlavə et
+  async addColumnToSheet(sheetId: string, createColumnData: CreateColumnDto) {
+
+    const sheet = await this.sheetModel.findById(sheetId)
+    if (!sheet) {
+      throw new NotFoundException('Sheet tapılmadı');
+    }
+
+    const project = await this.projectModel.findById(sheet.projectId);
+    if (!project) {
+      throw new NotFoundException('Project tapılmadı');
+    }
+
+    // Yeni column yaradılması
+    const newColumn = new this.columnModel({ ...createColumnData, sheetId: sheet._id });
+
+    // Select type column üçün options əlavə et
+    if (createColumnData.type === ColumnType.Select) {
+      throw new BadRequestException('Select tipli sütunlar üçün variantlar əlavə edilməlidir');
+    }
+
+    // Proyektdə ColumnIds-də columnId əlavə et
+    project.columnIds.push(newColumn._id);
+
+    // Column ID-ni sheet-in columnIds massivinə əlavə et
+    sheet.columnIds.push(newColumn._id);
+    await Promise.all([project.save(), sheet.save()]);
+    return await newColumn.save();
+  }
 
 
+  // Sheet-ə aid column-ları yenilə
+  async updateColumnInSheet(columnId: string, updateColumnData: UpdateColumnDto) {
+    const column = await this.columnModel.findById(columnId);
+    if (!column) {
+      throw new NotFoundException('Column tapılmadı');
+    }
 
+    column.set({ ...updateColumnData });
+    await column.save();
+    return column;
+  }
+
+
+  // Sheet-ə aid column-ları gətir
+  async getColumnsOfSheet(sheetId: string) {
+    const columns = await this.columnModel.find({ sheetId: sheetId });
+    return columns;
+  }
 
 }
-

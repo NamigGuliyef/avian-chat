@@ -2,7 +2,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Types } from 'mongoose';
 import { AgentRowPermission } from './agent-row-permission.schema';
-import { Column } from './column.schema';
 
 
 @Schema({ timestamps: true, versionKey: false })
@@ -26,8 +25,8 @@ export class Sheet {
   agentRowPermissions: AgentRowPermission[];
 
   // embedded columns for easier access (frontend expects sheet.columns)
-  @Prop({ type: [Column], default: [] })
-  columnIds: Column[];
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], default: [] })
+  columnIds: Types.ObjectId[];
 }
 
 export const SheetSchema = SchemaFactory.createForClass(Sheet);

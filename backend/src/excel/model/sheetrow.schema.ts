@@ -3,7 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true , versionKey: false})
 export class SheetRow {
   @Prop({ type: Types.ObjectId, ref: 'Sheet', required: true })
   sheetId: Types.ObjectId;

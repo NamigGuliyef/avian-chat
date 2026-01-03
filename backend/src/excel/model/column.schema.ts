@@ -1,13 +1,13 @@
 
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { ColumnType } from 'src/enum/enum';
 import { ColumnOption } from './column-option.schema';
 
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, versionKey: false })
 export class Column {
-  @Prop({ type: Types.ObjectId, ref: 'Sheet', required: true })
+  @Prop({ type:  mongoose.Schema.Types.ObjectId, ref: 'Sheet', required: true })
   sheetId: Types.ObjectId;
 
   @Prop({ required: true })
@@ -16,7 +16,7 @@ export class Column {
   @Prop({ required: true })
   dataKey: string;
 
-  @Prop({ type: String,  enum: ColumnType, required: true, default: ColumnType.Text })
+  @Prop({ type: String, enum: ColumnType, required: true, default: ColumnType.Text })
   type: ColumnType;
 
   @Prop({ default: true })
