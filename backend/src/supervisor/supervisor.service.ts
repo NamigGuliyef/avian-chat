@@ -12,6 +12,7 @@ import { Column } from "src/excel/model/column.schema";
 import { Excel } from "src/excel/model/excel.schema";
 import { Sheet } from "src/excel/model/sheet.schema";
 import { Project } from "src/project/model/project.schema";
+import { User } from "src/user/model/user.schema";
 
 
 @Injectable()
@@ -21,6 +22,7 @@ export class SupervisorService {
     @InjectModel(Project.name) private projectModel: Model<Project>,
     @InjectModel(Sheet.name) private sheetModel: Model<Sheet>,
     @InjectModel(Column.name) private columnModel: Model<Column>,
+    @InjectModel(User.name) private userModel: Model<User>,
 
   ) { }
 
@@ -178,6 +180,19 @@ export class SupervisorService {
     project.sheetIds.push(newSheet._id);
     excel.sheetIds.push(newSheet._id);
 
+    // AgnetRowPermissions -a yazılan agentİd-leri tapib uyğun user-lerin id-lerin startRow və endRow sahələrini dəyişmək
+    for (const permission of createSheetData.agentRowPermissions) {
+      if (!createSheetData.agentIds.includes(permission.agentId)) {
+        await this.userModel.findByIdAndUpdate(permission.agentId, {
+          $set: {
+            startRow: permission.startRow,
+            endRow: permission.endRow,
+          }
+        });
+      }
+    }
+
+
     await Promise.all([
       project.save(),
       excel.save(),
@@ -216,9 +231,31 @@ export class SupervisorService {
         sheet.agentRowPermissions = sheet.agentRowPermissions.filter(
           (permission) => !agentsToRemove.includes(permission.agentId),
         );
+
+        // AgnetRowPermissions -a yazılan agentİd-leri tapib uyğun user-lerin id-lerin startRow və endRow sahələrini 0 etmək
+        for (const permission of updateSheetData.agentRowPermissions) {
+          await this.userModel.findByIdAndUpdate(permission.agentId, {
+            $set: {
+              startRow: 0,
+              endRow: 0,
+            }
+          });
+        }
       }
 
+
       /* 5. Sheet-in digər datalarının update edilməsi */
+      // AgnetRowPermissions -a yazılan agentİd-leri tapib uyğun user-lerin id-lerin startRow və endRow sahələrini yeniləmək
+      for (const permission of updateSheetData.agentRowPermissions) {
+        if (!updateSheetData.agentIds.includes(permission.agentId)) {
+          await this.userModel.findByIdAndUpdate(permission.agentId, {
+            $set: {
+              startRow: permission.startRow,
+              endRow: permission.endRow,
+            }
+          });
+        }
+      }
       return await this.sheetModel.findByIdAndUpdate(
         _id,
         { $set: updateSheetData },

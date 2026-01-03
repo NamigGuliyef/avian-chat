@@ -1,8 +1,6 @@
-import { OnlineStatus, UserRole } from 'src/enum/enum';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ApiProperty } from '@nestjs/swagger';
 import mongoose, { Document, Types } from 'mongoose';
-import { Channel } from 'src/channel/model/channel.schema';
+import { OnlineStatus, UserRole } from 'src/enum/enum';
 
 export type UserDocument = User & Document;
 
@@ -53,10 +51,15 @@ export class User {
   @Prop({ type: Boolean, default: true })
   isActive: boolean;
 
-  
+
   @Prop({ type: Boolean, default: false })
   isDeleted: boolean;
 
+  @Prop({ type: Number, default: 0 })
+  startRow: number;
+
+  @Prop({ type: Number, default: 0 })
+  endRow: number;
 
 }
 

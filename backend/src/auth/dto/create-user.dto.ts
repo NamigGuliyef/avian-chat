@@ -85,4 +85,12 @@ export class CreateUserDto {
   @IsOptional()
   isDeleted: boolean;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  startRow: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  endRow: number;
+
 }

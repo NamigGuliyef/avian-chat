@@ -17,6 +17,7 @@ import { SupervisorService } from './supervisor.service';
     { name: User.name, schema: UserSchema },
     { name: Sheet.name, schema: SheetSchema },
     { name: Column.name, schema: ColumnSchema },
+    { name: User.name, schema: UserSchema }
   ])],
   controllers: [SupervisorController],
   providers: [SupervisorService],
