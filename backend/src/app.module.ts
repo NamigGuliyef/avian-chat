@@ -4,16 +4,16 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { LoggerMiddleware } from './auth/logger.middleware';
 import { ChannelModule } from './channel/channel.module';
 import { CompanyModule } from './company/company.module';
 import { ConversationModule } from './conversation/conversation.module';
+import { AuditLog, AuditLogSchema } from './logger/model/logger.schema';
 import { MessageModule } from './message/message.module';
+import { ProjectModule } from './project/project.module';
 import { SupervisorModule } from './supervisor/supervisor.module';
 import { VisitorModule } from './visitor/visitor.module';
-import { AuthModule } from './auth/auth.module';
-import { ProjectModule } from './project/project.module';
-import { LoggerMiddleware } from './auth/logger.middleware';
-import { AuditLog, AuditLogSchema } from './logger/model/logger.schema';
 
 
 @Module({
@@ -32,7 +32,6 @@ import { AuditLog, AuditLogSchema } from './logger/model/logger.schema';
     ConversationModule,
     MessageModule,
     ProjectModule,
-
   ],
   controllers: [AppController],
   providers: [AppService],

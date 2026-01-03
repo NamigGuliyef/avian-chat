@@ -1,10 +1,10 @@
 // sheets/schema/agent-row-permission.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 @Schema({ _id: false })
 export class AgentRowPermission {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   agentId: Types.ObjectId;
 
   @Prop({ default: 1 })

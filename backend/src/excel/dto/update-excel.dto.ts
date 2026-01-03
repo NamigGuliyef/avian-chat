@@ -1,15 +1,19 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, IsArray } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class UpdateExcelDto {
+  @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  name?: string;
+  description: string;
 
-  @IsOptional()
-  @IsString()
-  description?: string;
-
+  @ApiProperty()
   @IsOptional()
   @IsArray()
-  agentIds?: string[];
+  agentIds: Types.ObjectId[];
 }
