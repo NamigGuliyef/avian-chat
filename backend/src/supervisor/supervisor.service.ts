@@ -1,8 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { ApiOperation } from "@nestjs/swagger";
-import strict from "assert/strict";
-import { Model, Types } from "mongoose";
+import { Model } from "mongoose";
 import { ColumnType } from "src/enum/enum";
 import { CreateColumnDto } from "src/excel/dto/create-column.dto";
 import { CreateExcelDto } from "src/excel/dto/create-excel.dto";
@@ -68,7 +66,6 @@ export class SupervisorService {
     await project.save();
     return createdExcel.save();
   }
-
 
 
   // Proyektə aid bütün Excelleri gətir

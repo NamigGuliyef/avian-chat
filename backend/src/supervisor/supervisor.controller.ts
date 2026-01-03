@@ -7,6 +7,7 @@ import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
 import { CreateColumnDto } from "src/excel/dto/create-column.dto";
 import { Types } from "mongoose";
 import { UpdateColumnDto } from "src/excel/dto/update-column.dto";
+import { UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
 
 @ApiTags("supervisor")
 @Controller('supervisor')
@@ -79,11 +80,11 @@ export class SupervisorController {
 
   @ApiOperation({ summary: " Excelə aid sheet yenilə" })
   @ApiBody(
-    { type: CreateSheetDto }
+    { type: UpdateSheetDto }
   )
   @Patch('sheet/:_id')
   @HttpCode(HttpStatus.OK)
-  async updateSheetInExcel(@Param('_id') _id: string, @Body() updateSheetData: CreateSheetDto) {
+  async updateSheetInExcel(@Param('_id') _id: string, @Body() updateSheetData: UpdateSheetDto) {
     return await this.supervisorService.updateSheetInExcel(_id, updateSheetData);
   }
 
