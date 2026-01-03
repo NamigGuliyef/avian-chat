@@ -74,8 +74,52 @@ export class SupervisorService {
 
   // Excel yeniləmək üçün
   async updateExcel(_id: string, updateExcelData: UpdateExcelDto) {
-    return await this.excelModel.findByIdAndUpdate(_id, { $set: updateExcelData }, { new: true }).exec();
+
+    /* 1. Excel yoxlanışı */
+    const excel = await this.excelModel.findById(_id);
+    if (!excel) {
+      throw new NotFoundException('Excel tapılmadı');
+    }
+
+    /* 2. Agent silinməsi varsa yoxla */
+    if (updateExcelData.agentIds) {
+
+      // Mövcud agent-lər
+      const currentAgentIds = excel.agentIds.map(id => id.toString());
+
+      // Çıxarılmaq istənən agent-lər
+      const removedAgentIds = currentAgentIds.filter(
+        id => !updateExcelData.agentIds.map(aid => aid.toString()).includes(id),
+      );
+
+      if (removedAgentIds.length > 0) {
+
+        /* 3. Sheet-lərdə istifadə olunan agent-ləri yoxla */
+        const sheetsUsingAgents = await this.sheetModel.find({
+          excelId: excel._id,
+          agentIds: { $in: removedAgentIds },
+        });
+
+        if (sheetsUsingAgents.length > 0) {
+          throw new BadRequestException(
+            'Bu agent Excel-in sheet-lərində istifadə olunur, silinə bilməz',
+          );
+        }
+      }
+
+      /* 4. İcazə varsa agentIds-i yenilə */
+      excel.agentIds = updateExcelData.agentIds;
+    }
+
+    /* 5. Digər sahələrin update edilməsi */
+    excel.set({
+      ...updateExcelData, agentIds: excel.agentIds,
+    });
+
+    await excel.save();
+    return excel;
   }
+
 
 
 
@@ -187,6 +231,15 @@ export class SupervisorService {
       .populate([{ path: 'agentIds', select: '-password' }, { path: 'agentRowPermissions' }, { path: 'columnIds' }]);
     return sheets;
   }
+
+
+
+
+  //  -------------------------------------- Column functions --------------------------------------//
+
+  
+
+
 
 
 }

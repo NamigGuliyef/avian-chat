@@ -16,7 +16,7 @@ export class Column {
   @Prop({ required: true })
   dataKey: string;
 
-  @Prop({ type: String,  enum: ColumnType, required: true, default: ColumnType.TEXT })
+  @Prop({ type: String,  enum: ColumnType, required: true, default: ColumnType.Text })
   type: ColumnType;
 
   @Prop({ default: true })

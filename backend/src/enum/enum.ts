@@ -33,9 +33,9 @@ export enum ProjectName {
 }
 
 export enum ColumnType {
-  TEXT = 'text',
-  NUMBER = 'number',
-  DATE = 'date',
-  SELECT = 'select',
-  PHONE = 'phone',
+  Text = 'text',
+  Number = 'number',
+  Date = 'date',
+  Select = 'select',
+  Phone = 'phone',
 }
