@@ -21,4 +21,18 @@ export const updateExcel = async (excelId, _data) => {
     const { data } = await axios.patch(`/supervisor/excel/${excelId}`, _data);
     return data;
 }
+export const getExcelSheets = async (exId) => {
+    const { data } = await axios.get(`/supervisor/sheets/${exId}`);
+    return data;
+}
+export const createExcelSheet = async (_data) => {
+    console.log('_daa', _data)
+    const { data } = await axios.post(`/supervisor/sheet`, _data);
+    return data;
+}
+
+export const updateExcelSheet = async (sheetId, _data) => {
+    const { data } = await axios.patch(`/supervisor/sheet/${sheetId}`, _data);
+    return data;
+}
 

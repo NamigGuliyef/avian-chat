@@ -1,0 +1,274 @@
+"use client";
+import {
+    CardHeader,
+    CardTitle
+} from "../ui/card";
+
+import { createExcelSheet, getExcelSheets, getProjectExcels, updateExcelSheet } from "@/api/supervisors";
+import { IAgentRowPermission, IExcel } from "@/types/types";
+import { Check, Edit, Plus, Table2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { ScrollArea } from "../ui/scroll-area";
+import { Checkbox } from "../ui/checkbox";
+import { toast } from "sonner";
+
+
+interface SheetCreateDto {
+    name: string;
+    description: string;
+    agentIds: string[];
+    agentRowPermissions: IAgentRowPermission[];
+}
+const emptyForm: SheetCreateDto = {
+    name: "",
+    description: "",
+    agentIds: [],
+    agentRowPermissions: [],
+};
+
+const SupervisorSingleExcel: React.FC = () => {
+    const [excels, setExcels] = useState<IExcel[]>([])
+    const [isExcelDialogId, setIsExcelDialogId] = useState("")
+    const [excelForm, setExcelForm] = useState<SheetCreateDto>(emptyForm);
+    const [editingSheet, setEditingSheet] = useState<IExcel | null>(null);
+    const [projectAgents, setProjectAgents] = useState<any[]>([]);
+    const [search, setSearch] = useState("");
+    const { excelId, excelName, projectId } = useParams()
+    const navigate = useNavigate()
+
+
+    useEffect(() => {
+        if (excelId) {
+            getExcelSheets(excelId).then((d) => {
+                setExcels(d)
+                setProjectAgents(d[0].agentIds)
+            })
+        }
+    }, [excelId])
+
+    const toggleAgentSheet = (agentId: string) => {
+        setExcelForm((prev) => {
+            const exists = prev.agentIds.includes(agentId);
+
+            return {
+                ...prev,
+                agentIds: exists
+                    ? prev.agentIds.filter((id) => id !== agentId)
+                    : [...prev.agentIds, agentId],
+
+                agentRowPermissions: exists
+                    ? prev.agentRowPermissions.filter(p => p.agentId !== agentId)
+                    : [...prev.agentRowPermissions, {
+                        agentId,
+                        startRow: 1,
+                        endRow: 100,
+                    }],
+            };
+        });
+    };
+
+
+    const updateAgentRowPermission = (
+        agentId: string,
+        startRow?: number,
+        endRow?: number
+    ) => {
+        setExcelForm((prev) => ({
+            ...prev,
+            agentRowPermissions: prev.agentRowPermissions.map((perm) => {
+                if (perm.agentId !== agentId) return perm;
+
+                const newStart = startRow ?? perm.startRow;
+                const newEnd = endRow ?? perm.endRow;
+                return {
+                    ...perm,
+                    startRow: newStart,
+                    endRow: newEnd,
+                };
+            }),
+        }));
+    };
+
+    const filteredAgents = React.useMemo(() => {
+        if (!search.trim()) return projectAgents;
+
+        const q = search.toLowerCase();
+
+        return projectAgents.filter((agent) =>
+            `${agent.name} ${agent.surname}`
+                .toLowerCase()
+                .includes(q)
+        );
+    }, [projectAgents, search]);
+
+    const handleUpdateSheet = () => {
+        const payload: SheetCreateDto = {
+            ...excelForm,
+            agentRowPermissions: excelForm.agentIds.map((agentId) => {
+                const permission = excelForm.agentRowPermissions.find(
+                    (p) => p.agentId === agentId
+                );
+
+                return (
+                    permission || {
+                        agentId,
+                        startRow: 1,
+                        endRow: 100,
+                    }
+                );
+            }),
+        };
+        const sheetId = editingSheet?._id;
+        if (sheetId) {
+            updateExcelSheet(sheetId, payload).then((d) => {
+                setExcels((prev) =>
+                    prev.map((item) =>
+                        item._id === excelId ? { ...item, ...d } : item
+                    )
+                );
+            });
+        } else {
+            createExcelSheet({ ...payload, excelId, projectId }).then((d) => {
+                setExcels((prev) => [...prev, d]);
+            });
+        }
+
+        setIsExcelDialogId("");
+    };
+
+
+    return (
+        <div>
+            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">← Geri</Button>
+            <div className="mb-6  flex items-center justify-between">
+                <h2 className="text-2xl font-bold">{excelName}</h2>
+
+                <Dialog
+                    open={Boolean(isExcelDialogId)}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setIsExcelDialogId("");
+                            setEditingSheet(null);
+                            setExcelForm(emptyForm);
+                            setSearch("");
+                        }
+                    }}
+                >
+                    <DialogTrigger asChild>
+                        <Button
+                            onClick={() => {
+                                setIsExcelDialogId("new");
+                                setEditingSheet(null);
+                                setExcelForm(emptyForm);
+                            }}
+                        >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Yeni Sheet
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader><DialogTitle>{editingSheet ? 'Sheet-i Redaktə Et' : 'Yeni Sheet'}</DialogTitle></DialogHeader>
+                        <div className="space-y-4 mt-4">
+                            <div className="mb-1"><Label>Sheet adı</Label><Input value={excelForm.name} onChange={(e) => setExcelForm({ ...excelForm, name: e.target.value })} /></div>
+                            <div className="mb-1"><Label>Təsvir</Label><Input value={excelForm.description} onChange={(e) => setExcelForm({ ...excelForm, description: e.target.value })} /></div>
+                            <div>
+                                <Label className="mb-2 block">Agentlər və sətir icazələri</Label>
+                                <ScrollArea className="h-48 border rounded-lg p-2">
+                                    {filteredAgents.map((agent) => {
+                                        const isSelected = excelForm.agentIds.includes(agent._id);
+                                        const permission = excelForm.agentRowPermissions.find(p => p.agentId === agent._id);
+                                        return (
+                                            <div key={agent._id} className="py-2 border-b border-border/50 last:border-0">
+                                                <div className="flex items-center gap-2">
+                                                    <Checkbox checked={isSelected} onCheckedChange={() => toggleAgentSheet(agent._id)} />
+                                                    <span className="text-sm font-medium">{agent.name} {agent.surname}</span>
+                                                </div>
+                                                {isSelected && (
+                                                    <div className="mt-2 ml-6 flex items-center gap-2 text-sm">
+                                                        <span className="text-muted-foreground">Sətir aralığı:</span>
+                                                        <Input
+                                                            type="number"
+                                                            value={permission?.startRow}
+                                                            onChange={(e) => updateAgentRowPermission(agent._id, parseInt(e.target.value), undefined)}
+                                                            className="w-20 h-8"
+                                                            min={1}
+                                                        />
+                                                        <span>-</span>
+                                                        <Input
+                                                            type="number"
+                                                            value={permission?.endRow}
+                                                            onChange={(e) => updateAgentRowPermission(agent._id, undefined, parseInt(e.target.value))}
+                                                            className="w-20 h-8"
+                                                            min={1}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </ScrollArea>
+                            </div>
+                            <Button className="w-full" onClick={handleUpdateSheet}>{editingSheet ? 'Yenilə' : 'Yarat'}</Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {excels.map((item) => {
+                    return (
+                        <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`/`) }}>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-lg flex items-center gap-2 justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Table2 className="h-5 w-5 text-primary" />
+                                        {item.name}
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+
+                                            setIsExcelDialogId(item._id);
+                                            setEditingSheet(item);
+
+                                            setExcelForm({
+                                                name: item.name,
+                                                description: item.description || "",
+                                                agentIds: item.agentIds || [],
+                                                agentRowPermissions:
+                                                    item.agentRowPermissions?.length
+                                                        ? item.agentRowPermissions
+                                                        : (item.agentIds || []).map((id: string) => ({
+                                                            agentId: id,
+                                                            startRow: 1,
+                                                            endRow: 100,
+                                                        })),
+                                            });
+                                            setSearch("");
+                                        }}
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent><p className="text-sm text-muted-foreground mb-3">{item.description}</p>
+                                <Badge variant="outline">{item.sheetIds?.length} sheet</Badge>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+export default SupervisorSingleExcel;

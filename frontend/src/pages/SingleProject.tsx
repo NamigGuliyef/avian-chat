@@ -29,13 +29,6 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-
-const mockSupervisors = [
-    { _id: "1", name: "Ali Supervisor" },
-    { _id: "2", name: "Elvin Manager" },
-    { _id: "3", name: "Nigar Team Lead" },
-];
-
 const SingleProject = () => {
     const [project, setProject] = useState<IProject>({
         supervisors: [] as Partial<IUser>[],

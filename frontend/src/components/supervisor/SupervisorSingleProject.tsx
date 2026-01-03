@@ -185,7 +185,7 @@ const SupervisorSingleProject: React.FC = () => {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {excels.map((item) => {
                     return (
-                        <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`/`) }}>
+                        <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`/supervisor/excels/${item.projectId}/${item._id}/${item.name}`) }}>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg flex items-center gap-2 justify-between">
                                     <div className="flex items-center gap-2">

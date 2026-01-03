@@ -157,6 +157,12 @@ export interface IExcel {
     description: string;
     agentIds: string[];
     sheetIds: string[];
+    agentRowPermissions: IAgentRowPermission[]
+}
+export interface IAgentRowPermission {
+    agentId: string;
+    startRow: number;
+    endRow: number;
 }
 export interface ISheet {
     projectId: string;
