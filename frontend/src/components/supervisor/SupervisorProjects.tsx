@@ -1,63 +1,24 @@
 "use client";
 import {
-    FileSpreadsheet,
-    FolderKanban,
-    Plus,
-    Table2
-} from "lucide-react";
-import React, { useContext, useEffect, useState } from "react";
-import { toast } from "sonner";
+    CardHeader,
+    CardTitle
+} from "../ui/card";
 
-import {
-    mockCrmUsers,
-    mockProjects,
-    mockSupervisorAssignments
-} from "@/data/mockData";
-
-import {
-    ColumnConfig,
-    Excel,
-    Project,
-    Sheet
-} from "@/types/crm";
-
-import { SupervisorContext } from "./SupervisorOutlet";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { Input } from "../ui/input";
-import { Badge } from "../ui/badge";
 import { getSupervisorProjects } from "@/api/supervisors";
 import { IProject } from "@/types/types";
+import { Eye, FolderKanban } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { ScrollArea } from "../ui/scroll-area";
 
-/* ---------------------------------- */
 
 const SupervisorProjects: React.FC = () => {
-    const { currentSupervisor, excels, setExcels, sheets, setSheets } =
-        useContext(SupervisorContext);
-
     const [supervisorProjects, setSupervisorProjects] = useState<IProject[]>([])
-    /* navigation state */
-    const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
-    const [selectedExcel, setSelectedExcel] = useState<Excel | null>(null);
-    const [selectedSheet, setSelectedSheet] = useState<Sheet | null>(null);
-
-    /* dialog state */
-    const [excelDialog, setExcelDialog] = useState(false);
-    const [sheetDialog, setSheetDialog] = useState(false);
-    const [columnDialog, setColumnDialog] = useState(false);
-
-    /* edit state */
-    const [editingExcel, setEditingExcel] = useState<Excel | null>(null);
-    const [editingSheet, setEditingSheet] = useState<Sheet | null>(null);
-    const [editingColumn, setEditingColumn] = useState<ColumnConfig | null>(null);
-
-    /* forms */
-    const [excelForm, setExcelForm] = useState({
-        name: "",
-        description: "",
-        agentIds: [] as string[],
-    });
+    const navigate = useNavigate()
 
     useEffect(() => {
         getSupervisorProjects('69511a96fb49f4fb17d67331').then((d) => {
@@ -66,279 +27,148 @@ const SupervisorProjects: React.FC = () => {
         })
     }, [])
 
-    const [sheetForm, setSheetForm] = useState({
-        name: "",
-        description: "",
-        agentIds: [] as string[],
-        agentRowPermissions: [] as any[],
-    });
+    const excelCards = supervisorProjects.reduce((acc, project) => {
+        project.excelIds?.forEach((excel) => {
+            if (!acc[excel._id]) {
+                acc[excel._id] = {
+                    excelId: excel._id,
+                    excelName: excel.name,
+                    agentsCount: 0,
+                };
+            }
 
-    const [columnForm, setColumnForm] = useState<Partial<ColumnConfig>>({
-        name: "",
-        dataKey: "",
-        type: "text",
-        visibleToUser: true,
-        editableByUser: true,
-        isRequired: false,
-        options: [],
-        phoneNumbers: [],
-    });
-
-    const saveExcel = () => {
-        if (!excelForm.name || !selectedProject) return;
-
-        if (editingExcel) {
-            setExcels(
-                excels.map(e =>
-                    e.id === editingExcel.id ? { ...e, ...excelForm } : e
-                )
-            );
-            toast.success("Excel yeniləndi");
-        } else {
-            setExcels([
-                ...excels,
-                {
-                    id: `excel-${Date.now()}`,
-                    projectId: selectedProject._id,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    ...excelForm,
-                } as Excel,
-            ]);
-            toast.success("Excel yaradıldı");
-        }
-
-        setExcelDialog(false);
-        setEditingExcel(null);
-        setExcelForm({ name: "", description: "", agentIds: [] });
-    };
-
-    /* ---------------------------------- */
-    /* Sheet CRUD */
-
-    const saveSheet = () => {
-        if (!sheetForm.name || !selectedExcel) return;
-
-        if (editingSheet) {
-            setSheets(
-                sheets.map(s =>
-                    s.id === editingSheet.id ? { ...s, ...sheetForm } : s
-                )
-            );
-            toast.success("Sheet yeniləndi");
-        } else {
-            setSheets([
-                ...sheets,
-                {
-                    id: `sheet-${Date.now()}`,
-                    excelId: selectedExcel.id,
-                    projectId: selectedExcel.projectId,
-                    columns: [],
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    ...sheetForm,
-                } as Sheet,
-            ]);
-            toast.success("Sheet yaradıldı");
-        }
-
-        setSheetDialog(false);
-        setEditingSheet(null);
-        setSheetForm({
-            name: "",
-            description: "",
-            agentIds: [],
-            agentRowPermissions: [],
-        });
-    };
-
-    /* ---------------------------------- */
-    /* Column CRUD */
-
-    const saveColumn = () => {
-        if (!columnForm.name || !selectedSheet) return;
-
-        const column: ColumnConfig = {
-            id: editingColumn?.id || `col-${Date.now()}`,
-            sheetId: selectedSheet.id,
-            order: selectedSheet.columns.length + 1,
-            ...(columnForm as ColumnConfig),
-        };
-
-        const updatedSheet = {
-            ...selectedSheet,
-            columns: editingColumn
-                ? selectedSheet.columns.map(c =>
-                    c.id === editingColumn.id ? column : c
-                )
-                : [...selectedSheet.columns, column],
-        };
-
-        setSheets(
-            sheets.map(s => (s.id === selectedSheet.id ? updatedSheet : s))
-        );
-        setSelectedSheet(updatedSheet);
-
-        setColumnDialog(false);
-        setEditingColumn(null);
-        setColumnForm({
-            name: "",
-            dataKey: "",
-            type: "text",
-            visibleToUser: true,
-            editableByUser: true,
-            isRequired: false,
-            options: [],
+            acc[excel._id].agentsCount += excel.agentIds.length;
         });
 
-        toast.success(editingColumn ? "Sütun yeniləndi" : "Sütun əlavə edildi");
-    };
+        return acc;
+    }, {} as Record<string, { excelId: string; excelName: string; agentsCount: number }>);
 
-    /* ---------------------------------- */
-    /* UI */
+    const cardsArray = Object.values(excelCards);
 
     return (
         <div>
-            {/* PROJECT LIST */}
-            {!selectedProject && (
-                <>
-                    <h2 className="text-2xl font-bold mb-6">Layihələrim</h2>
+            <div className="mb-6">
+                <h2 className="text-2xl font-bold">Layihələrim</h2>
+                <p className="text-sm text-muted-foreground">Layihə → Excel → Sheet → Sütunlar</p>
+            </div>
 
-                    <div className="grid gap-4 md:grid-cols-3">
-                        {supervisorProjects.map(project => (
-                            <Card
-                                key={project._id}
-                                className="cursor-pointer hover:border-primary"
-                                onClick={() => setSelectedProject(project)}
-                            >
-                                <CardHeader>
-                                    <CardTitle className="flex gap-2 items-center">
-                                        <FolderKanban className="h-5 w-5" />
-                                        {project.name}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground">
-                                        {project.description}
-                                    </p>
-                                    <Badge variant="outline">{project.excelIds?.length} Excel</Badge>
-                                </CardContent>
+            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mb-8">
+                {cardsArray.map((excel) => {
+                    return (
+                        <Card key={excel.excelId} className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                            <CardContent className="p-4">
+                                <p className="text-sm text-muted-foreground mb-1">{excel.excelName}</p>
+                                <p className="text-3xl font-bold text-primary">{excel.agentsCount} nəfər</p>
+                            </CardContent>
+                        </Card>
+                    )
+                })}
+            </div>
+            <Card className="mb-6">
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-lg">Layihə Statusu – Detal</CardTitle>
+                </CardHeader>
 
-                            </Card>
-                        ))}
+                <CardContent>
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-border">
+                                    <th className="text-left p-3 font-medium text-muted-foreground">Layihə adı</th>
+                                    <th className="text-left p-3 font-medium text-muted-foreground">Excel adı</th>
+                                    <th className="text-left p-3 font-medium text-muted-foreground">Sheet adı</th>
+                                    <th className="text-center p-3 font-medium text-muted-foreground">Agentlər</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {supervisorProjects.flatMap((project) =>
+                                    project.excelIds?.flatMap((excel) =>
+                                        project.sheetIds
+                                            ?.filter((sheet) => sheet.excelId === excel._id)
+                                            .map((sheet) => {
+                                                const sheetAgents =
+                                                    project.agents?.filter((agent) =>
+                                                        sheet.agentIds.includes(agent._id)
+                                                    ) || [];
+
+                                                return (
+                                                    <tr
+                                                        key={sheet._id}
+                                                        className="border-b border-border/50 hover:bg-muted/50"
+                                                    >
+                                                        <td className="p-3">
+                                                            {project.name || "Adsız layihə"}
+                                                        </td>
+
+                                                        <td className="p-3">{excel.name}</td>
+
+                                                        <td className="p-3">{sheet.name}</td>
+
+                                                        <td className="p-3 text-center">
+                                                            <Popover>
+                                                                <PopoverTrigger asChild>
+                                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                        <Eye />
+                                                                    </Button>
+                                                                </PopoverTrigger>
+                                                                <PopoverContent align="end" side="bottom" className="w-64 p-3">
+                                                                    <p className="font-medium">"{sheet.name}" agentləri</p>
+                                                                    <ScrollArea className="h-32 mt-4">
+                                                                        {sheetAgents.length > 0 ? (
+                                                                            <div className="space-y-2">
+                                                                                {sheetAgents.map((agent) => (
+                                                                                    <div
+                                                                                        key={agent._id}
+                                                                                        className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
+                                                                                    >
+                                                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                                                                                            {agent.name.charAt(0)}
+                                                                                        </div>
+                                                                                        <span className="font-medium">
+                                                                                            {agent.name} {agent.surname}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <p className="text-center text-muted-foreground py-4">
+                                                                                Agent yoxdur
+                                                                            </p>
+                                                                        )}
+                                                                    </ScrollArea>
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
+                                    )
+                                )}
+                            </tbody>
+                        </table>
                     </div>
-                </>
-            )}
+                </CardContent>
+            </Card>
 
-            {/* EXCEL LEVEL */}
-            {selectedProject && !selectedExcel && (
-                <>
-                    <Button variant="ghost" onClick={() => setSelectedProject(null)}>
-                        ← Geri
-                    </Button>
-
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-bold">
-                            {selectedProject.name} — Exceller
-                        </h2>
-
-                        <Dialog open={excelDialog} onOpenChange={setExcelDialog}>
-                            <DialogTrigger asChild>
-                                <Button>
-                                    <Plus className="h-4 w-4 mr-2" /> Yeni Excel
-                                </Button>
-                            </DialogTrigger>
-
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Excel</DialogTitle>
-                                </DialogHeader>
-
-                                <Input
-                                    placeholder="Ad"
-                                    value={excelForm.name}
-                                    onChange={e =>
-                                        setExcelForm({ ...excelForm, name: e.target.value })
-                                    }
-                                />
-
-                                <Button onClick={saveExcel}>Yadda saxla</Button>
-                            </DialogContent>
-                        </Dialog>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-3">
-                        {excels
-                            .filter(e => e.projectId === selectedProject._id)
-                            .map(excel => (
-                                <Card
-                                    key={excel.id}
-                                    className="cursor-pointer"
-                                    onClick={() => setSelectedExcel(excel)}
-                                >
-                                    <CardContent className="p-4 flex justify-between">
-                                        <span>{excel.name}</span>
-                                        <Table2 />
-                                    </CardContent>
-                                </Card>
-                            ))}
-                    </div>
-                </>
-            )}
-
-            {/* SHEET LEVEL */}
-            {selectedExcel && !selectedSheet && (
-                <>
-                    <Button variant="ghost" onClick={() => setSelectedExcel(null)}>
-                        ← Geri
-                    </Button>
-
-                    <h2 className="text-xl font-bold mb-4">{selectedExcel.name}</h2>
-
-                    <div className="grid gap-4 md:grid-cols-3">
-                        {sheets
-                            .filter(s => s.excelId === selectedExcel.id)
-                            .map(sheet => (
-                                <Card
-                                    key={sheet.id}
-                                    className="cursor-pointer"
-                                    onClick={() => setSelectedSheet(sheet)}
-                                >
-                                    <CardContent className="p-4 flex justify-between">
-                                        <span>{sheet.name}</span>
-                                        <FileSpreadsheet />
-                                    </CardContent>
-                                </Card>
-                            ))}
-                    </div>
-                </>
-            )}
-
-            {/* COLUMN LEVEL */}
-            {selectedSheet && (
-                <>
-                    <Button variant="ghost" onClick={() => setSelectedSheet(null)}>
-                        ← Geri
-                    </Button>
-
-                    <h2 className="text-xl font-bold mb-4">{selectedSheet.name}</h2>
-
-                    <Button onClick={() => setColumnDialog(true)}>
-                        <Plus className="h-4 w-4 mr-2" /> Yeni sütun
-                    </Button>
-
-                    <div className="space-y-2 mt-4">
-                        {selectedSheet.columns.map(col => (
-                            <Card key={col.id}>
-                                <CardContent className="flex justify-between p-3">
-                                    <span>{col.name}</span>
-                                    <Badge>{col.type}</Badge>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </>
-            )}
+            <h2 className="text-xl font-bold mb-4">Layihələr</h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {supervisorProjects.map((project) => {
+                    return (
+                        <Card key={project._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`/supervisor/projects/${project._id}/${project.name}`) }}>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <FolderKanban className="h-5 w-5 text-primary" />
+                                    {project.name}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent><p className="text-sm text-muted-foreground mb-3">{project.description}</p>
+                                <Badge variant="outline">{project.excelIds?.length} excel</Badge>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
         </div>
     );
 };
