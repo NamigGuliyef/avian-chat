@@ -328,6 +328,18 @@ export class SupervisorService {
       throw new NotFoundException('Column tapılmadı');
     }
 
+      // Type phone olan column eyni sheet-də artıq mövcuddursa, xəta at
+    if (updateColumnData.type === ColumnType.Phone) {
+      const existingPhoneColumn = await this.columnModel.findOne({  
+        sheetId: column.sheetId,
+        type: ColumnType.Phone,
+      });
+      if (existingPhoneColumn) {
+        throw new BadRequestException('Hər bir sheet üçün yalnız bir Phone tipli sütun ola bilər');
+      }
+    }
+
+
     column.set({ ...updateColumnData });
     await column.save();
     return column;
