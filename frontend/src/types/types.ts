@@ -156,8 +156,7 @@ export interface IExcel {
     name: string;
     description: string;
     agentIds: string[];
-    sheetIds: string[];
-    agentRowPermissions: IAgentRowPermission[]
+    sheetIds: ISheet[];
 }
 export interface IAgentRowPermission {
     agentId: string;
@@ -165,13 +164,14 @@ export interface IAgentRowPermission {
     endRow: number;
 }
 export interface ISheet {
+    _id: string;
     projectId: string;
     excelId: string;
     name: string;
     description: string;
     agentIds: string[];
-    agentRowPermissions: string[];
-    columns: string[];
+    agentRowPermissions: IAgentRowPermission[]
+    columnIds: IColumn[];
 }
 
 export interface IProject {
@@ -192,6 +192,19 @@ export interface IProject {
     sheetIds: any[];
 }
 
+export interface IColumn {
+    _id: string;
+    sheetId: string;
+    name: string;
+    dataKey: string;
+    type: "text" | "number" | "phone" | "select";
+    visibleToUser: boolean;
+    editableByUser: boolean;
+    isRequired: boolean;
+    order: number;
+    options: string[];
+    phoneNumbers: string[];
+}
 
 
 // ---------------------------------------------------

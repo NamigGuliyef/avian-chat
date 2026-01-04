@@ -5,7 +5,7 @@ import {
 } from "../ui/card";
 
 import { createExcelSheet, getExcelSheets, getProjectExcels, updateExcelSheet } from "@/api/supervisors";
-import { IAgentRowPermission, IExcel } from "@/types/types";
+import { IAgentRowPermission, IExcel, ISheet } from "@/types/types";
 import { Check, Edit, Plus, Table2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -35,10 +35,10 @@ const emptyForm: SheetCreateDto = {
 };
 
 const SupervisorSingleExcel: React.FC = () => {
-    const [excels, setExcels] = useState<IExcel[]>([])
-    const [isExcelDialogId, setIsExcelDialogId] = useState("")
-    const [excelForm, setExcelForm] = useState<SheetCreateDto>(emptyForm);
-    const [editingSheet, setEditingSheet] = useState<IExcel | null>(null);
+    const [sheets, setSheets] = useState<ISheet[]>([])
+    const [isSheetDialogId, setIsSheetDialogId] = useState("")
+    const [sheetForm, setSheetForm] = useState<SheetCreateDto>(emptyForm);
+    const [editingSheet, setEditingSheet] = useState<ISheet | null>(null);
     const [projectAgents, setProjectAgents] = useState<any[]>([]);
     const [search, setSearch] = useState("");
     const { excelId, excelName, projectId } = useParams()
@@ -48,14 +48,14 @@ const SupervisorSingleExcel: React.FC = () => {
     useEffect(() => {
         if (excelId) {
             getExcelSheets(excelId).then((d) => {
-                setExcels(d)
+                setSheets(d)
                 setProjectAgents(d[0].agentIds)
             })
         }
     }, [excelId])
 
     const toggleAgentSheet = (agentId: string) => {
-        setExcelForm((prev) => {
+        setSheetForm((prev) => {
             const exists = prev.agentIds.includes(agentId);
 
             return {
@@ -81,7 +81,7 @@ const SupervisorSingleExcel: React.FC = () => {
         startRow?: number,
         endRow?: number
     ) => {
-        setExcelForm((prev) => ({
+        setSheetForm((prev) => ({
             ...prev,
             agentRowPermissions: prev.agentRowPermissions.map((perm) => {
                 if (perm.agentId !== agentId) return perm;
@@ -111,9 +111,9 @@ const SupervisorSingleExcel: React.FC = () => {
 
     const handleUpdateSheet = () => {
         const payload: SheetCreateDto = {
-            ...excelForm,
-            agentRowPermissions: excelForm.agentIds.map((agentId) => {
-                const permission = excelForm.agentRowPermissions.find(
+            ...sheetForm,
+            agentRowPermissions: sheetForm.agentIds.map((agentId) => {
+                const permission = sheetForm.agentRowPermissions.find(
                     (p) => p.agentId === agentId
                 );
 
@@ -129,7 +129,7 @@ const SupervisorSingleExcel: React.FC = () => {
         const sheetId = editingSheet?._id;
         if (sheetId) {
             updateExcelSheet(sheetId, payload).then((d) => {
-                setExcels((prev) =>
+                setSheets((prev) =>
                     prev.map((item) =>
                         item._id === excelId ? { ...item, ...d } : item
                     )
@@ -137,11 +137,11 @@ const SupervisorSingleExcel: React.FC = () => {
             });
         } else {
             createExcelSheet({ ...payload, excelId, projectId }).then((d) => {
-                setExcels((prev) => [...prev, d]);
+                setSheets((prev) => [...prev, d]);
             });
         }
 
-        setIsExcelDialogId("");
+        setIsSheetDialogId("");
     };
 
 
@@ -152,12 +152,12 @@ const SupervisorSingleExcel: React.FC = () => {
                 <h2 className="text-2xl font-bold">{excelName}</h2>
 
                 <Dialog
-                    open={Boolean(isExcelDialogId)}
+                    open={Boolean(isSheetDialogId)}
                     onOpenChange={(open) => {
                         if (!open) {
-                            setIsExcelDialogId("");
+                            setIsSheetDialogId("");
                             setEditingSheet(null);
-                            setExcelForm(emptyForm);
+                            setSheetForm(emptyForm);
                             setSearch("");
                         }
                     }}
@@ -165,9 +165,9 @@ const SupervisorSingleExcel: React.FC = () => {
                     <DialogTrigger asChild>
                         <Button
                             onClick={() => {
-                                setIsExcelDialogId("new");
+                                setIsSheetDialogId("new");
                                 setEditingSheet(null);
-                                setExcelForm(emptyForm);
+                                setSheetForm(emptyForm);
                             }}
                         >
                             <Plus className="h-4 w-4 mr-2" />
@@ -177,14 +177,14 @@ const SupervisorSingleExcel: React.FC = () => {
                     <DialogContent>
                         <DialogHeader><DialogTitle>{editingSheet ? 'Sheet-i Redaktə Et' : 'Yeni Sheet'}</DialogTitle></DialogHeader>
                         <div className="space-y-4 mt-4">
-                            <div className="mb-1"><Label>Sheet adı</Label><Input value={excelForm.name} onChange={(e) => setExcelForm({ ...excelForm, name: e.target.value })} /></div>
-                            <div className="mb-1"><Label>Təsvir</Label><Input value={excelForm.description} onChange={(e) => setExcelForm({ ...excelForm, description: e.target.value })} /></div>
+                            <div className="mb-1"><Label>Sheet adı</Label><Input value={sheetForm.name} onChange={(e) => setSheetForm({ ...sheetForm, name: e.target.value })} /></div>
+                            <div className="mb-1"><Label>Təsvir</Label><Input value={sheetForm.description} onChange={(e) => setSheetForm({ ...sheetForm, description: e.target.value })} /></div>
                             <div>
                                 <Label className="mb-2 block">Agentlər və sətir icazələri</Label>
                                 <ScrollArea className="h-48 border rounded-lg p-2">
                                     {filteredAgents.map((agent) => {
-                                        const isSelected = excelForm.agentIds.includes(agent._id);
-                                        const permission = excelForm.agentRowPermissions.find(p => p.agentId === agent._id);
+                                        const isSelected = sheetForm.agentIds.includes(agent._id);
+                                        const permission = sheetForm.agentRowPermissions.find(p => p.agentId === agent._id);
                                         return (
                                             <div key={agent._id} className="py-2 border-b border-border/50 last:border-0">
                                                 <div className="flex items-center gap-2">
@@ -222,9 +222,9 @@ const SupervisorSingleExcel: React.FC = () => {
                 </Dialog>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {excels.map((item) => {
+                {sheets.map((item) => {
                     return (
-                        <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`/`) }}>
+                        <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`/supervisor/sheets/${projectId}/${excelId}/${item._id}/${item.name}`) }}>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg flex items-center gap-2 justify-between">
                                     <div className="flex items-center gap-2">
@@ -237,10 +237,10 @@ const SupervisorSingleExcel: React.FC = () => {
                                         onClick={(e) => {
                                             e.stopPropagation();
 
-                                            setIsExcelDialogId(item._id);
+                                            setIsSheetDialogId(item._id);
                                             setEditingSheet(item);
 
-                                            setExcelForm({
+                                            setSheetForm({
                                                 name: item.name,
                                                 description: item.description || "",
                                                 agentIds: item.agentIds || [],
@@ -261,7 +261,7 @@ const SupervisorSingleExcel: React.FC = () => {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent><p className="text-sm text-muted-foreground mb-3">{item.description}</p>
-                                <Badge variant="outline">{item.sheetIds?.length} sheet</Badge>
+                                <Badge variant="outline">{item.columnIds.length} sütun</Badge>
                             </CardContent>
                         </Card>
                     );
