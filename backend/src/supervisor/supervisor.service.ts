@@ -268,7 +268,7 @@ export class SupervisorService {
   //Excel -ə aid sheetləri gətir
   async getSheetsOfExcel(excelId: string) {
     const sheets = await this.sheetModel.find({ excelId: excelId })
-      .populate([{ path: 'agentIds', select: '-password' }, { path: 'agentRowPermissions' }, { path: 'columnIds' }]);
+      .populate([{ path: 'agentRowPermissions', populate: { path: 'agentId', select: ['-password'] } }, { path: 'columnIds' }]);
     return sheets;
   }
 
@@ -298,10 +298,10 @@ export class SupervisorService {
       throw new BadRequestException('Select tipli sütunlar üçün variantlar əlavə edilməlidir');
     }
 
-    
+
     // Type phone olan column eyni sheet-də artıq mövcuddursa, xəta at
     if (createColumnData.type === ColumnType.Phone) {
-      const existingPhoneColumn = await this.columnModel.findOne({  
+      const existingPhoneColumn = await this.columnModel.findOne({
         sheetId: sheet._id,
         type: ColumnType.Phone,
       });
@@ -328,9 +328,9 @@ export class SupervisorService {
       throw new NotFoundException('Column tapılmadı');
     }
 
-      // Type phone olan column eyni sheet-də artıq mövcuddursa, xəta at
+    // Type phone olan column eyni sheet-də artıq mövcuddursa, xəta at
     if (updateColumnData.type === ColumnType.Phone) {
-      const existingPhoneColumn = await this.columnModel.findOne({  
+      const existingPhoneColumn = await this.columnModel.findOne({
         sheetId: column.sheetId,
         type: ColumnType.Phone,
       });
