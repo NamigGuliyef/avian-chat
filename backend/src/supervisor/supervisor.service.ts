@@ -298,6 +298,19 @@ export class SupervisorService {
       throw new BadRequestException('Select tipli sütunlar üçün variantlar əlavə edilməlidir');
     }
 
+    
+    // Type phone olan column eyni sheet-də artıq mövcuddursa, xəta at
+    if (createColumnData.type === ColumnType.Phone) {
+      const existingPhoneColumn = await this.columnModel.findOne({  
+        sheetId: sheet._id,
+        type: ColumnType.Phone,
+      });
+      if (existingPhoneColumn) {
+        throw new BadRequestException('Hər bir sheet üçün yalnız bir Phone tipli sütun ola bilər');
+      }
+    }
+
+
     // Proyektdə ColumnIds-də columnId əlavə et
     project.columnIds.push(newColumn._id);
 
