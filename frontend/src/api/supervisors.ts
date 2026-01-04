@@ -26,7 +26,6 @@ export const getExcelSheets = async (exId) => {
     return data;
 }
 export const createExcelSheet = async (_data) => {
-    console.log('_daa', _data)
     const { data } = await axios.post(`/supervisor/sheet`, _data);
     return data;
 }
@@ -36,3 +35,17 @@ export const updateExcelSheet = async (sheetId, _data) => {
     return data;
 }
 
+export const addColumnToExcel = async (sheetId, columnId, _data) => {
+    const resp = await axios.post(`/supervisor/sheet/${sheetId}/column/${columnId}`, _data)
+    return resp.data;
+}
+
+export const updateSheetColumn = async (columnId, _data) => {
+    const { data } = await axios.patch(`/supervisor/column/${columnId}`, _data);
+    return data;
+}
+
+export const getSheetColumns = async (sheetId) => {
+    const { data } = await axios.get(`/supervisor/sheet/${sheetId}`);
+    return data;
+}
