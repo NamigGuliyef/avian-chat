@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Column } from 'src/excel/model/column.schema';
@@ -87,8 +87,38 @@ export class UserService {
 
 
     async getColumnsBySheetId(sheetId: string): Promise<Column[]> {
+        const sheet = await this.sheetModel.findById(sheetId).exec();
+        // const columns = sheet?.columnIds // sheet.columns -> [{columnId, editable, visible, agentId}]
         const columns = await this.columnModel.find({ sheetId: sheetId }).exec();
+        // const rows =  await this[sheet.row+"Model"].find().exec();
+        // const response = {
+        //     columns: columns,
+        //     rows: rows
+        // }
         return columns;
     }
 
+
+    // User-in təyin olunduğu sheet-e uyğun column-ları gətirən function - startRow və endRow ilə filterlənmiş
+    async getUserColumnsBySheetWithRowFilter(sheetId: string, startRow: number, endRow: number): Promise<Column[]> {
+        const user = await this.userModel.findById("6951181444b1c022c540a5a0").exec();
+        if (!user) {
+            throw new NotFoundException('İstifadəçi tapılmadı');
+        }
+        // İstifadəçinin təyin olunduğu column-ları sheet modelində olan agentIds den tap
+        const sheet = await this.sheetModel.find({
+            _id: sheetId,
+            "agentRowPermissions.agentId": user._id
+        }).exec();
+
+        // Tapılan column-ları startRow və endRow ilə filterləyərək qaytar
+        const filteredColumns = await this.columnModel.find({
+            sheetId: sheetId,
+
+        }).exec();
+
+        return filteredColumns;
+
+    }
 }
+
