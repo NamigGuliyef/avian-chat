@@ -191,18 +191,29 @@ export interface IProject {
     excelIds: any[];
     sheetIds: any[];
 }
+export enum ColumnType {
+    Text = 'text',
+    Number = 'number',
+    Date = 'date',
+    Select = 'select',
+    Phone = 'phone',
+}
 
+export interface ISelectOption {
+    value: string;
+    label: string;
+}
 export interface IColumn {
     _id: string;
     sheetId: string;
     name: string;
     dataKey: string;
-    type: "text" | "number" | "phone" | "select";
+    type: ColumnType;
     visibleToUser: boolean;
     editableByUser: boolean;
     isRequired: boolean;
     order: number;
-    options: string[];
+    options: ISelectOption[];
     phoneNumbers: string[];
 }
 

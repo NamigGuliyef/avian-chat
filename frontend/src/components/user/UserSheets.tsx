@@ -4,36 +4,39 @@ import {
     CardTitle
 } from "../ui/card";
 
-import { getUserExcels } from "@/api/users";
-import { IExcel } from "@/types/types";
+import { getSheetsByExcelId, getUserSheets } from "@/api/users";
+import { ISheet } from "@/types/types";
 import { Table2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 
 
-const UserProjects: React.FC = () => {
-    const [excels, setExcels] = useState<IExcel[]>([])
+const UserSheets: React.FC = () => {
+    const [sheets, setSheets] = useState<ISheet[]>([])
     const navigate = useNavigate()
+    const { excelId, excelName } = useParams()
 
     useEffect(() => {
-        getUserExcels().then((d) => {
-            setExcels(d)
-        })
-    }, [])
+        if (excelId) {
+            getSheetsByExcelId(excelId).then((d) => {
+                setSheets(d)
+            })
+        }
+    }, [excelId])
 
     return (
-        <div>
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">← Geri</Button>
-            <div className="mb-6  flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Sizə təyin olunmuş cədvəllər</h2>
+        <div className="p-3">
+            <div className="mb-6">
+                <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">← Geri</Button>
+                <p className="text-muted-foreground">"{excelName}" excelin sheet seçin</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {excels.map((item) => {
+                {sheets.map((item) => {
                     return (
-                        <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`//excels/${item.projectId}/${item._id}/${item.name}`) }}>
+                        <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`/user/columns/${item._id}/${item.name}`) }}>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg flex items-center gap-2 justify-between">
                                     <div className="flex items-center gap-2">
@@ -43,7 +46,7 @@ const UserProjects: React.FC = () => {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent><p className="text-sm text-muted-foreground mb-3">{item.description}</p>
-                                <Badge variant="outline">{item.sheetIds?.length} sheet</Badge>
+                                <Badge variant="outline">{item.columnIds.length} sütun</Badge>
                             </CardContent>
                         </Card>
                     );
@@ -53,4 +56,4 @@ const UserProjects: React.FC = () => {
     );
 };
 
-export default UserProjects;
+export default UserSheets;
