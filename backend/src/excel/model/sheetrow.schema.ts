@@ -1,4 +1,4 @@
-// leads/schema/lead.schema.ts
+
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
