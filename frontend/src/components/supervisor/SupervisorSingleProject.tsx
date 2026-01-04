@@ -171,7 +171,7 @@ const SupervisorSingleProject: React.FC = () => {
                                                 className="cursor-pointer"
                                                 onClick={() => toggleAgentExcel(agent._id)}
                                             >
-                                                {agent.name} ✕
+                                                {agent.name} {agent.surname} ✕
                                             </Badge>
                                         ))}
                                     </div>
@@ -204,9 +204,7 @@ const SupervisorSingleProject: React.FC = () => {
                                             setExcelForm({
                                                 name: item.name,
                                                 description: item.description || "",
-                                                agentIds: (item.agentIds || []).filter(id =>
-                                                    projectAgents.some(a => a._id === id)
-                                                ),
+                                                agentIds: item.agentIds[0]._id ? item.agentIds?.map(a => a._id) : item.agentIds as any ?? [],
                                             });
 
                                             setSearch("");
@@ -223,7 +221,7 @@ const SupervisorSingleProject: React.FC = () => {
                     );
                 })}
             </div>
-        </div>
+        </div >
     );
 };
 
