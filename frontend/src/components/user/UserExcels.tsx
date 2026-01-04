@@ -14,7 +14,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 
 
-const UserProjects: React.FC = () => {
+const UserExcels: React.FC = () => {
     const [excels, setExcels] = useState<IExcel[]>([])
     const navigate = useNavigate()
 
@@ -25,15 +25,15 @@ const UserProjects: React.FC = () => {
     }, [])
 
     return (
-        <div>
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">← Geri</Button>
-            <div className="mb-6  flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Sizə təyin olunmuş cədvəllər</h2>
+        <div className="p-3">
+            <div className="mb-6">
+                <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">← Geri</Button>
+                <p className="text-muted-foreground">Sizə təyin olunmuş cədvəllər</p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {excels.map((item) => {
                     return (
-                        <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`//excels/${item.projectId}/${item._id}/${item.name}`) }}>
+                        <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`/user/sheets/${item._id}/${item.name}`) }}>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-lg flex items-center gap-2 justify-between">
                                     <div className="flex items-center gap-2">
@@ -53,4 +53,4 @@ const UserProjects: React.FC = () => {
     );
 };
 
-export default UserProjects;
+export default UserExcels;

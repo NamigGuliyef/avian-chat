@@ -65,8 +65,8 @@ export default function UserOutlet() {
               <DropdownMenuItem onClick={() => navigate("/user/dashboard")}>
                 Dashboard
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/user/projects")}>
-                Projects
+              <DropdownMenuItem onClick={() => navigate("/user/excels")}>
+                Excels
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => { logout(); navigate("/user/login"); }} className="text-destructive">
                 <LogOut className="h-4 w-4 mr-2" />
