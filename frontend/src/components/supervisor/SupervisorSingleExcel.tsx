@@ -1,211 +1,186 @@
+// =============================
+// UPDATED SupervisorSingleExcel – Sheet creation with Columns
+// =============================
 "use client";
+
+import { getAdminColumns } from "@/api/column";
 import {
-    CardHeader,
-    CardTitle
-} from "../ui/card";
-import { createExcelSheet, getExcelSheets, updateExcelSheet } from "@/api/supervisors";
-import { IAgentRowPermission, ISheet } from "@/types/types";
+    createExcelSheet,
+    getExcelSheets,
+    updateExcelSheet,
+} from "@/api/supervisors";
+import { ISheet, SheetColumnForm } from "@/types/types";
 import { Edit, Plus, Table2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { Card, CardContent } from "../ui/card";
+import {
+    Card, CardContent,
+    CardHeader,
+    CardTitle
+} from "../ui/card";
 import { Checkbox } from "../ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
 
+// -----------------------------
+// Types
+// -----------------------------
 
 interface SheetCreateDto {
     name: string;
     description: string;
-    agentIds: string[];
-    agentRowPermissions: IAgentRowPermission[];
+    columnIds: SheetColumnForm[];
 }
+
 const emptyForm: SheetCreateDto = {
     name: "",
     description: "",
-    agentIds: [],
-    agentRowPermissions: [],
+    columnIds: [],
 };
 
 const SupervisorSingleExcel: React.FC = () => {
-    const [sheets, setSheets] = useState<ISheet[]>([])
-    const [isSheetDialogId, setIsSheetDialogId] = useState("")
-    const [sheetForm, setSheetForm] = useState<SheetCreateDto>(emptyForm);
+    const [sheets, setSheets] = useState<ISheet[]>([]);
+    const [columns, setColumns] = useState<any[]>([]);
+    const [open, setOpen] = useState(false);
     const [editingSheet, setEditingSheet] = useState<ISheet | null>(null);
-    const [projectAgents, setProjectAgents] = useState<any[]>([]);
-    const [search, setSearch] = useState("");
-    const { excelId, excelName, projectId } = useParams()
-    const navigate = useNavigate()
+    const [sheetForm, setSheetForm] = useState<SheetCreateDto>(emptyForm);
 
+    const { excelId, excelName, projectId } = useParams();
+    const navigate = useNavigate();
 
+    // -----------------------------
+    // Load sheets + columns
+    // -----------------------------
     useEffect(() => {
-        if (excelId) {
-            getExcelSheets(excelId).then((d) => {
-                setSheets(d)
-                setProjectAgents(d[0].agentIds)
-            })
-        }
-    }, [excelId])
+        if (!excelId) return;
+        getExcelSheets(excelId).then(setSheets);
+        getAdminColumns().then(setColumns);
+    }, [excelId]);
 
-    const toggleAgentSheet = (agentId: string) => {
-        setSheetForm((prev) => {
-            const exists = prev.agentIds.includes(agentId);
+    // -----------------------------
+    // Helpers
+    // -----------------------------
+    // const toggleColumn = (columnId: string) => {
+    //     setSheetForm((prev) => {
+    //         const exists = prev.columnIds.find((c) => c.columnId === columnId);
 
-            return {
-                ...prev,
-                agentIds: exists
-                    ? prev.agentIds.filter((id) => id !== agentId)
-                    : [...prev.agentIds, agentId],
+    //         if (exists) {
+    //             return {
+    //                 ...prev,
+    //                 columnIds: prev.columnIds.filter((c) => c.columnId !== columnId),
+    //             };
+    //         }
 
-                agentRowPermissions: exists
-                    ? prev.agentRowPermissions.filter(p => p.agentId !== agentId)
-                    : [...prev.agentRowPermissions, {
-                        agentId,
-                        startRow: 1,
-                        endRow: 100,
-                    }],
-            };
-        });
-    };
+    //         return {
+    //             ...prev,
+    //             columnIds: [
+    //                 ...prev.columnIds,
+    //                 {
+    //                     columnId,
+    //                     editable: true,
+    //                     required: false,
+    //                     order: prev.columnIds.length + 1,
+    //                 },
+    //             ],
+    //         };
+    //     });
+    // };
 
+    // const updateColumnField = (
+    //     columnId: string,
+    //     field: keyof Omit<SheetColumnForm, "columnId" | "order">,
+    //     value: boolean
+    // ) => {
+    //     setSheetForm((prev) => ({
+    //         ...prev,
+    //         columnIds: prev.columnIds.map((c) =>
+    //             c.columnId === columnId ? { ...c, [field]: value } : c
+    //         ),
+    //     }));
+    // };
 
-    const updateAgentRowPermission = (
-        agentId: string,
-        startRow?: number,
-        endRow?: number
-    ) => {
-        setSheetForm((prev) => ({
-            ...prev,
-            agentRowPermissions: prev.agentRowPermissions.map((perm) => {
-                if (perm.agentId !== agentId) return perm;
+    const handleSave = async () => {
+        if (!sheetForm.name) return;
 
-                const newStart = startRow ?? perm.startRow;
-                const newEnd = endRow ?? perm.endRow;
-                return {
-                    ...perm,
-                    startRow: newStart,
-                    endRow: newEnd,
-                };
-            }),
-        }));
-    };
-
-    const filteredAgents = React.useMemo(() => {
-        if (!search.trim()) return projectAgents;
-
-        const q = search.toLowerCase();
-
-        return projectAgents.filter((agent) =>
-            `${agent.name} ${agent.surname}`
-                .toLowerCase()
-                .includes(q)
-        );
-    }, [projectAgents, search]);
-
-    const handleUpdateSheet = () => {
-        const payload: SheetCreateDto = {
+        const payload = {
             ...sheetForm,
-            agentRowPermissions: sheetForm.agentIds.map((agentId) => {
-                const permission = sheetForm.agentRowPermissions.find(
-                    (p) => p.agentId === agentId
-                );
-
-                return (
-                    permission || {
-                        agentId,
-                        startRow: 1,
-                        endRow: 100,
-                    }
-                );
-            }),
+            excelId,
+            projectId,
         };
-        const sheetId = editingSheet?._id;
-        if (sheetId) {
-            updateExcelSheet(sheetId, payload).then((d) => {
-                setSheets((prev) =>
-                    prev.map((item) =>
-                        item._id === excelId ? { ...item, ...d } : item
-                    )
-                );
-            });
+
+        if (editingSheet) {
+            const updated = await updateExcelSheet(editingSheet._id, payload);
+            setSheets((prev) => prev.map((s) => (s._id === updated._id ? updated : s)));
         } else {
-            createExcelSheet({ ...payload, excelId, projectId }).then((d) => {
-                setSheets((prev) => [...prev, d]);
-            });
+            const created = await createExcelSheet(payload);
+            setSheets((prev) => [...prev, created]);
         }
 
-        setIsSheetDialogId("");
+        setOpen(false);
+        setEditingSheet(null);
+        setSheetForm(emptyForm);
     };
 
-
+    // -----------------------------
+    // Render
+    // -----------------------------
     return (
         <div>
             <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">← Geri</Button>
-            <div className="mb-6  flex items-center justify-between">
+
+            <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold">{excelName}</h2>
 
-                <Dialog
-                    open={Boolean(isSheetDialogId)}
-                    onOpenChange={(open) => {
-                        if (!open) {
-                            setIsSheetDialogId("");
-                            setEditingSheet(null);
-                            setSheetForm(emptyForm);
-                            setSearch("");
-                        }
-                    }}
-                >
+                <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
-                        <Button
-                            onClick={() => {
-                                setIsSheetDialogId("new");
-                                setEditingSheet(null);
-                                setSheetForm(emptyForm);
-                            }}
-                        >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Yeni Sheet
+                        <Button onClick={() => { setOpen(true); setEditingSheet(null); setSheetForm(emptyForm); }}>
+                            <Plus className="h-4 w-4 mr-2" /> Yeni Sheet
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader><DialogTitle>{editingSheet ? 'Sheet-i Redaktə Et' : 'Yeni Sheet'}</DialogTitle></DialogHeader>
-                        <div className="space-y-4 mt-4">
-                            <div className="mb-1"><Label>Sheet adı</Label><Input value={sheetForm.name} onChange={(e) => setSheetForm({ ...sheetForm, name: e.target.value })} /></div>
-                            <div className="mb-1"><Label>Təsvir</Label><Input value={sheetForm.description} onChange={(e) => setSheetForm({ ...sheetForm, description: e.target.value })} /></div>
+
+                    <DialogContent className="max-w-xl">
+                        <DialogHeader>
+                            <DialogTitle>{editingSheet ? 'Sheet-i Redaktə Et' : 'Yeni Sheet'}</DialogTitle>
+                        </DialogHeader>
+
+                        <div className="space-y-4">
                             <div>
-                                <Label className="mb-2 block">Agentlər və sətir icazələri</Label>
-                                <ScrollArea className="h-48 border rounded-lg p-2">
-                                    {filteredAgents.map((agent) => {
-                                        const isSelected = sheetForm.agentIds.includes(agent._id);
-                                        const permission = sheetForm.agentRowPermissions.find(p => p.agentId === agent._id);
+                                <Label>Ad</Label>
+                                <Input value={sheetForm.name} onChange={(e) => setSheetForm({ ...sheetForm, name: e.target.value })} />
+                            </div>
+
+                            <div>
+                                <Label>Təsvir</Label>
+                                <Input value={sheetForm.description} onChange={(e) => setSheetForm({ ...sheetForm, description: e.target.value })} />
+                            </div>
+
+                            <div>
+                                <Label className="mb-2 block">Sütunlar</Label>
+                                <ScrollArea className="h-64 border rounded-lg p-2">
+                                    {columns.map((col) => {
+                                        const selected = sheetForm.columnIds.find((c) => c.columnId === col._id);
+
                                         return (
-                                            <div key={agent._id} className="py-2 border-b border-border/50 last:border-0">
+                                            <div key={col._id} className="border-b last:border-0 py-2">
                                                 <div className="flex items-center gap-2">
-                                                    <Checkbox checked={isSelected} onCheckedChange={() => toggleAgentSheet(agent._id)} />
-                                                    <span className="text-sm font-medium">{agent.name} {agent.surname}</span>
+                                                    {/* <Checkbox checked={!!selected} onCheckedChange={() => toggleColumn(col._id)} /> */}
+                                                    <span className="font-medium text-sm">{col.name}</span>
                                                 </div>
-                                                {isSelected && (
-                                                    <div className="mt-2 ml-6 flex items-center gap-2 text-sm">
-                                                        <span className="text-muted-foreground">Sətir aralığı:</span>
-                                                        <Input
-                                                            type="number"
-                                                            value={permission?.startRow}
-                                                            onChange={(e) => updateAgentRowPermission(agent._id, parseInt(e.target.value), undefined)}
-                                                            className="w-20 h-8"
-                                                            min={1}
-                                                        />
-                                                        <span>-</span>
-                                                        <Input
-                                                            type="number"
-                                                            value={permission?.endRow}
-                                                            onChange={(e) => updateAgentRowPermission(agent._id, undefined, parseInt(e.target.value))}
-                                                            className="w-20 h-8"
-                                                            min={1}
-                                                        />
+
+                                                {selected && (
+                                                    <div className="ml-6 mt-2 flex items-center gap-4 text-sm">
+                                                        <div className="flex items-center gap-2">
+                                                            {/* <Checkbox checked={selected.editable} onCheckedChange={(v) => updateColumnField(col._id, 'editable', Boolean(v))} /> */}
+                                                            <span>Edit</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            {/* <Checkbox checked={selected.required} onCheckedChange={(v) => updateColumnField(col._id, 'required', Boolean(v))} /> */}
+                                                            <span>Required</span>
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
@@ -213,56 +188,33 @@ const SupervisorSingleExcel: React.FC = () => {
                                     })}
                                 </ScrollArea>
                             </div>
-                            <Button className="w-full" onClick={handleUpdateSheet}>{editingSheet ? 'Yenilə' : 'Yarat'}</Button>
+
+                            <Button className="w-full" onClick={handleSave}>Yadda saxla</Button>
                         </div>
                     </DialogContent>
                 </Dialog>
             </div>
+
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {sheets.map((item) => {
-                    return (
-                        <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`/supervisor/sheets/${projectId}/${excelId}/${item._id}/${item.name}`) }}>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-lg flex items-center gap-2 justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <Table2 className="h-5 w-5 text-primary" />
-                                        {item.name}
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-
-                                            setIsSheetDialogId(item._id);
-                                            setEditingSheet(item);
-
-                                            setSheetForm({
-                                                name: item.name,
-                                                description: item.description || "",
-                                                agentIds: item.agentIds || [],
-                                                agentRowPermissions:
-                                                    item.agentRowPermissions?.length
-                                                        ? item.agentRowPermissions
-                                                        : (item.agentIds || []).map((id: string) => ({
-                                                            agentId: id,
-                                                            startRow: 1,
-                                                            endRow: 100,
-                                                        })),
-                                            });
-                                            setSearch("");
-                                        }}
-                                    >
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent><p className="text-sm text-muted-foreground mb-3">{item.description}</p>
-                                <Badge variant="outline">{item.columnIds.length} sütun</Badge>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
+                {sheets.map((item) => (
+                    <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => navigate(`/supervisor/sheets/${projectId}/${excelId}/${item._id}/${item.name}`)}>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-lg flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Table2 className="h-5 w-5 text-primary" />
+                                    {item.name}
+                                </div>
+                                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setEditingSheet(item); setSheetForm({ name: item.name, description: item.description || '', columnIds: item.columnIds }); setOpen(true); }}>
+                                    <Edit className="h-4 w-4" />
+                                </Button>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground">{item.description}</p>
+                            <Badge variant="outline">{item.columnIds.length} sütun</Badge>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
         </div>
     );

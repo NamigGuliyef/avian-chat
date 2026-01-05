@@ -31,6 +31,7 @@ import SupervisorSingleSheet from "./components/supervisor/SupervisorSingleSheet
 import UserExcels from "./components/user/UserExcels";
 import UserSheets from "./components/user/UserSheets";
 import UserColumns from "./components/user/UserColumns";
+import AdminColumns from "./components/admin/AdminColumns";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
             {/* Admin */}
             <Route path="/admin" element={<AdminOutlet />}>
               <Route path="companies" element={<AdminCompanies />} />
+              <Route path="columns" element={<AdminColumns />} />
               <Route path="companies/:companyId" element={<AdminSingleCompany />} />
               <Route path="projects/:projectId" element={<SingleProject />} />
               <Route path="chatbots" element={<ChatbotsManagement />} />

@@ -171,7 +171,38 @@ export interface ISheet {
     description: string;
     agentIds: string[];
     agentRowPermissions: IAgentRowPermission[]
-    columnIds: IColumn[];
+    columnIds: SheetColumnForm[];
+}
+export interface IAdminColumnOption {
+    label: string;
+    value: string;
+}
+export enum ColumnType {
+    Text = 'text',
+    Number = 'number',
+    Date = 'date',
+    Select = 'select',
+    Phone = 'phone',
+}
+
+export interface ISheetColumn {
+    _id: string;
+    name: string;
+    dataKey: string;
+    type: ColumnType;
+    options?: IAdminColumnOption[];
+}
+
+export interface SheetRowForm {
+    sheetId: string;
+    rowNumber: number;
+    data: any;
+}
+export interface SheetColumnForm {
+    columnId: ISheetColumn;
+    editable: boolean;
+    required: boolean;
+    order: number;
 }
 
 export interface IProject {
@@ -190,13 +221,6 @@ export interface IProject {
     columnIds: any[];
     excelIds: any[];
     sheetIds: any[];
-}
-export enum ColumnType {
-    Text = 'text',
-    Number = 'number',
-    Date = 'date',
-    Select = 'select',
-    Phone = 'phone',
 }
 
 export interface ISelectOption {

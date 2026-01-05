@@ -11,7 +11,8 @@ import {
     FolderKanban,
     LogOut,
     UserCog,
-    Users
+    Users,
+    Columns
 } from 'lucide-react';
 
 type MenuItem = {
@@ -34,7 +35,7 @@ const menuItems = [
     { id: '/admin/companies', icon: Building2, label: 'Şirkətlər' },
     { id: '/admin/chatbots', icon: Bot, label: 'Chatbot-lar' },
     { divider: true },
-    // { id: '/admin/leads', icon: FolderKanban, label: 'Lead İdarəetmə' },
+    { id: '/admin/columns', icon: Columns, label: 'Sütunlar' },
     // { id: '/admin/supervisors', icon: UserCog, label: 'Supervayzerlər' },
     { id: '/admin/users', icon: Users, label: 'Userlər' },
     { divider: true },

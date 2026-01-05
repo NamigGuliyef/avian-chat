@@ -158,6 +158,17 @@ export class SupervisorController {
 
   @ApiOperation({ summary: 'Excel-dən row-ları import et' })
   @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @UseInterceptors(FileInterceptor('file'))
   @Post('sheet/:sheetId/rows/import')
   @HttpCode(HttpStatus.CREATED)

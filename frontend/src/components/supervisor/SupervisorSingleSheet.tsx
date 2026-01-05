@@ -1,268 +1,150 @@
 "use client";
-import {
-    CardHeader,
-    CardTitle
-} from "../ui/card";
-
-import { addColumnToExcel, getSheetColumns, updateSheetColumn } from "@/api/supervisors";
-import { IColumn } from "@/types/types";
-import { Edit, Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Button } from "../ui/button";
-import { Card, CardContent } from "../ui/card";
-import { Checkbox } from "../ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Badge } from "../ui/badge";
-import { Switch } from "../ui/switch";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "../ui/select";
-import { X } from "lucide-react";
-import { ScrollArea } from "../ui/scroll-area";
+import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
-type ColumnType = "text" | "number" | "date" | "select" | "phone";
-
-interface IColumnOption {
-    label: string;
-    color?: string;
-}
-
-interface IColumnForm {
-    name: string;
-    dataKey: string;
-    type: ColumnType;
-    visibleToUser: boolean;
-    editableByUser: boolean;
-    isRequired: boolean;
-    options: IColumnOption[];
-    phoneNumbers: string[];
-}
-
-const emptyColumn: Partial<any> = {
-    name: "",
-    dataKey: "",
-    type: "text",
-    visibleToUser: true,
-    editableByUser: true,
-    isRequired: false,
-    order: 0,
-    options: [],
-    phoneNumbers: [],
-};
+import {
+    Card,
+    CardContent,
+} from "../ui/card";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { ScrollArea } from "../ui/scroll-area";
+import { Badge } from "../ui/badge";
+import {
+    getColumns, getRows, addRow, updateCell, deleteRow, importFromExcel
+} from "@/api/supervisors";
+import { SheetColumnForm, SheetRowForm } from "@/types/types";
 
 const SupervisorSingleSheet: React.FC = () => {
-    const [columns, setColumns] = useState<IColumn[]>([]);
-    const { excelId, sheetId, sheetName, projectId } = useParams()
-    const navigate = useNavigate()
-    const [isColumnDialogOpen, setIsColumnDialogOpen] = useState(false);
-    const [editingColumn, setEditingColumn] = useState<any | null>(null);
+    const { excelId, sheetId, sheetName } = useParams();
+    const navigate = useNavigate();
 
-    const [columnForm, setColumnForm] = useState<any>(emptyColumn);
-    const [newOptionLabel, setNewOptionLabel] = useState("");
-    const [newPhoneNumber, setNewPhoneNumber] = useState("");
+    // States
+    const [columns, setColumns] = useState<SheetColumnForm[]>([]);
+    const [rows, setRows] = useState<SheetRowForm[]>([]);
+    const [file, setFile] = useState<File | null>(null);
 
-
+    // ---------------- Fetch Columns & Rows ----------------
     useEffect(() => {
-        if (sheetId) {
-            getSheetColumns(sheetId).then(setColumns);
-        }
+        if (sheetId) fetchColumns();
+        if (sheetId) fetchRows();
     }, [sheetId]);
 
-    const handleAddOption = () => {
-        if (!newOptionLabel.trim()) return;
-
-        setColumnForm((prev) => ({
-            ...prev,
-            options: [...prev.options, { label: newOptionLabel }],
-        }));
-
-        setNewOptionLabel("");
-    };
-
-    const handleRemoveOption = (index: number) => {
-        setColumnForm((prev) => ({
-            ...prev,
-            options: prev.options.filter((_, i) => i !== index),
-        }));
-    };
-
-    const handleAddPhoneNumber = () => {
-        if (!newPhoneNumber.trim()) return;
-
-        setColumnForm((prev) => ({
-            ...prev,
-            phoneNumbers: [...prev.phoneNumbers, newPhoneNumber],
-        }));
-
-        setNewPhoneNumber("");
-    };
-
-    const handleRemovePhoneNumber = (index: number) => {
-        const colId = editingColumn._id
-        const phoneNumber = columnForm.phoneNumbers[index]
-        if (columns.find((col) => col._id === colId).phoneNumbers.includes(phoneNumber)) {
-            toast("Bazaya əlavə edilmiş telefon nömrəsi silinə bilməz!")
-        } else {
-            setColumnForm((prev) => ({
-                ...prev,
-                phoneNumbers: prev.phoneNumbers.filter((_, i) => i !== index),
-            }));
+    const fetchColumns = async () => {
+        try {
+            const data = await getColumns(sheetId!);
+            setColumns(data);
+        } catch (e) {
+            toast.error("Sütunlar gətirilərkən xəta baş verdi");
         }
     };
 
-    const handleAddColumn = async () => {
-        const _d = await addColumnToExcel(sheetId, columnForm._id, {
-            ...columnForm,
-            sheetId,
-        });
-        setColumns((pre) => ([...pre, _d]))
-
-        setIsColumnDialogOpen(false);
+    const fetchRows = async () => {
+        try {
+            const data = await getRows(sheetId!, 1, 100);
+            setRows(data);
+        } catch (e) {
+            toast.error("Sətirlər gətirilərkən xəta baş verdi");
+        }
     };
 
-    const handleUpdateColumn = async () => {
-        delete columnForm.sheetId
-        delete columnForm.createdAt
-        delete columnForm.updatedAt
-        delete columnForm._id
-        const _d = await updateSheetColumn(editingColumn._id, {
-            ...columnForm,
-        });
-        setColumns((pre) => pre.map((col) => {
-            if (col._id === editingColumn._id) {
-                return { ...col, ..._d }
-            }
-            return col
-        }))
-        setColumnForm(emptyColumn)
-        setIsColumnDialogOpen(false);
+    // ---------------- Row Actions ----------------
+    const handleAddRow = async () => {
+        // if (!sheetId) return;
+        // const emptyRow: Record<string, any> = {};
+        // columns.forEach(col => emptyRow[col.dataKey] = "");
+        // try {
+        //     const row = await addRow(sheetId, emptyRow);
+        //     setRows(prev => [...prev, row]);
+        // } catch (e) {
+        //     toast.error("Sətir əlavə edilərkən xəta baş verdi");
+        // }
+    };
+
+    const handleUpdateCell = async (rowIndex: number, key: string, value: any) => {
+        if (!sheetId) return;
+        try {
+            await updateCell(sheetId, rowIndex, key, value);
+            setRows(prev => {
+                const updated = [...prev];
+                updated[rowIndex][key] = value;
+                return updated;
+            });
+        } catch (e) {
+            toast.error("Cell yenilənərkən xəta baş verdi");
+        }
+    };
+
+    const handleDeleteRow = async (rowIndex: number) => {
+        if (!sheetId) return;
+        try {
+            await deleteRow(sheetId, rowIndex);
+            setRows(prev => prev.filter((_, i) => i !== rowIndex));
+        } catch (e) {
+            toast.error("Sətir silinərkən xəta baş verdi");
+        }
+    };
+
+    // ---------------- Import Excel ----------------
+    const handleImportExcel = async () => {
+        if (!sheetId || !file) return;
+        try {
+            await importFromExcel(sheetId, file);
+            toast.success("Excel import olundu");
+            fetchRows();
+            setFile(null);
+        } catch (e) {
+            toast.error("Excel import zamanı xəta baş verdi");
+        }
     };
 
     return (
         <div>
             <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">← Geri</Button>
-            <div className="mb-6  flex items-center justify-between">
-                <h2 className="text-2xl font-bold">{sheetName}</h2>
+            <h2 className="text-2xl font-bold mb-6">{sheetName}</h2>
 
-                <Dialog open={isColumnDialogOpen} onOpenChange={(open) => { setIsColumnDialogOpen(open); if (!open) { setEditingColumn(null); setColumnForm({ name: '', dataKey: '', type: 'text', visibleToUser: true, editableByUser: true, isRequired: false, options: [], phoneNumbers: [] }); setNewOptionLabel(''); setNewPhoneNumber(''); } }}>
-                    <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />Yeni Sütun</Button></DialogTrigger>
-                    <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-                        <DialogHeader><DialogTitle>{editingColumn ? 'Sütunu Redaktə Et' : 'Yeni Sütun'}</DialogTitle></DialogHeader>
-                        <div className="space-y-4 mt-4">
-                            <div><Label>Sütun adı</Label><Input value={columnForm.name} onChange={(e) => setColumnForm({ ...columnForm, name: e.target.value })} /></div>
-                            <div><Label>Data açarı</Label><Input value={columnForm.dataKey} onChange={(e) => setColumnForm({ ...columnForm, dataKey: e.target.value })} /></div>
-                            <div><Label>Tip</Label>
-                                <Select value={columnForm.type} onValueChange={(v: ColumnType) => setColumnForm({ ...columnForm, type: v })}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent><SelectItem value="text">Mətn</SelectItem><SelectItem value="number">Rəqəm</SelectItem><SelectItem value="date">Tarix</SelectItem><SelectItem value="select">Seçim</SelectItem><SelectItem value="phone">Telefon</SelectItem></SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Phone type - Number list */}
-                            {columnForm.type === 'phone' && (
-                                <div>
-                                    <Label className="mb-2 block">Telefon nömrələri</Label>
-                                    <div className="space-y-2">
-                                        <div className="flex gap-2">
-                                            <Input
-                                                value={newPhoneNumber}
-                                                onChange={(e) => setNewPhoneNumber(e.target.value)}
-                                                placeholder="+994 XX XXX XX XX"
-                                                onKeyDown={(e) => e.key === 'Enter' && handleAddPhoneNumber()}
-                                            />
-                                            <Button type="button" size="sm" onClick={handleAddPhoneNumber}><Plus className="h-4 w-4" /></Button>
-                                        </div>
-                                        <ScrollArea className="h-24 border rounded-lg p-2">
-                                            {(columnForm.phoneNumbers || []).map((phone, index) => (
-                                                <div key={index} className="flex items-center justify-between py-1 px-2 bg-muted/50 rounded mb-1">
-                                                    <span className="text-sm font-mono">{phone}</span>
-                                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemovePhoneNumber(index)}><X className="h-3 w-3" /></Button>
-                                                </div>
-                                            ))}
-                                            {(columnForm.phoneNumbers || []).length === 0 && (
-                                                <p className="text-xs text-muted-foreground text-center py-2">Nömrə əlavə edin</p>
-                                            )}
-                                        </ScrollArea>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Select type - Options with color */}
-                            {columnForm.type === 'select' && (
-                                <div>
-                                    <Label className="mb-2 block">Seçim variantları</Label>
-                                    <div className="space-y-2">
-                                        <div className="flex gap-2">
-                                            <Input
-                                                value={newOptionLabel}
-                                                onChange={(e) => setNewOptionLabel(e.target.value)}
-                                                placeholder="Variant adı"
-                                                onKeyDown={(e) => e.key === 'Enter' && handleAddOption()}
-                                                className="flex-1"
-                                            />
-                                            <Button type="button" size="sm" onClick={handleAddOption}><Plus className="h-4 w-4" /></Button>
-                                        </div>
-                                        <ScrollArea className="h-32 border rounded-lg p-2">
-                                            {(columnForm.options || []).map((opt, index) => (
-                                                <div key={index} className="flex items-center justify-between py-1.5 px-2 bg-muted/50 rounded mb-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <div
-                                                            className="w-4 h-4 rounded-full border"
-                                                            style={{ backgroundColor: opt.color || '#3B82F6' }}
-                                                        />
-                                                        <span className="text-sm">{opt.label}</span>
-                                                    </div>
-                                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveOption(index)}><X className="h-3 w-3" /></Button>
-                                                </div>
-                                            ))}
-                                            {(columnForm.options || []).length === 0 && (
-                                                <p className="text-xs text-muted-foreground text-center py-2">Variant əlavə edin</p>
-                                            )}
-                                        </ScrollArea>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="flex items-center justify-between"><Label>Məcburi</Label><Switch checked={columnForm.isRequired} onCheckedChange={(c) => setColumnForm({ ...columnForm, isRequired: c })} /></div>
-                            <div className="flex items-center justify-between"><Label>Görünən</Label><Switch checked={columnForm.visibleToUser} onCheckedChange={(c) => setColumnForm({ ...columnForm, visibleToUser: c })} /></div>
-                            <div className="flex items-center justify-between"><Label>Redaktə edilə bilən</Label><Switch checked={columnForm.editableByUser} onCheckedChange={(c) => setColumnForm({ ...columnForm, editableByUser: c })} /></div>
-                            <Button className="w-full" onClick={editingColumn ? handleUpdateColumn : handleAddColumn}>{editingColumn ? 'Yenilə' : 'Əlavə et'}</Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
-
+            {/* Import Excel & Add Row */}
+            <div className="flex gap-2 items-center mb-6">
+                <Input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                <Button onClick={handleImportExcel}>Import Excel</Button>
+                <Button onClick={handleAddRow}>Yeni Sətir</Button>
             </div>
-            {/* <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"> */}
-            <div className="space-y-2">
-                {columns.map((col) => (
-                    <Card key={col._id}>
-                        <CardContent className="flex items-center justify-between p-3">
-                            <div>
-                                <p className="font-medium">{col.name}</p>
-                                <p className="text-xs text-muted-foreground">{col.dataKey} • {col.type}{col.type === 'select' && col.options && ` (${col.options.length} variant)`}</p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                {col.isRequired && <Badge>Məcburi</Badge>}
-                                <Badge variant={col.visibleToUser ? "default" : "secondary"}>{col.visibleToUser ? 'Görünür' : 'Gizli'}</Badge>
-                                <Button variant="ghost" size="icon" onClick={() => {
-                                    setEditingColumn(col);
-                                    setColumnForm(col);
-                                    setIsColumnDialogOpen(true);
-                                }}><Edit className="h-4 w-4" /></Button>
-                                {/* <Button variant="ghost" size="icon" onClick={() => handleDeleteColumn(col.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button> */}
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
+
+            {/* Rows Table */}
+            <ScrollArea className="border rounded-lg p-2">
+                <table className="w-full table-auto border-collapse">
+                    <thead>
+                        <tr>
+                            {columns.sort((a, b) => b.order - a.order).map((c) => c.columnId).map(col => <th key={col._id} className="border p-1">{col.name}</th>)}
+                            {/* <th className="border p-1">Əməliyyatlar</th> */}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.map((row, rowIndex) => (
+                            <tr key={rowIndex} className="border-b">
+                                {Object.values(row.data).map((val: string) => {
+                                    return (
+                                        <td key={val} className="border p-1">
+                                            <Input
+                                                value={val}
+                                                onChange={(e) => handleUpdateCell(rowIndex, val, e.target.value)}
+                                                className="w-full"
+                                            />
+                                        </td>
+                                    )
+                                })}
+
+                                <td className="border p-1">
+                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteRow(rowIndex)}>
+                                        Sil
+                                    </Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+
+                </table>
+            </ScrollArea>
         </div>
     );
 };

@@ -11,7 +11,8 @@ import { SheetRow } from "src/excel/model/row-schema";
 import { Sheet, SheetColumn } from "src/excel/model/sheet.schema";
 import { Project } from "src/project/model/project.schema";
 import { User } from "src/user/model/user.schema";
-import XLSX from "xlsx";
+import * as XLSX from 'xlsx';
+
 
 
 @Injectable()
@@ -152,11 +153,11 @@ export class SupervisorService {
       name: createSheetData.name,
       description: createSheetData.description,
       agentIds: createSheetData.agentIds ?? [],
-      columns: [], // initially empty
+      columnIds: createSheetData.columnIds ?? []
     });
 
     /* 4. Sheet ID-lərin əlaqələndirilməsi */
-    project.sheetIds.push(newSheet._id);
+    // project.sheetIds.push(newSheet._id);
     excel.sheetIds.push(newSheet._id);
 
     await Promise.all([
@@ -272,7 +273,11 @@ export class SupervisorService {
   async getColumnsOfSheet(sheetId: string) {
     const sheet = await this.sheetModel
       .findById(sheetId)
-      .populate('columnIds.columnId');
+      .populate({
+        path: 'columnIds.columnId', // nested path
+        model: 'Column', // optional, amma tövsiyə olunur
+        select: 'name dataKey options type'
+      });
 
     if (!sheet) {
       throw new NotFoundException('Sheet tapılmadı');
