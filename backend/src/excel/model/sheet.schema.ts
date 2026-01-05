@@ -20,7 +20,7 @@ export class Sheet {
   agentIds: Types.ObjectId[];
 
   @Prop({ default: [] })
-  columns: SheetColumn[];
+  columnIds: SheetColumn[];
 }
 
 

@@ -1,13 +1,24 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateExcelDto } from "src/excel/dto/create-excel.dto";
-import { SupervisorService } from "./supervisor.service";
 import { CreateSheetColumnDto, CreateSheetDto } from "src/excel/dto/create-sheet.dto";
 import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
-import { Types } from "mongoose";
-
-import { SheetColumn } from "src/excel/model/sheet.schema";
 import { UpdateSheetColumnDto, UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
+import { SupervisorService } from './supervisor.service';
 
 @ApiTags("supervisor")
 @Controller('supervisor')
@@ -129,6 +140,103 @@ export class SupervisorController {
   @HttpCode(HttpStatus.OK)
   async getColumnsOfSheet(@Param('sheetId') sheetId: string) {
     return await this.supervisorService.getColumnsOfSheet(sheetId);
+  }
+
+  // row
+
+  @ApiOperation({ summary: 'Sheet-ə yeni row əlavə et' })
+  @Post('sheet/:sheetId/rows')
+  @HttpCode(HttpStatus.CREATED)
+  addRow(
+    @Param('sheetId') sheetId: string,
+    @Body() data: Record<string, any>,
+  ) {
+    return this.supervisorService.addRow(sheetId, data);
+  }
+
+  // -----------------------------------------------------
+
+  @ApiOperation({ summary: 'Excel-dən row-ları import et' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('sheet/:sheetId/rows/import')
+  @HttpCode(HttpStatus.CREATED)
+  importFromExcel(
+    @Param('sheetId') sheetId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.supervisorService.importFromExcel(sheetId, file);
+  }
+
+  // -----------------------------------------------------
+
+  @ApiOperation({ summary: 'Sheet-ə aid row-ları gətir (pagination)' })
+  @Get('sheet/:sheetId/rows')
+  @HttpCode(HttpStatus.OK)
+  getRows(
+    @Param('sheetId') sheetId: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '50',
+  ) {
+    return this.supervisorService.getRows(
+      sheetId,
+      Number(page),
+      Number(limit),
+    );
+  }
+
+  // -----------------------------------------------------
+
+  @ApiOperation({ summary: 'Row-u tam update et' })
+  @Patch('sheet/:sheetId/rows/:rowNumber')
+  @HttpCode(HttpStatus.OK)
+  updateRow(
+    @Param('sheetId') sheetId: string,
+    @Param('rowNumber') rowNumber: string,
+    @Body() data: Record<string, any>,
+  ) {
+    return this.supervisorService.updateRow(
+      sheetId,
+      Number(rowNumber),
+      data,
+    );
+  }
+
+  // -----------------------------------------------------
+
+  @ApiOperation({ summary: 'Row-un tək bir cell-ni update et' })
+  @Patch('sheet/:sheetId/rows/:rowNumber/cell')
+  @HttpCode(HttpStatus.OK)
+  updateCell(
+    @Param('sheetId') sheetId: string,
+    @Param('rowNumber') rowNumber: string,
+    @Body()
+    body: {
+      key: string;
+      value: any;
+    },
+  ) {
+    return this.supervisorService.updateCell(
+      sheetId,
+      Number(rowNumber),
+      body.key,
+      body.value,
+    );
+  }
+
+  // -----------------------------------------------------
+
+  @ApiOperation({ summary: 'Row sil (rowNumber reindex edilir)' })
+  @Delete('sheet/:sheetId/rows/:rowNumber')
+  @HttpCode(HttpStatus.OK)
+  deleteRow(
+    @Param('sheetId') sheetId: string,
+    @Param('rowNumber') rowNumber: string,
+  ) {
+    return this.supervisorService.deleteRow(
+      sheetId,
+      Number(rowNumber),
+    );
   }
 
 }

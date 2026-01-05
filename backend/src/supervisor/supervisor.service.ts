@@ -1,16 +1,17 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { CreateAdminColumnDto } from "src/excel/dto/create-column.dto";
 import { CreateExcelDto } from "src/excel/dto/create-excel.dto";
-import { CreateSheetColumnDto, CreateSheetDto } from "src/excel/dto/create-sheet.dto";
+import { CreateSheetDto } from "src/excel/dto/create-sheet.dto";
 import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
 import { UpdateSheetColumnDto, UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
 import { Column } from "src/excel/model/column.schema";
 import { Excel } from "src/excel/model/excel.schema";
+import { SheetRow } from "src/excel/model/row-schema";
 import { Sheet, SheetColumn } from "src/excel/model/sheet.schema";
 import { Project } from "src/project/model/project.schema";
 import { User } from "src/user/model/user.schema";
+import XLSX from "xlsx";
 
 
 @Injectable()
@@ -21,6 +22,7 @@ export class SupervisorService {
     @InjectModel(Sheet.name) private sheetModel: Model<Sheet>,
     @InjectModel(Column.name) private columnModel: Model<Column>,
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(SheetRow.name) private sheetRowModel: Model<SheetRow>,
 
   ) { }
 
@@ -215,7 +217,7 @@ export class SupervisorService {
     }
 
     // Sheet-də eyni column varsa, blokla
-    const exists = sheet.columns.some(
+    const exists = sheet.columnIds.some(
       (c) => c.columnId.toString() === column._id.toString(),
     );
 
@@ -223,12 +225,12 @@ export class SupervisorService {
       throw new BadRequestException('Bu column artıq sheet-ə əlavə olunub');
     }
 
-    sheet.columns.push({
+    sheet.columnIds.push({
       columnId: column._id,
       editable: createColumnData.editable ?? true,
       required: createColumnData.required ?? false,
       agentId: createColumnData.agentId ?? null,
-      order: sheet.columns.length + 1,
+      order: sheet.columnIds.length + 1,
     });
 
     await sheet.save();
@@ -247,7 +249,7 @@ export class SupervisorService {
       throw new NotFoundException('Sheet tapılmadı');
     }
 
-    const columnConfig = sheet.columns.find(
+    const columnConfig = sheet.columnIds.find(
       (c) => c.columnId.toString() === columnId,
     );
 
@@ -270,13 +272,126 @@ export class SupervisorService {
   async getColumnsOfSheet(sheetId: string) {
     const sheet = await this.sheetModel
       .findById(sheetId)
-      .populate('columns.columnId');
+      .populate('columnIds.columnId');
 
     if (!sheet) {
       throw new NotFoundException('Sheet tapılmadı');
     }
 
-    return sheet.columns;
+    return sheet.columnIds;
+  }
+  // row-lara aid isler
+
+  async addRow(sheetId: string, data: Record<string, any>) {
+    const sheet = await this.sheetModel.findById(sheetId);
+    if (!sheet) throw new NotFoundException('Sheet tapılmadı');
+
+    const lastRow = await this.sheetRowModel
+      .findOne({ sheetId })
+      .sort({ rowNumber: -1 });
+
+    const rowNumber = lastRow ? lastRow.rowNumber + 1 : 1;
+
+    return await this.sheetRowModel.create({
+      sheetId,
+      rowNumber,
+      data,
+    });
   }
 
+  async importFromExcel(sheetId: string, file: Express.Multer.File) {
+    const sheet = await this.sheetModel.findById(sheetId);
+    if (!sheet) throw new NotFoundException('Sheet tapılmadı');
+
+    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+    const rows = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet, {
+      defval: null,
+    });
+
+    if (!rows.length) {
+      throw new BadRequestException('Excel boşdur');
+    }
+
+    const lastRow = await this.sheetRowModel
+      .findOne({ sheetId })
+      .sort({ rowNumber: -1 });
+
+    let rowNumber = lastRow ? lastRow.rowNumber + 1 : 1;
+
+    const docs = rows.map((row) => ({
+      sheetId,
+      rowNumber: rowNumber++,
+      data: row,
+    }));
+
+    await this.sheetRowModel.insertMany(docs, { ordered: false });
+
+    return {
+      inserted: docs.length,
+    };
+  }
+
+  // ---------------- GET ROWS ----------------
+  async getRows(sheetId: string, page = 1, limit = 50) {
+    const skip = (page - 1) * limit;
+
+    const [rows, total] = await Promise.all([
+      this.sheetRowModel
+        .find({ sheetId })
+        .sort({ rowNumber: 1 })
+        .skip(skip)
+        .limit(limit),
+      this.sheetRowModel.countDocuments({ sheetId }),
+    ]);
+
+    return { data: rows, total, page, limit };
+  }
+
+  // ---------------- UPDATE ROW ----------------
+  async updateRow(sheetId: string, rowNumber: number, data: Record<string, any>) {
+    const row = await this.sheetRowModel.findOneAndUpdate(
+      { sheetId, rowNumber },
+      { $set: { data } },
+      { new: true },
+    );
+
+    if (!row) throw new NotFoundException('Row tapılmadı');
+    return row;
+  }
+
+  // ---------------- UPDATE CELL ----------------
+  async updateCell(
+    sheetId: string,
+    rowNumber: number,
+    key: string,
+    value: any,
+  ) {
+    const row = await this.sheetRowModel.findOneAndUpdate(
+      { sheetId, rowNumber },
+      { $set: { [`data.${key}`]: value } },
+      { new: true },
+    );
+
+    if (!row) throw new NotFoundException('Row tapılmadı');
+    return row;
+  }
+
+  // ---------------- DELETE ROW ----------------
+  async deleteRow(sheetId: string, rowNumber: number) {
+    const deleted = await this.sheetRowModel.findOneAndDelete({
+      sheetId,
+      rowNumber,
+    });
+
+    if (!deleted) throw new NotFoundException('Row tapılmadı');
+
+    await this.sheetRowModel.updateMany(
+      { sheetId, rowNumber: { $gt: rowNumber } },
+      { $inc: { rowNumber: -1 } },
+    );
+
+    return { success: true };
+  }
 }
