@@ -6,10 +6,14 @@ import { CreateChannelDto } from 'src/channel/dto/create-channel.dto';
 import { Channel } from 'src/channel/model/channel.schema';
 import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
 import { Company } from 'src/company/model/company.schema';
+import { CreateAdminColumnDto } from 'src/excel/dto/create-column.dto';
+import { UpdateAdminColumnDto } from 'src/excel/dto/update-column.dto';
+import { Column } from 'src/excel/model/column.schema';
 import { hashPassword } from 'src/helper/hashpass';
 import { CreateProjectDto } from 'src/project/dto/create-project.dto';
 import { Project } from 'src/project/model/project.schema';
 import { User } from 'src/user/model/user.schema';
+
 
 @Injectable()
 export class AdminService {
@@ -19,6 +23,8 @@ export class AdminService {
     @InjectModel(Project.name) private readonly projectModel: Model<Project>,
     @InjectModel(Channel.name) private readonly channelModel: Model<Channel>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(Column.name) private readonly columnModel: Model<Column>,
+
   ) { }
 
 
@@ -369,7 +375,7 @@ export class AdminService {
   ): Promise<{
     data: User[]; total: number; totalPages: number; currentPage: number;
   }> {
-  
+
     const limit = 10;
     const skip = (page - 1) * limit;
     const filter: any = { isDeleted: false };
@@ -385,7 +391,7 @@ export class AdminService {
         { email: { $regex: query, $options: 'i' } },
       ];
     }
-    
+
     const [data, total] = await Promise.all([
       this.userModel.find(filter).select('-password').skip(skip).limit(limit).sort({ createdAt: -1 })
         .populate({ path: 'projectIds', select: 'name createdAt' }).exec(),
@@ -419,6 +425,32 @@ export class AdminService {
     return {
       message: "İstifadəçi uğurla ləğv edildi",
     }
+  }
+  // Column
+  // ---------------- Column ---------------- //
+
+  async createColumn(data: CreateAdminColumnDto) {
+    return await this.columnModel.create(data);
+  }
+
+  async getColumns() {
+    return await this.columnModel.find().sort({ createdAt: -1 });
+  }
+
+  async getColumnById(columnId: string) {
+    return await this.columnModel.findById(columnId);
+  }
+
+  async updateColumn(columnId: string, data: UpdateAdminColumnDto) {
+    return await this.columnModel.findByIdAndUpdate(
+      columnId,
+      data,
+      { new: true }
+    );
+  }
+
+  async deleteColumn(columnId: string) {
+    return await this.columnModel.findByIdAndDelete(columnId);
   }
 
 

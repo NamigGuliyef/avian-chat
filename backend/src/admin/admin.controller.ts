@@ -6,6 +6,8 @@ import { CreateProjectDto } from 'src/project/dto/create-project.dto';
 import { CreateChannelDto } from 'src/channel/dto/create-channel.dto';
 import { Types } from 'mongoose';
 import { CreateUserDto } from 'src/auth/dto/create-user.dto';
+import { CreateAdminColumnDto } from 'src/excel/dto/create-column.dto';
+import { UpdateAdminColumnDto } from 'src/excel/dto/update-column.dto';
 
 @ApiTags('admin')
 @Controller('admin')
@@ -274,6 +276,48 @@ export class AdminController {
   @HttpCode(HttpStatus.OK)
   async deleteUser(@Param('userId') userId: string) {
     return this.adminService.deleteUser(userId);
+  }
+
+
+  // columns
+  @ApiOperation({ summary: 'Create column' })
+  @ApiBody({ type: CreateAdminColumnDto })
+  @Post('column')
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() dto: CreateAdminColumnDto) {
+    return this.adminService.createColumn(dto);
+  }
+
+  @ApiOperation({ summary: 'Get all columns' })
+  @Get('column')
+  @HttpCode(HttpStatus.OK)
+  findAll() {
+    return this.adminService.getColumns();
+  }
+
+  @ApiOperation({ summary: 'Get column by id' })
+  @Get('column/:id')
+  @HttpCode(HttpStatus.OK)
+  findOne(@Param('id') id: string) {
+    return this.adminService.getColumnById(id);
+  }
+
+  @ApiOperation({ summary: 'Update column' })
+  @ApiBody({ type: UpdateAdminColumnDto })
+  @Patch('column/:id')
+  @HttpCode(HttpStatus.OK)
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateAdminColumnDto
+  ) {
+    return this.adminService.updateColumn(id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete column' })
+  @Delete('column/:id')
+  @HttpCode(HttpStatus.OK)
+  remove(@Param('id') id: string) {
+    return this.adminService.deleteColumn(id);
   }
 
 }

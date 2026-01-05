@@ -4,10 +4,9 @@ import { CreateExcelDto } from "src/excel/dto/create-excel.dto";
 import { SupervisorService } from "./supervisor.service";
 import { CreateSheetDto } from "src/excel/dto/create-sheet.dto";
 import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
-import { CreateColumnDto } from "src/excel/dto/create-column.dto";
 import { Types } from "mongoose";
-import { UpdateColumnDto } from "src/excel/dto/update-column.dto";
 import { UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
+import { SheetColumn } from "src/excel/model/sheet.schema";
 
 @ApiTags("supervisor")
 @Controller('supervisor')
@@ -98,30 +97,32 @@ export class SupervisorController {
 
 
   @ApiOperation({ summary: " Sheet-ə column əlavə et" })
-  @ApiBody(
-    { type: CreateColumnDto }
-  )
+  // Todo: Nam, bura bax z.o, comment-i aca bilmedim. 
+  // @ApiBody(
+  //   { type: SheetColumn }
+  // )
   @Post('sheet/:sheetId/column/:columnId')
   @HttpCode(HttpStatus.CREATED)
   async addColumnToSheet(
     @Param('sheetId') sheetId: string,
-    @Body() createColumnData: CreateColumnDto
+    @Body() createColumnData: SheetColumn
   ) {
     return await this.supervisorService.addColumnToSheet(sheetId, createColumnData);
   }
 
 
   @ApiOperation({ summary: " Sheet-ə aid column-ları yenilə" })
-  @ApiBody(
-    { type: UpdateColumnDto }
-  )
-  @Patch('column/:columnId')
+  // @ApiBody(
+  //   { type: UpdateColumnDto }
+  // )
+  @Patch('sheet/:sheetId/column/:columnId')
   @HttpCode(HttpStatus.OK)
   async updateColumnInSheet(
+    @Param('sheetId') sheetId: string,
     @Param('columnId') columnId: string,
-    @Body() updateColumnData: UpdateColumnDto
+    @Body() updateColumnData: SheetColumn
   ) {
-    return await this.supervisorService.updateColumnInSheet(columnId, updateColumnData);
+    return await this.supervisorService.updateColumnInSheet(sheetId, columnId, updateColumnData);
   }
 
 
