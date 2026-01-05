@@ -7,6 +7,7 @@ import { Project, ProjectSchema } from 'src/project/model/project.schema';
 import { Channel } from 'diagnostics_channel';
 import { ChannelSchema } from 'src/channel/model/channel.schema';
 import { User, UserSchema } from 'src/user/model/user.schema';
+import { Column, ColumnSchema } from 'src/excel/model/column.schema';
 
 @Module({
   imports: [MongooseModule.forFeature([
@@ -14,6 +15,7 @@ import { User, UserSchema } from 'src/user/model/user.schema';
     { name: Project.name, schema: ProjectSchema },
     { name: Channel.name, schema: ChannelSchema },
     { name: User.name, schema: UserSchema },
+    { name: Column.name, schema: ColumnSchema }
   ])],
   controllers: [AdminController],
   providers: [AdminService],

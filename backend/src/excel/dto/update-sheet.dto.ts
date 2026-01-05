@@ -1,27 +1,20 @@
-import { IsOptional, IsString, IsArray, ValidateNested, IsNumber, IsNotEmpty } from 'class-validator';
-import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Types } from 'mongoose';
+import { SheetColumn } from '../model/sheet.schema';
 
-export class AgentRowPermissionDto {
-
-  @ApiProperty({ description: "Agent-in ID-si", example: 'user-1' })
-  @IsNotEmpty()
-  agentId: Types.ObjectId;
-
-  @ApiProperty({ description: 'Başlanğıc sətir (start)', example: 1, required: false })
-  @IsOptional()
-  @IsNumber()
-  startRow: number;
-
-
-  @ApiProperty({ description: 'Son sətir (end)', example: 100, required: false })
-  @IsOptional()
-  @IsNumber()
-  endRow: number;
-}
 
 export class UpdateSheetDto {
+  @ApiProperty({ description: 'Excel-in ID-si', example: 'excel-1' })
+  @IsNotEmpty()
+  @IsString()
+  excelId: string;
+
+  @ApiProperty({ description: 'Layihənin (project) ID-si', example: 'proj-1' })
+  @IsNotEmpty()
+  @IsString()
+  projectId: string;
+
   @ApiProperty({ description: 'Sheet adı', example: 'Yanvar satışları' })
   @IsNotEmpty()
   @IsString()
@@ -37,11 +30,32 @@ export class UpdateSheetDto {
   @IsArray()
   agentIds: Types.ObjectId[];
 
-
-  @ApiProperty({ description: 'Agentlərin sətir icazələri', type: [AgentRowPermissionDto], required: false })
+  @ApiProperty({ description: 'Bu sheet-ə aid sütunlar', required: false })
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AgentRowPermissionDto)
-  agentRowPermissions: AgentRowPermissionDto[];
+  columnIds: SheetColumn[];
+}
+
+
+export class UpdateSheetColumnDto {
+
+  @ApiProperty({ description: 'Sütunun ID-si', example: 'column-1' })
+  @IsOptional()
+  columnId: Types.ObjectId;
+
+  @ApiProperty({ description: 'Sütunun redaktə olunma qabiliyyəti', example: true })
+  @IsOptional()
+  editable: boolean;
+
+  @ApiProperty({ description: 'Sütunun doldurulma məcburiyyəti', example: true })
+  @IsOptional()
+  required: boolean;
+
+  @ApiProperty({ description: 'Sütunun aid olduğu agentin ID-si', example: 'agent-1' })
+  @IsOptional()
+  agentId: Types.ObjectId;
+
+  @ApiProperty({ description: 'Sütunun sıralama nömrəsi', example: 1 })
+  @IsOptional()
+  order: number;
 }

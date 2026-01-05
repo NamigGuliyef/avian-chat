@@ -35,3 +35,27 @@ export class CreateSheetDto {
   @IsArray()
   columnIds: SheetColumn[];
 }
+
+
+export class CreateSheetColumnDto {
+
+  @ApiProperty({ description: 'Sütunun ID-si', example: 'column-1' })
+  @IsOptional()
+  columnId: Types.ObjectId;
+
+  @ApiProperty({ description: 'Sütunun redaktə olunma qabiliyyəti', example: true })
+  @IsOptional()
+  editable: boolean;
+
+  @ApiProperty({ description: 'Sütunun doldurulma məcburiyyəti', example: true })
+  @IsOptional()
+  required: boolean;
+
+  @ApiProperty({ description: 'Sütunun aid olduğu agentin ID-si', example: 'agent-1' })
+  @IsOptional()
+  agentId: Types.ObjectId;
+
+  @ApiProperty({ description: 'Sütunun sıralama nömrəsi', example: 1 })
+  @IsOptional()
+  order: number;
+}

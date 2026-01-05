@@ -3,9 +3,9 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { CreateAdminColumnDto } from "src/excel/dto/create-column.dto";
 import { CreateExcelDto } from "src/excel/dto/create-excel.dto";
-import { CreateSheetDto } from "src/excel/dto/create-sheet.dto";
+import { CreateSheetColumnDto, CreateSheetDto } from "src/excel/dto/create-sheet.dto";
 import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
-import { UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
+import { UpdateSheetColumnDto, UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
 import { Column } from "src/excel/model/column.schema";
 import { Excel } from "src/excel/model/excel.schema";
 import { Sheet, SheetColumn } from "src/excel/model/sheet.schema";
@@ -240,7 +240,7 @@ export class SupervisorService {
   async updateColumnInSheet(
     sheetId: string,
     columnId: string,
-    updateColumnData: SheetColumn,
+    updateColumnData: UpdateSheetColumnDto,
   ) {
     const sheet = await this.sheetModel.findById(sheetId);
     if (!sheet) {

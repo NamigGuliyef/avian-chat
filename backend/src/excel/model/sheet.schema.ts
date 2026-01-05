@@ -24,11 +24,21 @@ export class Sheet {
 }
 
 
-export interface SheetColumn {
+@Schema({ versionKey: false, timestamps: true })
+export class SheetColumn {
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Column' })
   columnId: Types.ObjectId;
+
+  @Prop({ default: true })
   editable: boolean;
+
+  @Prop({ default: false })
   required: boolean;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null })
   agentId: Types.ObjectId;
+
+  @Prop()
   order: number;
 }
 

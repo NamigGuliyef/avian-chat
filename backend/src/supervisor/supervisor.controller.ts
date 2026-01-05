@@ -2,11 +2,12 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from 
 import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CreateExcelDto } from "src/excel/dto/create-excel.dto";
 import { SupervisorService } from "./supervisor.service";
-import { CreateSheetDto } from "src/excel/dto/create-sheet.dto";
+import { CreateSheetColumnDto, CreateSheetDto } from "src/excel/dto/create-sheet.dto";
 import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
 import { Types } from "mongoose";
-import { UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
+
 import { SheetColumn } from "src/excel/model/sheet.schema";
+import { UpdateSheetColumnDto, UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
 
 @ApiTags("supervisor")
 @Controller('supervisor')
@@ -98,29 +99,26 @@ export class SupervisorController {
 
   @ApiOperation({ summary: " Sheet-ə column əlavə et" })
   // Todo: Nam, bura bax z.o, comment-i aca bilmedim. 
-  // @ApiBody(
-  //   { type: SheetColumn }
-  // )
+  @ApiBody(
+    { type: CreateSheetColumnDto }
+  )
   @Post('sheet/:sheetId/column/:columnId')
   @HttpCode(HttpStatus.CREATED)
   async addColumnToSheet(
     @Param('sheetId') sheetId: string,
-    @Body() createColumnData: SheetColumn
+    @Body() createColumnData: CreateSheetColumnDto
   ) {
     return await this.supervisorService.addColumnToSheet(sheetId, createColumnData);
   }
 
 
   @ApiOperation({ summary: " Sheet-ə aid column-ları yenilə" })
-  // @ApiBody(
-  //   { type: UpdateColumnDto }
-  // )
   @Patch('sheet/:sheetId/column/:columnId')
   @HttpCode(HttpStatus.OK)
   async updateColumnInSheet(
     @Param('sheetId') sheetId: string,
     @Param('columnId') columnId: string,
-    @Body() updateColumnData: SheetColumn
+    @Body() updateColumnData: UpdateSheetColumnDto
   ) {
     return await this.supervisorService.updateColumnInSheet(sheetId, columnId, updateColumnData);
   }
