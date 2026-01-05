@@ -21,7 +21,7 @@ const SupervisorProjects: React.FC = () => {
     const navigate = useNavigate()
 
     useEffect(() => {
-        getSupervisorProjects('69511a96fb49f4fb17d67331').then((d) => {
+        getSupervisorProjects('695bdaeff2405115af596e24').then((d) => {
             console.log('dasssa', d)
             setSupervisorProjects(d)
         })

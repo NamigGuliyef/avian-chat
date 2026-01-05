@@ -1,5 +1,5 @@
 import axios from "."
-import { IUser, Roles } from "@/types/types";
+import { IUser, Roles, SheetColumnForm, SheetRowForm } from "@/types/types";
 
 export const searchUsers = async (params?: {
     query: string;
@@ -34,7 +34,12 @@ export const getSheetsByExcelId = async (excelId) => {
     const { data } = await axios.get(`/user/sheets/excel/${excelId}`);
     return data;
 }
-export const getColumnsBySheetId = async (sheetId) => {
+export const getColumnsBySheetId = async (sheetId): Promise<IUserSheetResponse> => {
     const { data } = await axios.get(`/user/columns/sheet/${sheetId}`);
     return data;
+}
+
+export interface IUserSheetResponse {
+    columns: SheetColumnForm[];
+    rows: SheetRowForm[];
 }

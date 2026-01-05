@@ -158,10 +158,13 @@ export interface IExcel {
     agentIds: IUser[];
     sheetIds: ISheet[];
 }
+
 export interface IAgentRowPermission {
     agentId: string;
-    startRow: number;
-    endRow: number;
+    name: string;
+    surname: string;
+    startRow: string;
+    endRow: string;
 }
 export interface ISheet {
     _id: string;
@@ -169,7 +172,7 @@ export interface ISheet {
     excelId: string;
     name: string;
     description: string;
-    agentIds: string[];
+    agentIds: IAgentRowPermission[];
     agentRowPermissions: IAgentRowPermission[]
     columnIds: SheetColumnForm[];
 }

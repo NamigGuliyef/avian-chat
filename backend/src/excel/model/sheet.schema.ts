@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Types } from 'mongoose';
+import { AgentRowPermission } from './agent-row-permission.schema';
 
 
 @Schema({ timestamps: true, versionKey: false })
@@ -17,12 +18,11 @@ export class Sheet {
   description: string;
 
   @Prop({ type: [Types.ObjectId], ref: 'User' })
-  agentIds: Types.ObjectId[];
+  agentIds: AgentRowPermission[];
 
   @Prop({ default: [] })
   columnIds: SheetColumn[];
 }
-
 
 @Schema({ versionKey: false, timestamps: true })
 export class SheetColumn {
@@ -52,3 +52,5 @@ export interface ISheetRow {
 
 
 export const SheetSchema = SchemaFactory.createForClass(Sheet);
+export const SheetColumnSchema = SchemaFactory.createForClass(SheetColumn);
+

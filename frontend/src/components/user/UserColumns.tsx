@@ -31,50 +31,52 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { getColumnsBySheetId } from "@/api/users"
-import { ColumnType, IColumn } from "@/types/types"
-
+import { getColumnsBySheetId, IUserSheetResponse } from "@/api/users"
+import { ColumnType, SheetColumnForm, SheetRowForm } from "@/types/types"
 
 type RowData = Record<string, any>
 
 const UserColumns = () => {
     const { sheetId, sheetName } = useParams()
     const navigate = useNavigate()
-
-    const [columns, setColumns] = useState<IColumn[]>([])
-    const [data, setData] = useState<RowData[]>([])
-
+    const [data, setData] = useState<IUserSheetResponse>({
+        columns: [],
+        rows: [],
+    })
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-    const [columnVisibility, setColumnVisibility] =
-        useState<VisibilityState>({})
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = useState({})
 
     useEffect(() => {
         if (sheetId) {
-            getColumnsBySheetId(sheetId).then(setColumns)
+            getColumnsBySheetId(sheetId).then(res => {
+                // Transform rows for table
+                const transformedRows = res.rows.map(row => ({
+                    ...row,
+                    ...row.data // move data keys to top-level for table accessorKey
+                }))
+                setData({
+                    columns: res.columns,
+                    rows: transformedRows
+                })
+            })
         }
     }, [sheetId])
 
-    const visibleColumns = useMemo(
-        () =>
-            columns
-                .filter(c => c.visibleToUser)
-                .sort((a, b) => a.order - b.order),
-        [columns]
-    )
-
     const updateCell = (rowIndex: number, key: string, value: any) => {
-        setData(old =>
-            old.map((row, i) =>
+        setData(prev => ({
+            ...prev,
+            rows: prev.rows.map((row, i) =>
                 i === rowIndex ? { ...row, [key]: value } : row
-            )
-        )
+            ),
+        }))
     }
 
-    const tableColumns = useMemo<ColumnDef<RowData>[]>(() =>
-        visibleColumns.map(col => ({
-            accessorKey: col.dataKey,
+    const tableColumns = useMemo<ColumnDef<RowData>[]>(() => {
+        return data.columns.map(col => ({
+            id: col.columnId.name,
+            accessorKey: col.columnId.name,
             header: ({ column }) => (
                 <Button
                     variant="ghost"
@@ -83,21 +85,17 @@ const UserColumns = () => {
                         column.toggleSorting(column.getIsSorted() === "asc")
                     }
                 >
-                    {col.name}
+                    {col.columnId.name}
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             ),
             cell: ({ row, getValue }) => {
                 const value = getValue()
+                if (!col.editable) return <span className="text-sm">{String(value ?? "")}</span>
 
-                if (!col.editableByUser) {
-                    return <span className="text-sm">{String(value as any)}</span>
-                }
+                const onChange = (v: any) => updateCell(row.index, col.columnId.name, v)
 
-                const onChange = (v: any) =>
-                    updateCell(row.index, col.dataKey, v)
-
-                switch (col.type) {
+                switch (col.columnId.type) {
                     case ColumnType.Select:
                         return (
                             <select
@@ -106,14 +104,13 @@ const UserColumns = () => {
                                 onChange={e => onChange(e.target.value)}
                             >
                                 <option value="">—</option>
-                                {col.options.map(opt => (
+                                {col.columnId.options.map(opt => (
                                     <option key={opt.value} value={opt.value}>
                                         {opt.label}
                                     </option>
                                 ))}
                             </select>
                         )
-
                     case ColumnType.Number:
                         return (
                             <Input
@@ -122,7 +119,6 @@ const UserColumns = () => {
                                 onChange={e => onChange(Number(e.target.value))}
                             />
                         )
-
                     case ColumnType.Date:
                         return (
                             <Input
@@ -131,7 +127,6 @@ const UserColumns = () => {
                                 onChange={e => onChange(e.target.value)}
                             />
                         )
-
                     default:
                         return (
                             <Input
@@ -141,19 +136,14 @@ const UserColumns = () => {
                         )
                 }
             },
-        })),
-        [visibleColumns]
-    )
+        }))
+    }, [data.columns])
+
 
     const table = useReactTable({
-        data,
+        data: data.rows,
         columns: tableColumns,
-        state: {
-            sorting,
-            columnFilters,
-            columnVisibility,
-            rowSelection,
-        },
+        state: { sorting, columnFilters, columnVisibility, rowSelection },
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
         onColumnVisibilityChange: setColumnVisibility,
@@ -164,11 +154,11 @@ const UserColumns = () => {
         getPaginationRowModel: getPaginationRowModel(),
     })
 
-    const addRow = () => {
-        const row: RowData = {}
-        visibleColumns.forEach(c => (row[c.dataKey] = ""))
-        setData(prev => [...prev, row])
-    }
+    // const addRow = () => {
+    //     const row: RowData = {}
+    //     data.columns.forEach(c => (row[c.columnId.name] = ""))
+    //     // setData(prev => ({ ...prev, rows: [...prev.rows, row] }))
+    // }
 
     return (
         <div className="flex-1 p-4">
@@ -179,7 +169,7 @@ const UserColumns = () => {
                     </Button>
                     <p className="text-muted-foreground">"{sheetName}" məlumatları</p>
                 </div>
-                <Button onClick={addRow}>+ Yeni sətir</Button>
+                {/* <Button onClick={addRow}>+ Yeni sətir</Button> */}
             </div>
 
             {/* Controls */}
@@ -222,6 +212,7 @@ const UserColumns = () => {
                     <TableHeader>
                         {table.getHeaderGroups().map(hg => (
                             <TableRow key={hg.id}>
+                                <TableHead>#</TableHead>
                                 {hg.headers.map(header => (
                                     <TableHead key={header.id}>
                                         {header.isPlaceholder
@@ -238,8 +229,11 @@ const UserColumns = () => {
 
                     <TableBody>
                         {table.getRowModel().rows.length ? (
-                            table.getRowModel().rows.map(row => (
+                            table.getRowModel().rows.map((row, ind) => (
                                 <TableRow key={row.id}>
+                                    <TableCell>
+                                        {ind + 1}
+                                    </TableCell>
                                     {row.getVisibleCells().map(cell => (
                                         <TableCell key={cell.id}>
                                             {flexRender(
@@ -253,7 +247,7 @@ const UserColumns = () => {
                         ) : (
                             <TableRow>
                                 <TableCell
-                                    colSpan={visibleColumns.length}
+                                    colSpan={data.columns.length}
                                     className="h-24 text-center"
                                 >
                                     Məlumat yoxdur

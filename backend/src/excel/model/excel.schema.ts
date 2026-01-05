@@ -14,7 +14,7 @@ export class Excel {
   @Prop()
   description?: string;
 
-  @Prop({ type: [Types.ObjectId], ref: 'User' })
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'User' })
   agentIds: Types.ObjectId[];
 
   @Prop({ type: [Types.ObjectId], ref: 'Sheet', default: [] })

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import { Model, Types } from "mongoose";
 import { CreateExcelDto } from "src/excel/dto/create-excel.dto";
 import { CreateSheetDto } from "src/excel/dto/create-sheet.dto";
 import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
@@ -14,6 +14,7 @@ import { User } from "src/user/model/user.schema";
 import * as XLSX from 'xlsx';
 
 
+const supId = "695bdaeff2405115af596e24"
 
 @Injectable()
 export class SupervisorService {
@@ -79,7 +80,7 @@ export class SupervisorService {
 
 
   // Excel yeniləmək üçün
-  async updateExcel(_id: string, updateExcelData: UpdateExcelDto) {
+  async updateExcel(_id: Types.ObjectId, updateExcelData: UpdateExcelDto) {
 
     /* 1. Excel yoxlanışı */
     const excel = await this.excelModel.findById(_id);
@@ -91,19 +92,18 @@ export class SupervisorService {
     if (updateExcelData.agentIds) {
 
       // Mövcud agent-lər
-      const currentAgentIds = excel.agentIds.map(id => id.toString());
+      const currentAgentIds = excel.agentIds
 
       // Çıxarılmaq istənən agent-lər
       const removedAgentIds = currentAgentIds.filter(
-        id => !updateExcelData.agentIds.map(aid => aid.toString()).includes(id),
+        id => !updateExcelData.agentIds.map(aid => aid._id).includes(id._id),
       );
 
       if (removedAgentIds.length > 0) {
-
         /* 3. Sheet-lərdə istifadə olunan agent-ləri yoxla */
         const sheetsUsingAgents = await this.sheetModel.find({
           excelId: excel._id,
-          agentIds: { $in: removedAgentIds },
+          "agentIds.agentId": { $in: removedAgentIds },
         });
 
         if (sheetsUsingAgents.length > 0) {
@@ -185,6 +185,7 @@ export class SupervisorService {
         name: updateSheetData.name ?? sheet.name,
         description: updateSheetData.description ?? sheet.description,
         agentIds: updateSheetData.agentIds ?? sheet.agentIds,
+        columnIds: updateSheetData.columnIds ?? sheet.columnIds
       });
 
       await sheet.save();
@@ -194,9 +195,9 @@ export class SupervisorService {
 
 
   //Excel -ə aid sheetləri gətir
-  async getSheetsOfExcel(excelId: string) {
+  async getSheetsOfExcel(excelId: Types.ObjectId) {
     const sheets = await this.sheetModel.find({ excelId: excelId })
-      .populate([{ path: 'agentIds', select: '-password' }, { path: 'columnIds' }]);
+    // .populate([{ path: 'agentIds', select: '-password' }, { path: 'columnIds' }]);
     return sheets;
   }
 

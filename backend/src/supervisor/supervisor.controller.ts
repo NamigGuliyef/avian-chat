@@ -19,6 +19,7 @@ import { CreateSheetColumnDto, CreateSheetDto } from "src/excel/dto/create-sheet
 import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
 import { UpdateSheetColumnDto, UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
 import { SupervisorService } from './supervisor.service';
+import { Types } from 'mongoose';
 
 @ApiTags("supervisor")
 @Controller('supervisor')
@@ -72,7 +73,7 @@ export class SupervisorController {
   )
   @Patch('excel/:_id')
   @HttpCode(HttpStatus.OK)
-  async updateExcel(@Param('_id') _id: string, @Body() updateExcelData: UpdateExcelDto) {
+  async updateExcel(@Param('_id') _id: Types.ObjectId, @Body() updateExcelData: UpdateExcelDto) {
     return await this.supervisorService.updateExcel(_id, updateExcelData);
   }
 
@@ -103,7 +104,7 @@ export class SupervisorController {
   @ApiOperation({ summary: "Excel-ə aid sheetləri gətir" })
   @Get('sheets/:excelId')
   @HttpCode(HttpStatus.OK)
-  async getSheetsOfExcel(@Param('excelId') excelId: string) {
+  async getSheetsOfExcel(@Param('excelId') excelId: Types.ObjectId) {
     return await this.supervisorService.getSheetsOfExcel(excelId);
   }
 

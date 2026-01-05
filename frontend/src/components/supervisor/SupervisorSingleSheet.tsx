@@ -14,6 +14,8 @@ import {
     getColumns, getRows, addRow, updateCell, deleteRow, importFromExcel
 } from "@/api/supervisors";
 import { SheetColumnForm, SheetRowForm } from "@/types/types";
+import { EditableCell } from "../Table/EditableCell";
+
 
 const SupervisorSingleSheet: React.FC = () => {
     const { excelId, sheetId, sheetName } = useParams();
@@ -107,7 +109,7 @@ const SupervisorSingleSheet: React.FC = () => {
             <div className="flex gap-2 items-center mb-6">
                 <Input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
                 <Button onClick={handleImportExcel}>Import Excel</Button>
-                <Button onClick={handleAddRow}>Yeni Sətir</Button>
+                {/* <Button onClick={handleAddRow}>Yeni Sətir</Button> */}
             </div>
 
             {/* Rows Table */}
@@ -115,30 +117,35 @@ const SupervisorSingleSheet: React.FC = () => {
                 <table className="w-full table-auto border-collapse">
                     <thead>
                         <tr>
-                            {columns.sort((a, b) => b.order - a.order).map((c) => c.columnId).map(col => <th key={col._id} className="border p-1">{col.name}</th>)}
+                            <th className="border p-1">#</th>
+                            {columns.sort((a, b) => b.order - a.order).map((c) => c.columnId).map(col => <th key={col?._id} className="border p-1">{col?.name}</th>)}
                             {/* <th className="border p-1">Əməliyyatlar</th> */}
                         </tr>
                     </thead>
                     <tbody>
                         {rows.map((row, rowIndex) => (
-                            <tr key={rowIndex} className="border-b">
-                                {Object.values(row.data).map((val: string) => {
-                                    return (
-                                        <td key={val} className="border p-1">
-                                            <Input
-                                                value={val}
-                                                onChange={(e) => handleUpdateCell(rowIndex, val, e.target.value)}
-                                                className="w-full"
-                                            />
-                                        </td>
-                                    )
-                                })}
-
-                                <td className="border p-1">
-                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteRow(rowIndex)}>
-                                        Sil
-                                    </Button>
+                            <tr key={rowIndex} className="border-b hover:bg-muted/40">
+                                <td className="border px-1 py-0">
+                                    {row.rowNumber}
                                 </td>
+                                {columns
+                                    .sort((a, b) => b.order - a.order)
+                                    .map((col) => {
+                                        const colDef = col.columnId;
+                                        if (!colDef) return null;
+
+                                        return (
+                                            <td key={colDef._id} className="border px-1 py-0">
+                                                <EditableCell
+                                                    value={row.data[colDef.name]}
+                                                    editable={col.editable}
+                                                    onSave={(val) =>
+                                                        handleUpdateCell(rowIndex, colDef.name, val)
+                                                    }
+                                                />
+                                            </td>
+                                        );
+                                    })}
                             </tr>
                         ))}
                     </tbody>
