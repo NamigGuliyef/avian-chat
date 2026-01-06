@@ -32,12 +32,12 @@ const WidgetDemo: React.FC = () => {
             Xoş gəlmisiniz!
           </h2>
           <p className="text-lg text-muted-foreground mb-4">
-            Bu səhifədə canlı dəstək chat widget-ini test edə bilərsiniz. 
+            Bu səhifədə canlı dəstək chat widget-ini test edə bilərsiniz.
             Sağ altdakı mavi düyməyə klikləyərək chat-ı açın.
           </p>
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8">
             <p className="text-sm text-primary font-medium">
-              💡 Widget-dən mesaj göndərdikdə, mesaj avtomatik olaraq Admin Panelə düşəcək. 
+              💡 Widget-dən mesaj göndərdikdə, mesaj avtomatik olaraq Admin Panelə düşəcək.
               Bunu test etmək üçün iki tab açın - birində widget, digərində admin panel.
             </p>
           </div>
@@ -70,8 +70,8 @@ const WidgetDemo: React.FC = () => {
               <p className="text-muted-foreground mb-4">
                 Mesajları idarə etmək üçün admin panelinə keçin.
               </p>
-              <a 
-                href="/login" 
+              <a
+                href="/login"
                 className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
               >
                 Admin Panelə Keç
@@ -81,7 +81,6 @@ const WidgetDemo: React.FC = () => {
         </div>
       </main>
 
-      {/* Chat Widget */}
       <ChatWidget onSendMessage={handleSendMessage} />
     </div>
   );

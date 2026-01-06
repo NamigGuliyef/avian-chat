@@ -114,3 +114,11 @@ export const removeProjectMember = async (projectId, userId, type) => {
 export const deleteProject = async (projectId) => {
     await axios.delete(`/admin/delete-project/${projectId}`)
 }
+
+
+// report
+
+export const getReport = async () => {
+    const res = await axios.get(`/admin/all-report`)
+    return res.data;
+}

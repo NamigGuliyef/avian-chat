@@ -38,7 +38,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
     };
     setMessages(prev => [...prev, userMessage]);
     setHasStarted(true);
-    
+
     // Simulate agent acknowledgment
     setTimeout(() => {
       const botMessage: Message = {
@@ -51,13 +51,13 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
       };
       setMessages(prev => [...prev, botMessage]);
     }, 1000);
-    
+
     onSendMessage?.(buttonLabel, triggerId);
   };
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
-    
+
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
       conversationId: 'widget-conv',
@@ -69,7 +69,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
     setMessages(prev => [...prev, userMessage]);
     setHasStarted(true);
     setInputValue('');
-    
+
     onSendMessage?.(inputValue);
   };
 
@@ -82,10 +82,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
 
   return (
     <div className="chat-widget-container">
-      {/* Chat Window */}
       {isOpen && (
         <div className="mb-4 w-[380px] bg-card rounded-2xl shadow-widget overflow-hidden animate-slide-up">
-          {/* Header */}
           <div className="bg-primary px-4 py-4 text-primary-foreground">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -104,9 +102,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
                 <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8">
                   <MoreHorizontal className="h-5 w-5" />
                 </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
                   onClick={() => setIsOpen(false)}
                 >
@@ -116,7 +114,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
             </div>
           </div>
 
-          {/* Info Section */}
           <div className="bg-secondary/50 px-4 py-3 border-b border-border">
             <div className="flex items-center gap-2 text-sm text-foreground mb-1">
               <Mail className="h-4 w-4 text-primary" />
@@ -131,9 +128,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
             </div>
           </div>
 
-          {/* Messages Area */}
           <div className="h-[350px] overflow-y-auto p-4 space-y-4 scrollbar-thin bg-background">
-            {/* Welcome Message */}
             <div className="flex gap-2">
               <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center shrink-0">
                 <span className="text-sm">🤖</span>
@@ -143,7 +138,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
               </div>
             </div>
 
-            {/* Quick Buttons */}
             {!hasStarted && (
               <div className="flex flex-wrap gap-2 justify-end">
                 {config.quickButtons.map((button) => (
@@ -158,7 +152,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
               </div>
             )}
 
-            {/* Chat Messages */}
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -180,7 +173,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
           <div className="p-4 border-t border-border bg-card">
             <div className="flex items-center gap-2">
               <Input
@@ -194,7 +186,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
                 <Smile className="h-5 w-5" />
               </Button>
               <Button
-                size="icon" 
+                size="icon"
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim()}
                 className="bg-primary hover:bg-primary/90"
@@ -202,12 +194,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
                 <Send className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground text-center mt-3">Powered by LiveChat</p>
+            <p className="text-xs text-muted-foreground text-center mt-3">Powered by Avian</p>
           </div>
         </div>
       )}
 
-      {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(

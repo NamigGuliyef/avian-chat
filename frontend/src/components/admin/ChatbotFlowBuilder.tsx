@@ -48,8 +48,7 @@ interface FlowBlock {
   content?: string;
   buttons?: FlowButton[];
   targetFlowId?: string;
-  actionType?: 'close' | 'open' | 'tag' | 'agent';
-  tagName?: string;
+  actionType?: 'close' | 'open' | 'agent';
 }
 
 interface Flow {
@@ -204,7 +203,7 @@ const ChatbotFlowBuilder: React.FC = () => {
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
   const [dragOverBlockId, setDragOverBlockId] = useState<string | null>(null);
   const [isDraggingNewBlock, setIsDraggingNewBlock] = useState<string | null>(null);
-  
+
   // Triggers state
   const [triggers, setTriggers] = useState<Trigger[]>(initialTriggers);
   const [isAddingTrigger, setIsAddingTrigger] = useState(false);
@@ -264,7 +263,7 @@ const ChatbotFlowBuilder: React.FC = () => {
       }
       return f;
     });
-    
+
     setFlows(updatedFlows);
     setSelectedBlockId(newBlock.id);
     setIsSaved(false);
@@ -287,9 +286,9 @@ const ChatbotFlowBuilder: React.FC = () => {
     const updatedFlows = flows.map((f) =>
       f.id === selectedFlowId
         ? {
-            ...f,
-            blocks: f.blocks.map((b) => (b.id === blockId ? { ...b, ...updates } : b))
-          }
+          ...f,
+          blocks: f.blocks.map((b) => (b.id === blockId ? { ...b, ...updates } : b))
+        }
         : f
     );
     setFlows(updatedFlows);
@@ -350,7 +349,7 @@ const ChatbotFlowBuilder: React.FC = () => {
 
   const handleDrop = useCallback((e: React.DragEvent, targetBlockId: string) => {
     e.preventDefault();
-    
+
     // Handle new block drag from sidebar
     if (isDraggingNewBlock && selectedFlow) {
       const targetIndex = selectedFlow.blocks.findIndex((b) => b.id === targetBlockId);
@@ -417,7 +416,6 @@ const ChatbotFlowBuilder: React.FC = () => {
     switch (actionType) {
       case 'close': return 'Söhbəti bağla';
       case 'open': return 'Söhbəti aç (Operatora yönləndir)';
-      case 'tag': return 'Tag əlavə et';
       case 'agent': return 'Agent-ə yönləndir';
       default: return 'Action seçin';
     }
@@ -834,8 +832,8 @@ const ChatbotFlowBuilder: React.FC = () => {
                 <label className="text-xs text-muted-foreground mb-1 block">Kanal</label>
                 <Select
                   value={editingTrigger.channel}
-                  onValueChange={(value) => setEditingTrigger({ 
-                    ...editingTrigger, 
+                  onValueChange={(value) => setEditingTrigger({
+                    ...editingTrigger,
                     channel: value as 'webchat' | 'whatsapp' | 'facebook' | 'instagram' | 'all'
                   })}
                 >
@@ -940,7 +938,7 @@ const ChatbotFlowBuilder: React.FC = () => {
                     };
                     setTriggers([...triggers, newTrigger]);
                   } else {
-                    setTriggers(triggers.map(t => 
+                    setTriggers(triggers.map(t =>
                       t.id === editingTrigger.id ? editingTrigger : t
                     ));
                   }
@@ -986,7 +984,7 @@ const ChatbotFlowBuilder: React.FC = () => {
                       variant="outline"
                       size="sm"
                       className="h-8 text-xs gap-1"
-                      onClick={() => {}}
+                      onClick={() => { }}
                     >
                       <Type className="h-3 w-3" />
                       Text
@@ -995,7 +993,7 @@ const ChatbotFlowBuilder: React.FC = () => {
                       variant="outline"
                       size="sm"
                       className="h-8 text-xs gap-1"
-                      onClick={() => {}}
+                      onClick={() => { }}
                     >
                       <Image className="h-3 w-3" />
                       Image
@@ -1004,7 +1002,7 @@ const ChatbotFlowBuilder: React.FC = () => {
                       variant="outline"
                       size="sm"
                       className="h-8 text-xs gap-1"
-                      onClick={() => {}}
+                      onClick={() => { }}
                     >
                       <Smile className="h-3 w-3" />
                       GIF
@@ -1057,8 +1055,8 @@ const ChatbotFlowBuilder: React.FC = () => {
                             />
                             <Select
                               value={btn.goToFlowId || 'none'}
-                              onValueChange={(value) => handleUpdateButton(selectedBlock.id, btn.id, { 
-                                goToFlowId: value === 'none' ? undefined : value 
+                              onValueChange={(value) => handleUpdateButton(selectedBlock.id, btn.id, {
+                                goToFlowId: value === 'none' ? undefined : value
                               })}
                             >
                               <SelectTrigger className="h-7 text-xs flex-1">
@@ -1088,8 +1086,8 @@ const ChatbotFlowBuilder: React.FC = () => {
                     <label className="text-xs text-muted-foreground mb-1 block">Action növü</label>
                     <Select
                       value={selectedBlock.actionType || 'close'}
-                      onValueChange={(value) => handleUpdateBlock(selectedBlock.id, { 
-                        actionType: value as 'close' | 'open' | 'tag' | 'agent'
+                      onValueChange={(value) => handleUpdateBlock(selectedBlock.id, {
+                        actionType: value as 'close' | 'open' | 'agent'
                       })}
                     >
                       <SelectTrigger className="w-full">
@@ -1098,23 +1096,10 @@ const ChatbotFlowBuilder: React.FC = () => {
                       <SelectContent>
                         <SelectItem value="close">Söhbəti bağla (Close conversation)</SelectItem>
                         <SelectItem value="open">Söhbəti aç (Operatora yönləndir)</SelectItem>
-                        <SelectItem value="tag">Tag əlavə et</SelectItem>
                         <SelectItem value="agent">Agent-ə yönləndir</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-
-                  {selectedBlock.actionType === 'tag' && (
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Tag adı</label>
-                      <Input
-                        value={selectedBlock.tagName || ''}
-                        onChange={(e) => handleUpdateBlock(selectedBlock.id, { tagName: e.target.value })}
-                        placeholder="Tag adını daxil edin..."
-                        className="text-sm"
-                      />
-                    </div>
-                  )}
                 </div>
               )}
 
