@@ -1,4 +1,4 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
 @Schema({ _id: true })
@@ -13,3 +13,5 @@ export class FlowButton {
   @Prop({ type: Types.ObjectId, ref: 'Flow' })
   goToFlowId?: Types.ObjectId;
 }
+
+export const FlowButtonSchema = SchemaFactory.createForClass(FlowButton);

@@ -55,7 +55,7 @@ export class ChatbotService {
   // flow related methods can be added here
   createFlow(flowData: CreateFlowDto) {
     const flow = new this.flowModel(flowData);
-      this.chatbotModel.updateOne(
+    this.chatbotModel.updateOne(
       { _id: flowData.chatbotId },
       { $push: { flowIds: flow._id } }
     ).exec();
@@ -68,6 +68,9 @@ export class ChatbotService {
 
   getFlowById(flowId: Types.ObjectId) {
     return this.flowModel.findById(flowId).exec();
+  }
+  getFlowByChatBotId(chatbotId: Types.ObjectId) {
+    return this.flowModel.findOne({ chatbotId }).exec();
   }
 
   deleteFlow(flowId: Types.ObjectId) {
@@ -99,7 +102,7 @@ export class ChatbotService {
   }
 
   // flow-block related methods can be added here
-  createFlowBlock(data:FlowBlockDto) {
+  createFlowBlock(data: FlowBlockDto) {
     const flowBlock = new this.flowBlockModel(data);
     this.flowModel.findByIdAndUpdate(
       data.targetFlowId,
@@ -124,7 +127,7 @@ export class ChatbotService {
     this.flowBlockModel.findByIdAndUpdate(
       data.goToFlowId,
       { $push: { buttons: flowButton._id } }
-    ).exec(); 
+    ).exec();
     flowButton.save();
     return flowButton;
   }

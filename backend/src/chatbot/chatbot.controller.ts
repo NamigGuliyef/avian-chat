@@ -84,6 +84,12 @@ export class ChatbotController {
     return this.chatbotService.getFlowById(flowId);
   }
 
+  @ApiOperation({ summary: 'Get a flow by ID' })
+  @Get('flow/chatbot/:chatbotId')
+  getFlowByChatBotId(@Param('chatbotId') chatbotId: Types.ObjectId) {
+    return this.chatbotService.getFlowByChatBotId(chatbotId);
+  }
+
   @ApiOperation({ summary: 'Delete a flow by ID' })
   @Delete('flow/:flowId')
   deleteFlow(@Param('flowId') flowId: Types.ObjectId) {
@@ -156,7 +162,7 @@ export class ChatbotController {
   @ApiBody({ type: FlowButtonDto })
   @Post('flow-buttons')
   createFlowButton(@Body() data: FlowButtonDto) {
-   return this.chatbotService.createFlowButton(data);
+    return this.chatbotService.createFlowButton(data);
   }
 
   @ApiOperation({ summary: "Update a flow button by ID" })

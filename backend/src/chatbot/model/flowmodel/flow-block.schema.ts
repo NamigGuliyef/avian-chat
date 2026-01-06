@@ -1,4 +1,4 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FlowButton } from './flow-button.schema';
 import mongoose, { Types } from 'mongoose';
 import { BlockType, ActionType } from 'src/enum/enum';
@@ -23,3 +23,5 @@ export class FlowBlock {
     @Prop({ type: String, enum: ActionType, default: ActionType.OPEN })
     actionType?: ActionType;
 }
+
+export const FlowBlockSchema = SchemaFactory.createForClass(FlowBlock);
