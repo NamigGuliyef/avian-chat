@@ -11,7 +11,7 @@ import { ChatbotService } from './chatbot.service';
 import { UpdateChatbotDto } from './dto/update-chatbot.dto';
 import { CreateChatbotDto } from './dto/create-chatbot.dto';
 import { Types } from 'mongoose';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { CreateFlowDto } from './dto/flowdto/create-flow.dto';
 import { UpdateFlowDto } from './dto/flowdto/update-flow.dto';
 import { CreateTriggerDto } from './dto/triggerdto/create-trigger.dto';
@@ -24,77 +24,95 @@ import { FlowButtonDto } from './dto/flowdto/flow-button.dto';
 export class ChatbotController {
   constructor(private readonly chatbotService: ChatbotService) { }
 
-  @ApiOperation({ summary: 'Create a new chatbot' })
+  @ApiOperation({ summary: 'Create a new chatbot ✅'})
   @ApiBody({ type: CreateChatbotDto })
   @Post()
   create(@Body() createChatbotDto: CreateChatbotDto) {
     return this.chatbotService.create(createChatbotDto);
   }
 
-  @ApiOperation({ summary: 'Get all chatbots' })
+
+  @ApiOperation({ summary: 'Get all chatbots ✅' })
   @Get()
   findAll() {
     return this.chatbotService.findAll();
   }
 
-  @ApiOperation({ summary: 'Get chatbots by company ID' })
-  @Get()
+
+  @ApiOperation({ summary: 'Get chatbots by company ID ✅' })
+  @Get('company/:companyId')
+  @ApiParam({ name: 'companyId', type: 'string' })
   findAllByCompanyId(@Param('companyId') companyId: Types.ObjectId) {
     return this.chatbotService.findAllByCompanyId(companyId);
   }
 
 
-  @ApiOperation({ summary: 'Get a chatbot by ID' })
+  @ApiOperation({ summary: 'Get a chatbot by ID ✅' })
   @Get(':id')
+  @ApiParam({ name: 'id', type: 'string' })
   findOne(@Param('id') id: Types.ObjectId) {
     return this.chatbotService.findOne(id);
   }
 
-  @ApiOperation({ summary: 'Update a chatbot by ID' })
+
+  @ApiOperation({ summary: 'Update a chatbot by ID ✅' })
   @ApiBody({ type: UpdateChatbotDto })
   @Patch(':id')
+  @ApiParam({ name: 'id', type: 'string' })
   update(@Param('id') id: Types.ObjectId, @Body() updateChatbotDto: UpdateChatbotDto) {
     return this.chatbotService.update(id, updateChatbotDto);
   }
 
-  @ApiOperation({ summary: 'Delete a chatbot by ID' })
+
+  @ApiOperation({ summary: 'Delete a chatbot by ID ✅' })
   @Delete(':id')
+  @ApiParam({ name: 'id', type: 'string' })
   remove(@Param('id') id: Types.ObjectId) {
     return this.chatbotService.remove(id);
   }
 
+
   // flow related endpoints can be added here
-  @ApiOperation({ summary: 'Create a new flow' })
+  @ApiOperation({ summary: 'Create a new flow ✅' })
   @ApiBody({ type: CreateFlowDto })
   @Post('flow')
   createFlow(@Body() flowData: CreateFlowDto) {
     return this.chatbotService.createFlow(flowData);
   }
 
-  @ApiOperation({ summary: 'Update a flow by ID' })
+
+  @ApiOperation({ summary: 'Update a flow by ID ✅' })
   @ApiBody({ type: UpdateFlowDto })
+  @ApiParam({ name: 'flowId', type: 'string' })
   @Patch('flow/:flowId')
   updateFlow(@Param('flowId') flowId: Types.ObjectId, @Body() flowData: UpdateFlowDto) {
     return this.chatbotService.updateFlow(flowId, flowData);
   }
 
-  @ApiOperation({ summary: 'Get a flow by ID' })
+
+  @ApiOperation({ summary: 'Get a flow by ID ✅' })
+  @ApiParam({ name: 'flowId', type: 'string' })
   @Get('flow/:flowId')
   getFlowById(@Param('flowId') flowId: Types.ObjectId) {
     return this.chatbotService.getFlowById(flowId);
   }
 
-  @ApiOperation({ summary: 'Get a flow by ID' })
+
+  @ApiOperation({ summary: 'Get a flow by chatbot ID ✅' })
+  @ApiParam({ name: 'chatbotId', type: 'string' })
   @Get('flow/chatbot/:chatbotId')
   getFlowByChatBotId(@Param('chatbotId') chatbotId: Types.ObjectId) {
     return this.chatbotService.getFlowByChatBotId(chatbotId);
   }
 
+
   @ApiOperation({ summary: 'Delete a flow by ID' })
+  @ApiParam({ name: 'flowId', type: 'string' })
   @Delete('flow/:flowId')
   deleteFlow(@Param('flowId') flowId: Types.ObjectId) {
     return this.chatbotService.deleteFlow(flowId);
   }
+
 
   // trigger related endpoints can be added here
 

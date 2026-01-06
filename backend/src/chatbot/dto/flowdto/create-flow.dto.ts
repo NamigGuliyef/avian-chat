@@ -22,7 +22,7 @@ export class CreateFlowDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  chatbotId: Types.ObjectId;
+  chatbotId: string;
 
   @ApiProperty()
   @IsOptional()

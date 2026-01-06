@@ -7,7 +7,7 @@ export class Flow {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Chatbot' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Chatbot', required: true })
   chatbotId: Types.ObjectId;
 
   @Prop({ default: false })

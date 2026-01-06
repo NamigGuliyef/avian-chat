@@ -62,20 +62,32 @@ export class ChatbotService {
     flow.save();
     return flow;
   }
+
+
   updateFlow(flowId: Types.ObjectId, flowData: Partial<CreateFlowDto>) {
     return this.flowModel.findByIdAndUpdate(flowId, flowData, { new: true }).exec();
   }
 
+
   getFlowById(flowId: Types.ObjectId) {
     return this.flowModel.findById(flowId).exec();
   }
+
+
   getFlowByChatBotId(chatbotId: Types.ObjectId) {
     return this.flowModel.findOne({ chatbotId }).exec();
   }
 
+
   deleteFlow(flowId: Types.ObjectId) {
-    return this.flowModel.findByIdAndDelete(flowId).exec();
+    const deleteFlow = this.flowModel.findByIdAndDelete(flowId).exec();
+    this.chatbotModel.updateOne(
+      { flowIds: flowId },
+      { $pull: { flowIds: flowId } }
+    ).exec();
+    return deleteFlow;
   }
+
 
   // trigger related methods can be added here
 
