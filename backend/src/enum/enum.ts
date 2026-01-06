@@ -39,3 +39,17 @@ export enum ColumnType {
   Select = 'select',
   Phone = 'phone',
 }
+
+
+export enum BlockType {
+  MESSAGE = 'message',
+  ACTION = 'action',
+  GOTO = 'goto',
+}
+
+
+export enum ActionType {
+  CLOSE = 'close',
+  OPEN = 'open',
+  AGENT = 'agent',
+}

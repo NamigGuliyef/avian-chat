@@ -61,7 +61,6 @@ interface Flow {
 interface Trigger {
   id: string;
   name: string;
-  channel: 'webchat' | 'whatsapp' | 'facebook' | 'instagram' | 'all';
   keywords: string[];
   targetFlowId: string;
   isActive: boolean;
@@ -169,7 +168,6 @@ const initialTriggers: Trigger[] = [
   {
     id: 'trig-1',
     name: 'Salam Trigger',
-    channel: 'webchat',
     keywords: ['salam', 'hello', 'hi'],
     targetFlowId: 'salamlama',
     isActive: true
@@ -177,7 +175,6 @@ const initialTriggers: Trigger[] = [
   {
     id: 'trig-2',
     name: 'Kömək Trigger',
-    channel: 'all',
     keywords: ['kömək', 'help', 'yardım'],
     targetFlowId: 'esas-menyu',
     isActive: true
@@ -547,7 +544,6 @@ const ChatbotFlowBuilder: React.FC = () => {
                       setEditingTrigger({
                         id: '',
                         name: '',
-                        channel: 'all',
                         keywords: [],
                         targetFlowId: '',
                         isActive: true
@@ -825,29 +821,6 @@ const ChatbotFlowBuilder: React.FC = () => {
                   placeholder="Trigger adını daxil edin..."
                   className="text-sm"
                 />
-              </div>
-
-              {/* Channel Selection */}
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Kanal</label>
-                <Select
-                  value={editingTrigger.channel}
-                  onValueChange={(value) => setEditingTrigger({
-                    ...editingTrigger,
-                    channel: value as 'webchat' | 'whatsapp' | 'facebook' | 'instagram' | 'all'
-                  })}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Kanal seçin..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Bütün kanallar</SelectItem>
-                    <SelectItem value="webchat">Web Chat</SelectItem>
-                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                    <SelectItem value="facebook">Facebook</SelectItem>
-                    <SelectItem value="instagram">Instagram</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
 
               {/* Keywords */}
