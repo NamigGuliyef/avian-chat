@@ -5,22 +5,28 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { defaultWidgetConfig } from '@/data/mockData';
 import { Message } from '@/types/chat';
+import { getTriggersByChatbotId, Trigger } from '@/api/chatbot';
 
 interface ChatWidgetProps {
   onSendMessage?: (message: string, triggerId?: string) => void;
 }
 
+const companyChatbotId = "695d87a22fb00cd7e7a290d9";
 const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [hasStarted, setHasStarted] = useState(false);
+  const [triggers, setTriggers] = useState<Trigger[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const config = defaultWidgetConfig;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+  useEffect(() => {
+    getTriggersByChatbotId(companyChatbotId).then(setTriggers)
+  }, [])
 
   useEffect(() => {
     scrollToBottom();
@@ -140,13 +146,13 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ onSendMessage }) => {
 
             {!hasStarted && (
               <div className="flex flex-wrap gap-2 justify-end">
-                {config.quickButtons.map((button) => (
+                {triggers.map((button) => (
                   <button
-                    key={button.id}
-                    onClick={() => handleQuickButtonClick(button.label, button.triggerId)}
+                    key={button._id}
+                    onClick={() => handleQuickButtonClick(button.name, button._id)}
                     className="quick-button text-sm"
                   >
-                    {button.label}
+                    {button.name}
                   </button>
                 ))}
               </div>
