@@ -28,7 +28,7 @@ export class ChatbotService {
   }
 
   findAll() {
-    const chatbots = this.chatbotModel.find().exec();
+    const chatbots = this.chatbotModel.find().populate({ path: 'companyId', select: '_id name' }).exec();
     return chatbots;
   }
 
@@ -144,7 +144,7 @@ export class ChatbotService {
     return this.flowBlockModel.findById(flowBlockId).exec();
   }
 
-  
+
   deleteFlowBlock(flowBlockId: Types.ObjectId) {
     const deleteFlowBlock = this.flowBlockModel.findByIdAndDelete(flowBlockId).exec();
     this.flowModel.updateOne(
@@ -177,7 +177,7 @@ export class ChatbotService {
     return this.flowButtonModel.findById(flowButtonId).exec();
   }
 
-  
+
   deleteFlowButton(flowButtonId: Types.ObjectId) {
     return this.flowButtonModel.findByIdAndDelete(flowButtonId).exec();
   }
