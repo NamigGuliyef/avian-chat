@@ -3,6 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { CreateExcelDto } from "src/excel/dto/create-excel.dto";
 import { CreateSheetDto } from "src/excel/dto/create-sheet.dto";
+import { SheetCellDto } from "src/excel/dto/sheet-cell.dto";
 import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
 import { UpdateSheetColumnDto, UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
 import { Column } from "src/excel/model/column.schema";
@@ -367,22 +368,28 @@ export class SupervisorService {
     return row;
   }
 
+
   // ---------------- UPDATE CELL ----------------
   async updateCell(
     sheetId: string,
     rowNumber: number,
-    key: string,
-    value: any,
+    sheetCellData: SheetCellDto
   ) {
     const row = await this.sheetRowModel.findOneAndUpdate(
-      { sheetId, rowNumber },
-      { $set: { [`data.${key}`]: value } },
-      { new: true },
+      { sheetId, rowNumber }, // mövcud row axtarır
+      { $set: { [`data.${sheetCellData.key}`]: sheetCellData.value } },
+      { new: true } 
     );
 
-    if (!row) throw new NotFoundException('Row tapılmadı');
+    if (!row) {
+      throw new NotFoundException('Row tapılmadı'); // mövcud deyilsə xətanı qaytar
+    }
+
     return row;
   }
+
+
+
 
   // ---------------- DELETE ROW ----------------
   async deleteRow(sheetId: string, rowNumber: number) {

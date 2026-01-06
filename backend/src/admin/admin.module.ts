@@ -8,6 +8,9 @@ import { Channel } from 'diagnostics_channel';
 import { ChannelSchema } from 'src/channel/model/channel.schema';
 import { User, UserSchema } from 'src/user/model/user.schema';
 import { Column, ColumnSchema } from 'src/excel/model/column.schema';
+import { Sheet, SheetSchema } from 'src/excel/model/sheet.schema';
+import { SheetRow, SheetRowSchema } from 'src/excel/model/row-schema';
+import { Excel, ExcelSchema } from 'src/excel/model/excel.schema';
 
 @Module({
   imports: [MongooseModule.forFeature([
@@ -15,7 +18,12 @@ import { Column, ColumnSchema } from 'src/excel/model/column.schema';
     { name: Project.name, schema: ProjectSchema },
     { name: Channel.name, schema: ChannelSchema },
     { name: User.name, schema: UserSchema },
-    { name: Column.name, schema: ColumnSchema }
+    { name: Column.name, schema: ColumnSchema },
+    { name: Sheet.name, schema: SheetSchema },
+    { name: SheetRow.name, schema: SheetRowSchema },
+    { name: Excel.name, schema: ExcelSchema },
+    { name: User.name, schema: UserSchema }
+
   ])],
   controllers: [AdminController],
   providers: [AdminService],

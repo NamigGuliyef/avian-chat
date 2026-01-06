@@ -320,4 +320,11 @@ export class AdminController {
     return this.adminService.deleteColumn(id);
   }
 
+
+  @ApiOperation({ summary: "Bütün məlumatları cədvələ gətir" })
+  @Get('all-report')
+  @HttpCode(HttpStatus.OK)
+  async getProjectTableView() {
+    return await this.adminService.getProjectTableView();
+  }
 }

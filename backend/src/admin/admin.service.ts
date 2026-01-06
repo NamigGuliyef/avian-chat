@@ -9,6 +9,9 @@ import { Company } from 'src/company/model/company.schema';
 import { CreateAdminColumnDto } from 'src/excel/dto/create-column.dto';
 import { UpdateAdminColumnDto } from 'src/excel/dto/update-column.dto';
 import { Column } from 'src/excel/model/column.schema';
+import { Excel } from 'src/excel/model/excel.schema';
+import { SheetRow } from 'src/excel/model/row-schema';
+import { Sheet } from 'src/excel/model/sheet.schema';
 import { hashPassword } from 'src/helper/hashpass';
 import { CreateProjectDto } from 'src/project/dto/create-project.dto';
 import { Project } from 'src/project/model/project.schema';
@@ -24,6 +27,9 @@ export class AdminService {
     @InjectModel(Channel.name) private readonly channelModel: Model<Channel>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Column.name) private readonly columnModel: Model<Column>,
+    @InjectModel(SheetRow.name) private readonly sheetRowModel: Model<SheetRow>,
+    @InjectModel(Excel.name) private readonly excelModel: Model<Excel>,
+    @InjectModel(Sheet.name) private readonly sheetModel: Model<Sheet>,
 
   ) { }
 
@@ -454,5 +460,69 @@ export class AdminService {
   }
 
 
-}
 
+  //------------------------------------------------Hesabat Functions ---------------------------// 
+
+  // ümumi hesabat məlumatlarını gətirən funksiyası
+  // Proyektde olan sütunların sayı və sütunlara yazılan məlumatlar
+
+  async getProjectTableView(): Promise<any[]> {
+    // bütün project-ləri çəkirik
+    const projects = await this.projectModel.find({ isDeleted: false }).select('-agents -sheetIds -columnIds')
+      .populate({ path: 'supervisors', select: 'name surname email' });
+
+    const result = await Promise.all(
+      projects.map(async (project) => {
+        // company məlumatı
+        const company = await this.companyModel.findById(project.companyId);
+
+        // excel məlumatı
+        const excel = await this.excelModel.findOne({ _id: { $in: project.excelIds } });
+
+        // sheet-ləri çəkirik
+        const sheets = await this.sheetModel.find({ excelId: excel?._id });
+
+        // hər sheet üçün column və row-ları çəkirik
+
+
+        const sheetData = await Promise.all(
+          sheets.map(async (sheet) => {
+            // columnId-ləri çıxarırıq
+            const columnIds = sheet.columnIds.map((col) => col.columnId);
+            const columns = await this.columnModel.find({ _id: { $in: columnIds } });
+
+            // agentId-ləri çıxarırıq
+            const agentIds = sheet.agentIds.map((agent) => agent.agentId);
+            const agents = await this.userModel.find({ _id: { $in: agentIds } });
+
+            // sheet row-ları çəkirik
+            const sheetRows = await this.sheetRowModel.find({ sheetId: sheet._id });
+
+            return {
+              sheetName: sheet.name,
+              columns: columns.map((col) => col.name),
+              agents: agents.map((agent) => ({
+                name: agent.name,
+                surname: agent.surname,
+                startRow: agent.startRow,
+                endRow: agent.endRow,
+              })),
+              sheetRows: sheetRows.map((row) => row.data),
+            };
+          })
+        );
+
+        return {
+          company: company?.name,
+          project: projects,
+          excel: excel?.name,
+          sheets: sheetData,
+        };
+      })
+    );
+
+    return result;
+  }
+
+
+}

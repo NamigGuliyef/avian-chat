@@ -20,6 +20,7 @@ import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
 import { UpdateSheetColumnDto, UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
 import { SupervisorService } from './supervisor.service';
 import { Types } from 'mongoose';
+import { SheetCellDto } from 'src/excel/dto/sheet-cell.dto';
 
 @ApiTags("supervisor")
 @Controller('supervisor')
@@ -217,22 +218,20 @@ export class SupervisorController {
   // -----------------------------------------------------
 
   @ApiOperation({ summary: 'Row-un tək bir cell-ni update et' })
-  @Patch('sheet/:sheetId/rows/:rowNumber/cell')
+  @ApiBody({
+    type: SheetCellDto
+  })
+  @Patch('sheet/:sheetId/rows/:rowNumber')
   @HttpCode(HttpStatus.OK)
   updateCell(
     @Param('sheetId') sheetId: string,
     @Param('rowNumber') rowNumber: string,
-    @Body()
-    body: {
-      key: string;
-      value: any;
-    },
+    @Body() sheetCellData: SheetCellDto
   ) {
     return this.supervisorService.updateCell(
       sheetId,
       Number(rowNumber),
-      body.key,
-      body.value,
+      sheetCellData
     );
   }
 

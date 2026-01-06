@@ -77,7 +77,7 @@ export const updateRow = async (sheetId: string, rowNumber: number, rowData: Rec
 };
 
 export const updateCell = async (sheetId: string, rowNumber: number, key: string, value: any) => {
-    const { data } = await axios.patch(`/supervisor/sheet/${sheetId}/rows/${rowNumber}/cell`, { key, value });
+    const { data } = await axios.patch(`/supervisor/sheet/${sheetId}/rows/${rowNumber}`, { key, value });
     return data;
 };
 
