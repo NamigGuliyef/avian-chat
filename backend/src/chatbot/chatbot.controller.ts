@@ -16,6 +16,8 @@ import { CreateFlowDto } from './dto/flowdto/create-flow.dto';
 import { UpdateFlowDto } from './dto/flowdto/update-flow.dto';
 import { CreateTriggerDto } from './dto/triggerdto/create-trigger.dto';
 import { UpdateTriggerDto } from './dto/triggerdto/update-trigger.dto';
+import { FlowBlockDto } from './dto/flowdto/flow-block.dto';
+import { FlowButtonDto } from './dto/flowdto/flow-button.dto';
 
 @ApiTags('chatbot')
 @Controller('chatbot')
@@ -114,5 +116,65 @@ export class ChatbotController {
   @Delete('trigger/:triggerId')
   deleteTrigger(@Param('triggerId') triggerId: Types.ObjectId) {
     return this.chatbotService.deleteTrigger(triggerId);
+  }
+
+  @ApiOperation({ summary: "Get all flow blocks" })
+  @Get('flow-blocks/:flowBlockId')
+  getAllFlowBlockById(@Param('flowBlockId') flowBlockId: Types.ObjectId) {
+    return this.chatbotService.getFlowBlockById(flowBlockId);
+  }
+
+  @ApiOperation({ summary: "Update a flow block by ID" })
+  @ApiBody({ type: FlowBlockDto })
+  @Patch('flow-blocks/:flowBlockId')
+  updateFlowBlock(@Param('flowBlockId') flowBlockId: Types.ObjectId, @Body() data: Partial<FlowBlockDto>) {
+    return this.chatbotService.updateFlowBlock(flowBlockId, data);
+  }
+
+  @ApiOperation({ summary: "Create a new flow block" })
+  @ApiBody({ type: FlowBlockDto })
+  @Post('flow-blocks')
+  createFlowBlock(@Body() data: FlowBlockDto) {
+    return this.chatbotService.createFlowBlock(data);
+  }
+
+  @ApiOperation({ summary: "Get a flow block by ID" })
+  @Get('flow-block/:flowBlockId')
+  getFlowBlockById(@Param('flowBlockId') flowBlockId: Types.ObjectId) {
+    return this.chatbotService.getFlowBlockById(flowBlockId);
+  }
+  @ApiOperation({ summary: "Delete a flow block by ID" })
+  @Delete('flow-blocks/:flowBlockId')
+  deleteFlowBlock(@Param('flowBlockId') flowBlockId: Types.ObjectId) {
+    return this.chatbotService.deleteFlowBlock(flowBlockId);
+  }
+
+
+  // flow button related endpoints can be added here
+
+  @ApiOperation({ summary: "Create a new flow button" })
+  @ApiBody({ type: FlowButtonDto })
+  @Post('flow-buttons')
+  createFlowButton(@Body() data: FlowButtonDto) {
+   return this.chatbotService.createFlowButton(data);
+  }
+
+  @ApiOperation({ summary: "Update a flow button by ID" })
+  @ApiBody({ type: FlowButtonDto })
+  @Patch('flow-buttons/:flowButtonId')
+  updateFlowButton(@Param('flowButtonId') flowButtonId: Types.ObjectId, @Body() data: Partial<FlowButtonDto>) {
+    return this.chatbotService.updateFlowButton(flowButtonId, data);
+  }
+
+  @ApiOperation({ summary: "Get a flow button by ID" })
+  @Get('flow-buttons/:flowButtonId')
+  getFlowButtonById(@Param('flowButtonId') flowButtonId: Types.ObjectId) {
+    return this.chatbotService.getFlowButtonById(flowButtonId);
+  }
+
+  @ApiOperation({ summary: "Delete a flow button by ID" })
+  @Delete('flow-buttons/:flowButtonId')
+  deleteFlowButton(@Param('flowButtonId') flowButtonId: Types.ObjectId) {
+    return this.chatbotService.deleteFlowButton(flowButtonId);
   }
 }
