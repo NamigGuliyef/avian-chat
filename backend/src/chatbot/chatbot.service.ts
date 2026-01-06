@@ -101,18 +101,27 @@ export class ChatbotService {
     return trigger;
   }
 
+
   updateTrigger(triggerId: Types.ObjectId, data: Partial<CreateTriggerDto>) {
     return this.triggerModel.findByIdAndUpdate(triggerId, data, { new: true }).exec();
   }
+
 
   getTriggerById(triggerId: Types.ObjectId) {
     return this.triggerModel.findById(triggerId).exec();
   }
 
+
   deleteTrigger(triggerId: Types.ObjectId) {
-    return this.triggerModel.findByIdAndUpdate(triggerId, { isDeleted: true }, { new: true }).exec();
+    const deleteTrigger = this.triggerModel.findByIdAndDelete(triggerId).exec();
+    this.chatbotModel.updateOne(
+      { triggerIds: triggerId },
+      { $pull: { triggerIds: triggerId } }
+    ).exec();
+    return deleteTrigger;
   }
 
+  
   // flow-block related methods can be added here
   createFlowBlock(data: FlowBlockDto) {
     const flowBlock = new this.flowBlockModel(data);
@@ -123,6 +132,8 @@ export class ChatbotService {
     flowBlock.save();
     return flowBlock;
   }
+
+
   updateFlowBlock(flowBlockId: Types.ObjectId, data: Partial<FlowBlockDto>) {
     return this.flowBlockModel.findByIdAndUpdate(flowBlockId, data, { new: true }).exec();
   }
@@ -132,6 +143,8 @@ export class ChatbotService {
   deleteFlowBlock(flowBlockId: Types.ObjectId) {
     return this.flowBlockModel.findByIdAndDelete(flowBlockId).exec();
   }
+
+
 
   // flow-button related methods can be added here
   createFlowButton(data: FlowButtonDto) {

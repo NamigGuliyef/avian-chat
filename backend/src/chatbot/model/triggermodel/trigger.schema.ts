@@ -10,7 +10,6 @@ export class Trigger {
   @Prop({ type: [String], default: [] })
   keywords: string[];
 
-
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Chatbot' })
   chatbotId: Types.ObjectId;
 

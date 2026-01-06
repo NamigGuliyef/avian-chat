@@ -106,7 +106,7 @@ export class ChatbotController {
   }
 
 
-  @ApiOperation({ summary: 'Delete a flow by ID' })
+  @ApiOperation({ summary: 'Delete a flow by ID ✅' })
   @ApiParam({ name: 'flowId', type: 'string' })
   @Delete('flow/:flowId')
   deleteFlow(@Param('flowId') flowId: Types.ObjectId) {
@@ -116,31 +116,39 @@ export class ChatbotController {
 
   // trigger related endpoints can be added here
 
-  @ApiOperation({ summary: 'Create a new trigger' })
+  @ApiOperation({ summary: 'Create a new trigger ✅' })
   @ApiBody({ type: CreateTriggerDto })
   @Post('trigger')
   createTrigger(@Body() data: CreateTriggerDto) {
     return this.chatbotService.createTrigger(data);
   }
 
-  @ApiOperation({ summary: 'Update a trigger by ID' })
+
+  @ApiOperation({ summary: 'Update a trigger by ID ✅' })
   @ApiBody({ type: UpdateTriggerDto })
+  @ApiParam({ name: 'triggerId', type: 'string' })
   @Patch('trigger/:triggerId')
   updateTrigger(@Param('triggerId') triggerId: Types.ObjectId, @Body() data: UpdateTriggerDto) {
     return this.chatbotService.updateTrigger(triggerId, data);
   }
 
-  @ApiOperation({ summary: 'Get a trigger by ID' })
+
+  @ApiOperation({ summary: 'Get a trigger by ID ✅' })
+  @ApiParam({ name: 'triggerId', type: 'string' })
   @Get('trigger/:triggerId')
   getTriggerById(@Param('triggerId') triggerId: Types.ObjectId) {
     return this.chatbotService.getTriggerById(triggerId);
   }
 
-  @ApiOperation({ summary: 'Delete a trigger by ID' })
+
+  @ApiOperation({ summary: 'Delete a trigger by ID ✅' })
+  @ApiParam({ name: 'triggerId', type: 'string' })
   @Delete('trigger/:triggerId')
   deleteTrigger(@Param('triggerId') triggerId: Types.ObjectId) {
     return this.chatbotService.deleteTrigger(triggerId);
   }
+
+  
 
   @ApiOperation({ summary: "Get all flow blocks" })
   @Get('flow-blocks/:flowBlockId')

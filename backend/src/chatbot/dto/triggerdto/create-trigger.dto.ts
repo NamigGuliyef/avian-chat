@@ -13,7 +13,7 @@ export class CreateTriggerDto {
 
   @ApiProperty()
   @IsString()
-  chatbotId: Types.ObjectId;
+  chatbotId: string
   
   @ApiProperty()
   @IsString()
