@@ -1,6 +1,6 @@
 
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 @Schema({ timestamps: true, versionKey: false })
 export class Trigger {
@@ -10,7 +10,11 @@ export class Trigger {
   @Prop({ type: [String], default: [] })
   keywords: string[];
 
-  @Prop({ type: Types.ObjectId, ref: 'Flow', required: true })
+
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Chatbot' })
+  chatbotId: Types.ObjectId;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Flow', required: true })
   targetFlowId: Types.ObjectId;
 
   @Prop({ default: true })

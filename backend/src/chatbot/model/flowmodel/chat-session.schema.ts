@@ -1,16 +1,16 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 @Schema({ timestamps: true, versionKey: false })
 export class ChatSession {
   @Prop({ required: true })
-  userId: string;
+  visitorId: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Flow' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Flow' })
   flowId: Types.ObjectId;
 
-  @Prop({ required: true })
-  currentBlockId: string;
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'FlowBlock' })
+  currentBlockId: Types.ObjectId;
 
   @Prop({ default: false })
   isFinished: boolean;

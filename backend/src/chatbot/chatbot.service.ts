@@ -1,0 +1,94 @@
+import { Injectable } from '@nestjs/common';
+import { CreateChatbotDto } from './dto/create-chatbot.dto';
+import { UpdateChatbotDto } from './dto/update-chatbot.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Chatbot } from './model/chatbot.schema';
+import { Model, Types } from 'mongoose';
+import { CreateFlowDto } from './dto/flowdto/create-flow.dto';
+import { Flow } from './model/flowmodel/flow.schema';
+import { CreateTriggerDto } from './dto/triggerdto/create-trigger.dto';
+import { Trigger } from './model/triggermodel/trigger.schema';
+
+@Injectable()
+export class ChatbotService {
+  constructor(
+    @InjectModel(Chatbot.name) private readonly chatbotModel: Model<Chatbot>,
+    @InjectModel(Flow.name) private readonly flowModel: Model<Flow>,
+    @InjectModel(Trigger.name) private readonly triggerModel: Model<Trigger>,
+  ) { }
+  create(createChatbotDto: CreateChatbotDto) {
+    const chatbot = this.chatbotModel.create(createChatbotDto);
+    return chatbot;
+  }
+
+  findAll() {
+    const chatbots = this.chatbotModel.find().exec();
+    return chatbots;
+  }
+
+  findAllByCompanyId(companyId: Types.ObjectId) {
+    const chatbots = this.chatbotModel.find({ companyId }).populate('companyId').exec();
+    return chatbots;
+  }
+
+  findOne(id: Types.ObjectId) {
+    const chatbot = this.chatbotModel.findById(id).exec();
+    return chatbot;
+  }
+
+  update(id: Types.ObjectId, updateChatbotDto: UpdateChatbotDto) {
+    const chatbot = this.chatbotModel.findByIdAndUpdate(id, updateChatbotDto, { new: true }).exec();
+    return chatbot;
+  }
+
+  remove(id: Types.ObjectId) {
+    const chatbot = this.chatbotModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true }).exec();
+    return chatbot;
+  }
+
+  // flow related methods can be added here
+  createFlow(flowData: CreateFlowDto) {
+    const flow = new this.flowModel(flowData);
+      this.chatbotModel.updateOne(
+      { _id: flowData.chatbotId },
+      { $push: { flowIds: flow._id } }
+    ).exec();
+    flow.save();
+    return flow;
+  }
+  updateFlow(flowId: Types.ObjectId, flowData: Partial<CreateFlowDto>) {
+    return this.flowModel.findByIdAndUpdate(flowId, flowData, { new: true }).exec();
+  }
+
+  getFlowById(flowId: Types.ObjectId) {
+    return this.flowModel.findById(flowId).exec();
+  }
+
+  deleteFlow(flowId: Types.ObjectId) {
+    return this.flowModel.findByIdAndDelete(flowId).exec();
+  }
+
+  // trigger related methods can be added here
+
+  createTrigger(data: CreateTriggerDto) {
+    const trigger = new this.triggerModel(data);
+    this.chatbotModel.updateOne(
+      { _id: data.chatbotId },
+      { $push: { triggerIds: trigger._id } }
+    ).exec();
+    trigger.save();
+    return trigger;
+  }
+
+  updateTrigger(triggerId: Types.ObjectId, data: Partial<CreateTriggerDto>) {
+    return this.triggerModel.findByIdAndUpdate(triggerId, data, { new: true }).exec();
+  }
+
+  getTriggerById(triggerId: Types.ObjectId) {
+    return this.triggerModel.findById(triggerId).exec();
+  }
+
+  deleteTrigger(triggerId: Types.ObjectId) {
+    return this.triggerModel.findByIdAndUpdate(triggerId, { isDeleted: true }, { new: true }).exec();
+  }
+}

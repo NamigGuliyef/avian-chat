@@ -1,11 +1,11 @@
 import { Prop, Schema } from '@nestjs/mongoose';
 import { FlowButton } from './flow-button.schema';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { BlockType, ActionType } from 'src/enum/enum';
 
-@Schema({ _id: true })
+@Schema()
 export class FlowBlock {
-    @Prop({ enum: BlockType, required: true })
+    @Prop({ type: String, enum: BlockType, required: true, default: BlockType.MESSAGE })
     type: BlockType;
 
     // MESSAGE
@@ -16,10 +16,10 @@ export class FlowBlock {
     buttons?: FlowButton[];
 
     // GOTO
-    @Prop({ type: Types.ObjectId, ref: 'Flow' })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Flow' })
     targetFlowId?: Types.ObjectId;
 
     // ACTION
-    @Prop({ enum: ActionType })
+    @Prop({ type: String, enum: ActionType, default: ActionType.OPEN })
     actionType?: ActionType;
 }
