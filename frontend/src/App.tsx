@@ -32,6 +32,7 @@ import UserExcels from "./components/user/UserExcels";
 import UserSheets from "./components/user/UserSheets";
 import UserColumns from "./components/user/UserColumns";
 import AdminColumns from "./components/admin/AdminColumns";
+import ChatbotFlowBuilder from "./components/admin/ChatbotFlowBuilder";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
               <Route path="companies/:companyId" element={<AdminSingleCompany />} />
               <Route path="projects/:projectId" element={<SingleProject />} />
               <Route path="chatbots" element={<ChatbotsManagement />} />
+              <Route path="chatbots/:chatbotId" element={<ChatbotFlowBuilder />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route path="logs" element={<OperationLogs />} />

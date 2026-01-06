@@ -24,7 +24,7 @@ import { FlowButtonDto } from './dto/flowdto/flow-button.dto';
 export class ChatbotController {
   constructor(private readonly chatbotService: ChatbotService) { }
 
-  @ApiOperation({ summary: 'Create a new chatbot ✅'})
+  @ApiOperation({ summary: 'Create a new chatbot ✅' })
   @ApiBody({ type: CreateChatbotDto })
   @Post()
   create(@Body() createChatbotDto: CreateChatbotDto) {
@@ -133,6 +133,14 @@ export class ChatbotController {
   }
 
 
+  @ApiOperation({ summary: 'Get triggers by chatbot ID ✅' })
+  @ApiParam({ name: 'chatbotId', type: 'string' })
+  @Get('trigger/chatbot/:chatbotId')
+  getTriggersByChatBotId(@Param('chatbotId') chatbotId: Types.ObjectId) {
+    return this.chatbotService.getTriggersByChatBotId(chatbotId);
+  }
+
+
   @ApiOperation({ summary: 'Get a trigger by ID ✅' })
   @ApiParam({ name: 'triggerId', type: 'string' })
   @Get('trigger/:triggerId')
@@ -148,7 +156,7 @@ export class ChatbotController {
     return this.chatbotService.deleteTrigger(triggerId);
   }
 
-  
+
   @ApiOperation({ summary: "Update a flow block by ID" })
   @ApiParam({ name: 'flowBlockId', type: 'string' })
   @ApiBody({ type: FlowBlockDto })

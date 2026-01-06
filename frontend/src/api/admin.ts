@@ -26,15 +26,13 @@ export const deleteCompany = async (companyId) => {
 
 // users
 export const getSupervisors = async (): Promise<IUser[]> => {
-    // const res = await axios.get(`/user?role=${Roles.Supervisor}`)
-    // return res.data;
-    return mokko.users
+    const res = await axios.get(`/user?role=${Roles.Supervisor}`)
+    return res.data;
 }
 
 export const getUsers = async (filter): Promise<IUser[]> => {
     const res = await axios.get(`/user${filter}`)
-    // return res.data;
-    return mokko.users
+    return res.data;
 }
 export const addUser = async (data: any): Promise<IUser> => {
     // const res = await axios.post("/user", data)

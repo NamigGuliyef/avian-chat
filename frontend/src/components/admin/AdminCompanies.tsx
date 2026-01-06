@@ -1,26 +1,15 @@
-import { addCompany, deleteCompany, getCompanies, getUsers, updateCompany } from '@/api/admin';
-import { Badge } from '@/components/ui/badge';
+import { addCompany, deleteCompany, getCompanies, updateCompany } from '@/api/admin';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useChat } from '@/contexts/ChatContext';
-import { mockCrmUsers, mockStats } from '@/data/mockData';
-import { User as CrmUser } from '@/types/crm';
-import { ICompany, IUser, ProjectDirection, ProjectName, ProjectType, Roles } from '@/types/types';
+import { ICompany } from '@/types/types';
 import {
     Building2,
     Edit,
-    Eye,
     Plus,
-    Search,
-    Trash2,
-    X
+    Trash2
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';

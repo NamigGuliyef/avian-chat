@@ -1,5 +1,46 @@
 import { Shield, UserCog, UserIcon } from "lucide-react";
 
+export enum UserRole {
+    admin = 'Admin',
+    supervisor = 'Supervisor',
+    agent = 'Agent',
+    partner = 'Partner',
+}
+
+
+export enum ProjectType {
+    outbound = "0",
+    inbound = "1"
+}
+
+
+export enum ProjectDirection {
+    call = "0",
+    social = "1"
+}
+
+
+export enum ProjectName {
+    survey = "0",
+    telesales = "1",
+    telemarketing = "2",
+}
+
+
+
+export enum BlockType {
+    MESSAGE = 'message',
+    ACTION = 'action',
+    GOTO = 'goto',
+}
+
+
+export enum ActionType {
+    CLOSE = 'close',
+    OPEN = 'open',
+    AGENT = 'agent',
+}
+
 export enum ProjectType {
     Outbound = "0",
     Inbound = "1"
@@ -244,155 +285,3 @@ export interface IColumn {
     phoneNumbers: string[];
 }
 
-
-// ---------------------------------------------------
-export const supervisorUser: IUser = {
-    _id: "user_supervisor_1",
-    name: "Elvin",
-    surname: "Mammadov",
-    phone: "+994501112233",
-    status: UserStatus.Active,
-    email: "elvin.supervisor@company.com",
-    password: "hashed_password",
-    supervisor: null as any,
-    channelIds: [],
-    role: Roles.Supervisor,
-    assignedAgents: []
-};
-export const supervisors: IUser[] = [
-    supervisorUser,
-    {
-        _id: "user_supervisor_2",
-        name: "Alvin",
-        surname: "12Mammadov",
-        phone: "+994501112233",
-        status: UserStatus.Active,
-        email: "elvin.supervisor@company.com",
-        password: "hashed_password",
-        supervisor: null as any,
-        channelIds: [],
-        role: Roles.Supervisor,
-        assignedAgents: []
-    }
-]
-const agentUser: IUser = {
-    _id: "user_agent_1",
-    name: "Aysel",
-    surname: "Aliyeva",
-    phone: "+994557778899",
-    status: UserStatus.Active,
-    email: "aysel.agent@company.com",
-    password: "hashed_password",
-    supervisor: supervisorUser,
-    channelIds: [],
-    role: Roles.Agent,
-    assignedAgents: []
-};
-const agents: IUser[] = [
-    agentUser,
-    {
-        _id: "user_agent_2",
-        name: "Eysel",
-        surname: "asEliyeva",
-        phone: "+994557778899",
-        status: UserStatus.Active,
-        email: "aysel.agent@company.com",
-        password: "hashed_password",
-        supervisor: supervisorUser,
-        channelIds: [],
-        role: Roles.Agent,
-        assignedAgents: []
-    }
-]
-
-const companies: ICompany[] = [{
-    _id: "company_1",
-    name: "ChatSoft LLC",
-    domain: "chatsoft.io",
-    channels: [],
-    agents: [agentUser],
-    supervisors: [supervisorUser],
-    projectType: ProjectType.Outbound,
-    projectDirection: ProjectDirection.Call,
-    projectName: ProjectName.Survey
-}];
-const company = companies[0]
-
-const websiteChannel: IChannel = {
-    _id: "channel_web_1",
-    name: "Website Chat",
-    company,
-    isActive: true,
-};
-
-const whatsappChannel: IChannel = {
-    _id: "channel_whatsapp_1",
-    name: "WhatsApp",
-    company,
-    isActive: true,
-};
-
-company.channels = [websiteChannel, whatsappChannel];
-agentUser.channelIds = [websiteChannel, whatsappChannel];
-supervisorUser.channelIds = [websiteChannel];
-
-const conversation: IConversation = {
-    _id: "conversation_1",
-    visitorId: null as any,
-    agentId: agentUser,
-    status: ConversationStatus.Open,
-    startedAt: new Date("2025-01-10T10:00:00Z"),
-    conversationNote: "Customer asking about pricing",
-};
-
-const visitor: IVisitor = {
-    _id: "visitor_1",
-    name: "John Doe",
-    email: "john.doe@gmail.com",
-    phone: "+49123456789",
-    ipAddress: "192.168.1.10",
-    conversationId: conversation,
-    gender: Gender.Male,
-    device: "Desktop",
-    os: "Windows",
-    language: "en",
-    originChannel: websiteChannel,
-    firstSeen: new Date("2025-01-10T09:58:00Z"),
-    lastSeen: new Date("2025-01-10T10:05:00Z"),
-};
-
-const messages: IMessage[] = [
-    {
-        _id: "message_1",
-        conversationId: conversation,
-        senderType: MessageSenderType.Visitor,
-        senderId: visitor._id,
-        messageType: MessageType.Text,
-        content: "Hi, I want to know your pricing plans.",
-        createdAt: new Date("2025-01-10T10:00:10Z"),
-    },
-    {
-        _id: "message_2",
-        conversationId: conversation,
-        senderType: MessageSenderType.Agent,
-        senderId: agentUser._id,
-        messageType: MessageType.Text,
-        content: "Hello! Sure, I’ll help you with that 😊",
-        seenAt: new Date("2025-01-10T10:00:30Z"),
-        createdAt: new Date("2025-01-10T10:00:25Z"),
-    },
-];
-
-export const mokko = {
-    companies,
-    users: [
-        supervisorUser,
-        agentUser,
-    ],
-    channels: [websiteChannel, whatsappChannel],
-    visitor,
-    conversation,
-    messages,
-    supervisors,
-    agents
-};

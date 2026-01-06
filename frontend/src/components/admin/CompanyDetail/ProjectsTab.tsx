@@ -1,24 +1,19 @@
-import { addProject, addProjectMember, deleteProject, getProjects, removeProjectMember, updateProject } from '@/api/admin';
+import { addProject, addProjectMember, deleteProject, getProjects, removeProjectMember } from '@/api/admin';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getEnumKeyByValue } from '@/lib/utils';
-import { IProject, IUser, mokko, ProjectDirection, ProjectName, ProjectType } from '@/types/types';
+import { IProject, IUser, ProjectDirection, ProjectName, ProjectType } from '@/types/types';
 import {
-    Pen,
     Plus,
-    Trash,
     Trash2
 } from 'lucide-react';
 
 import {
-    Eye,
     Folder
 } from 'lucide-react';
 import { useEffect, useState } from 'react';

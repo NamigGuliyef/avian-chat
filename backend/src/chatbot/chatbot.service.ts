@@ -75,7 +75,7 @@ export class ChatbotService {
 
 
   getFlowByChatBotId(chatbotId: Types.ObjectId) {
-    return this.flowModel.findOne({ chatbotId }).exec();
+    return this.flowModel.find({ chatbotId }).exec();
   }
 
 
@@ -111,6 +111,9 @@ export class ChatbotService {
     return this.triggerModel.findById(triggerId).exec();
   }
 
+  getTriggersByChatBotId(chatbotId: Types.ObjectId) {
+    return this.triggerModel.find({ chatbotId }).exec();
+  }
 
   deleteTrigger(triggerId: Types.ObjectId) {
     const deleteTrigger = this.triggerModel.findByIdAndDelete(triggerId).exec();

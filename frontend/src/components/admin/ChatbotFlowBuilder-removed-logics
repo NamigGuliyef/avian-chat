@@ -1,0 +1,25 @@
+// delete flow
+
+// const handleDeleteFlow = (flowId: string, e: React.MouseEvent) => {
+//     e.stopPropagation();
+//     if (flows.find((f) => f._id === flowId)?.isDefault) return;
+//     setFlows(flows.filter((f) => f._id !== flowId));
+//     if (selectedFlowId === flowId) {
+//         setSelectedFlowId(flows[0]?._id || '');
+//     }
+//     setIsSaved(false);
+// };
+
+
+// {!flow.isDefault && (
+//                         <Button
+//                           variant="ghost"
+//                           size="icon"
+//                           className="h-5 w-5 opacity-0 group-hover:opacity-100"
+//                           onClick={(e) => handleDeleteFlow(flow._id, e)}
+//                         >
+//                           <X className="h-3 w-3" />
+//                         </Button>
+//                       )} 
+
+// -----------------------------------------------
