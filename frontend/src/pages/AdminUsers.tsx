@@ -1,4 +1,4 @@
-import { updateUser } from '@/api/company';
+import { updateUser } from '@/api/admin';
 import { getSupervisorAgents, searchUsers, signUp } from '@/api/users';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

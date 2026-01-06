@@ -1,4 +1,4 @@
-import { addChannel, getChannels, updateChannel } from '@/api/company';
+import { addChannel, getChannels, updateChannel } from '@/api/admin';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';

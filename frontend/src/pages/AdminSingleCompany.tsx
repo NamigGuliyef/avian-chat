@@ -1,4 +1,4 @@
-import { getCompanyById } from '@/api/company';
+import { getCompanyById } from '@/api/admin';
 import CompanyDetail from '@/components/admin/CompanyDetail';
 import { ICompany } from '@/types/types';
 import { useEffect, useState } from 'react';

@@ -1,4 +1,4 @@
-import { addCompany, deleteCompany, getCompanies, getUsers, updateCompany } from '@/api/company';
+import { addCompany, deleteCompany, getCompanies, getUsers, updateCompany } from '@/api/admin';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

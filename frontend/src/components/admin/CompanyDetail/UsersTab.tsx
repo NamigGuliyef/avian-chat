@@ -1,4 +1,4 @@
-import { getChannels, getUsers, removeAgentFromCompany, updateUserChannels } from '@/api/company';
+import { getChannels, getUsers, removeAgentFromCompany, updateUserChannels } from '@/api/admin';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

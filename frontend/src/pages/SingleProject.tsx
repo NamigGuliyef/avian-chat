@@ -1,4 +1,4 @@
-import { addProjectMember, addUserToChannel, getChannels, getProjectById, removeChannelFromUser, removeProjectMember } from "@/api/company";
+import { addProjectMember, addUserToChannel, getChannels, getProjectById, removeChannelFromUser, removeProjectMember } from "@/api/admin";
 import { searchUsers } from "@/api/users";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
