@@ -121,7 +121,7 @@ export class ChatbotService {
     return deleteTrigger;
   }
 
-  
+
   // flow-block related methods can be added here
   createFlowBlock(data: FlowBlockDto) {
     const flowBlock = new this.flowBlockModel(data);
@@ -137,11 +137,21 @@ export class ChatbotService {
   updateFlowBlock(flowBlockId: Types.ObjectId, data: Partial<FlowBlockDto>) {
     return this.flowBlockModel.findByIdAndUpdate(flowBlockId, data, { new: true }).exec();
   }
+
+
+
   getFlowBlockById(flowBlockId: Types.ObjectId) {
     return this.flowBlockModel.findById(flowBlockId).exec();
   }
+
+  
   deleteFlowBlock(flowBlockId: Types.ObjectId) {
-    return this.flowBlockModel.findByIdAndDelete(flowBlockId).exec();
+    const deleteFlowBlock = this.flowBlockModel.findByIdAndDelete(flowBlockId).exec();
+    this.flowModel.updateOne(
+      { 'blocks._id': flowBlockId },
+      { $pull: { blocks: { _id: flowBlockId } } }
+    ).exec();
+    return deleteFlowBlock;
   }
 
 
@@ -156,12 +166,18 @@ export class ChatbotService {
     flowButton.save();
     return flowButton;
   }
+
+
   updateFlowButton(flowButtonId: Types.ObjectId, data: Partial<FlowButtonDto>) {
     return this.flowButtonModel.findByIdAndUpdate(flowButtonId, data, { new: true }).exec();
   }
+
+
   getFlowButtonById(flowButtonId: Types.ObjectId) {
     return this.flowButtonModel.findById(flowButtonId).exec();
   }
+
+  
   deleteFlowButton(flowButtonId: Types.ObjectId) {
     return this.flowButtonModel.findByIdAndDelete(flowButtonId).exec();
   }

@@ -16,7 +16,8 @@ import { Types } from 'mongoose';
 export class FlowBlockDto {
     @ApiProperty()
     @IsEnum(BlockType)
-    type: BlockType;
+    @IsNotEmpty()
+    type: string;
 
     // MESSAGE
     @ApiProperty()
@@ -24,7 +25,7 @@ export class FlowBlockDto {
     @IsString()
     content?: string;
 
-    @ApiProperty()
+    @ApiProperty({ type: [FlowButtonDto] })
     @IsOptional()
     @ValidateNested({ each: true })
     @Type(() => FlowButtonDto)
@@ -33,11 +34,11 @@ export class FlowBlockDto {
     // GOTO
     @ApiProperty()
     @IsNotEmpty()
-    targetFlowId?: Types.ObjectId;
+    targetFlowId?: string;
 
     // ACTION
     @ApiProperty()
     @IsOptional()
     @IsEnum(ActionType)
-    actionType?: ActionType;
+    actionType?: string;
 }

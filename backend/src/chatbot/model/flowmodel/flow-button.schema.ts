@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
-@Schema({ _id: true })
+@Schema({ versionKey: false, timestamps: true })
 export class FlowButton {
   @Prop({ required: true })
   label: string;
@@ -10,7 +10,7 @@ export class FlowButton {
   emoji?: string;
 
   // Go to Flow
-  @Prop({ type: Types.ObjectId, ref: 'Flow' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Flow' })
   goToFlowId?: Types.ObjectId;
 }
 

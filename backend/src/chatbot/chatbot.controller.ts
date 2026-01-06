@@ -149,19 +149,14 @@ export class ChatbotController {
   }
 
   
-
-  @ApiOperation({ summary: "Get all flow blocks" })
-  @Get('flow-blocks/:flowBlockId')
-  getAllFlowBlockById(@Param('flowBlockId') flowBlockId: Types.ObjectId) {
-    return this.chatbotService.getFlowBlockById(flowBlockId);
-  }
-
   @ApiOperation({ summary: "Update a flow block by ID" })
+  @ApiParam({ name: 'flowBlockId', type: 'string' })
   @ApiBody({ type: FlowBlockDto })
   @Patch('flow-blocks/:flowBlockId')
   updateFlowBlock(@Param('flowBlockId') flowBlockId: Types.ObjectId, @Body() data: Partial<FlowBlockDto>) {
     return this.chatbotService.updateFlowBlock(flowBlockId, data);
   }
+
 
   @ApiOperation({ summary: "Create a new flow block" })
   @ApiBody({ type: FlowBlockDto })
@@ -170,12 +165,17 @@ export class ChatbotController {
     return this.chatbotService.createFlowBlock(data);
   }
 
+
   @ApiOperation({ summary: "Get a flow block by ID" })
+  @ApiParam({ name: 'flowBlockId', type: 'string' })
   @Get('flow-block/:flowBlockId')
   getFlowBlockById(@Param('flowBlockId') flowBlockId: Types.ObjectId) {
     return this.chatbotService.getFlowBlockById(flowBlockId);
   }
+
+
   @ApiOperation({ summary: "Delete a flow block by ID" })
+  @ApiParam({ name: 'flowBlockId', type: 'string' })
   @Delete('flow-blocks/:flowBlockId')
   deleteFlowBlock(@Param('flowBlockId') flowBlockId: Types.ObjectId) {
     return this.chatbotService.deleteFlowBlock(flowBlockId);

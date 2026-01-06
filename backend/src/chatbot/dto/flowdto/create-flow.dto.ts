@@ -1,3 +1,5 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsNotEmpty,
@@ -5,10 +7,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { FlowBlockDto } from './flow-block.dto';
-import { ApiProperty } from '@nestjs/swagger';
-import { Types } from 'mongoose';
 
 export class CreateFlowDto {
   @ApiProperty()
