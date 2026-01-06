@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
-export class ButtonDto {
+export class FlowButtonDto {
   @ApiProperty()
   @IsString()
   label: string;

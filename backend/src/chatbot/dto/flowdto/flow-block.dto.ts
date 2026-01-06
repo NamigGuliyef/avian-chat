@@ -1,16 +1,19 @@
 import {
     IsEnum,
+    IsNotEmpty,
+    isNotEmpty,
     IsOptional,
     IsString,
     ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { BlockType, ActionType } from 'src/enum/enum';
-import { ButtonDto } from './flow-button.dto';
+import { FlowButtonDto } from './flow-button.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
 
-export class BlockDto {
+export class FlowBlockDto {
     @ApiProperty()
     @IsEnum(BlockType)
     type: BlockType;
@@ -24,14 +27,13 @@ export class BlockDto {
     @ApiProperty()
     @IsOptional()
     @ValidateNested({ each: true })
-    @Type(() => ButtonDto)
-    buttons?: ButtonDto[];
+    @Type(() => FlowButtonDto)
+    buttons?: FlowButtonDto[];
 
     // GOTO
     @ApiProperty()
-    @IsOptional()
-    @IsString()
-    targetFlowId?: string;
+    @IsNotEmpty()
+    targetFlowId?: Types.ObjectId;
 
     // ACTION
     @ApiProperty()
