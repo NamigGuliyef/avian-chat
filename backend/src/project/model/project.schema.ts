@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Types } from 'mongoose';
-import { ProjectDirection, ProjectName, ProjectType } from '../enum/enum';
+import { ProjectDirection, ProjectName, ProjectType } from 'src/enum/enum';
 
 @Schema({ versionKey: false, timestamps: true })
 

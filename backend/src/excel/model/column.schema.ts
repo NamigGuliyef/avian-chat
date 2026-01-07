@@ -1,7 +1,7 @@
 
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Types } from 'mongoose';
-import { ColumnType } from '../enum/enum';
+import { ColumnType } from 'src/enum/enum';
 import { ColumnOption } from './column-option.schema';
 
 

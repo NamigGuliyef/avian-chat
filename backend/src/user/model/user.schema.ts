@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, Types } from 'mongoose';
-import { OnlineStatus, UserRole } from '../enum/enum';
+import { OnlineStatus, UserRole } from 'src/enum/enum';
 
 export type UserDocument = User & Document;
 
