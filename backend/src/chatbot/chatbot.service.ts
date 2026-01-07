@@ -22,23 +22,24 @@ export class ChatbotService {
     @InjectModel(FlowBlock.name) private readonly flowBlockModel: Model<FlowBlock>,
     @InjectModel(FlowButton.name) private readonly flowButtonModel: Model<FlowButton>,
   ) { }
-  create(createChatbotDto: CreateChatbotDto) {
-    const chatbot = this.chatbotModel.create(createChatbotDto);
-    return chatbot;
+  async create(createChatbotDto: CreateChatbotDto) {
+    const chatbot = await this.chatbotModel.create(createChatbotDto);
+    const _d = await this.findOne(chatbot._id);
+    return _d;
   }
 
   findAll() {
-    const chatbots = this.chatbotModel.find().populate({ path: 'companyId', select: '_id name' }).exec();
+    const chatbots = this.chatbotModel.find({ isDeleted: false }).populate({ path: 'companyId', select: '_id name' }).exec();
     return chatbots;
   }
 
   findAllByCompanyId(companyId: Types.ObjectId) {
-    const chatbots = this.chatbotModel.find({ companyId }).populate('companyId').exec();
+    const chatbots = this.chatbotModel.find({ companyId, isDeleted: false }).populate({ path: 'companyId', select: '_id name' }).exec();
     return chatbots;
   }
 
   findOne(id: Types.ObjectId) {
-    const chatbot = this.chatbotModel.findById(id).exec();
+    const chatbot = this.chatbotModel.findOne({ _id: id, isDeleted: false }).populate({ path: 'companyId', select: '_id name' }).exec();
     return chatbot;
   }
 

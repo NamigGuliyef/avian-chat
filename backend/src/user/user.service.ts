@@ -7,7 +7,7 @@ import { Sheet, SheetColumn } from 'src/excel/model/sheet.schema';
 import { User } from './model/user.schema';
 import { SheetRow } from 'src/excel/model/row-schema';
 
-const supId = "695bdad5f2405115af596e1e"
+const supId = "695e0b4690d5dca3abdd31ae"
 @Injectable()
 export class UserService {
     constructor(
@@ -91,7 +91,7 @@ export class UserService {
 
 
     async getColumnsBySheetId(sheetId: string): Promise<any> {
-        const userId = "695bdad5f2405115af596e1e";
+        const userId = "695e0b4690d5dca3abdd31ae";
         const sheet = await this.sheetModel.findById(sheetId).populate({ path: "columnIds.columnId", model: "Column" }).exec();
         console.log(sheet?.columnIds)
         if (!sheet) throw new Error("Sheet not found");
