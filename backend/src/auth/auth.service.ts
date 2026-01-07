@@ -1,9 +1,9 @@
-import { CreateUserDto } from 'src/auth/dto/create-user.dto';
+import { CreateUserDto } from '../auth/dto/create-user.dto';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { hashPassword, comparePassword } from 'src/helper/hashpass';
-import { User } from 'src/user/model/user.schema';
+import { hashPassword, comparePassword } from '../helper/hashpass';
+import { User } from '../user/model/user.schema';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 

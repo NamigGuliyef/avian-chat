@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId, Types } from 'mongoose';
-import { CreateUserDto } from 'src/auth/dto/create-user.dto';
-import { CreateChannelDto } from 'src/channel/dto/create-channel.dto';
-import { Channel } from 'src/channel/model/channel.schema';
-import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
-import { Company } from 'src/company/model/company.schema';
-import { CreateAdminColumnDto } from 'src/excel/dto/create-column.dto';
-import { UpdateAdminColumnDto } from 'src/excel/dto/update-column.dto';
-import { Column } from 'src/excel/model/column.schema';
-import { Excel } from 'src/excel/model/excel.schema';
-import { SheetRow } from 'src/excel/model/row-schema';
-import { Sheet } from 'src/excel/model/sheet.schema';
-import { hashPassword } from 'src/helper/hashpass';
-import { CreateProjectDto } from 'src/project/dto/create-project.dto';
-import { Project } from 'src/project/model/project.schema';
-import { User } from 'src/user/model/user.schema';
+import { CreateUserDto } from '../auth/dto/create-user.dto';
+import { CreateChannelDto } from '../channel/dto/create-channel.dto';
+import { Channel } from '../channel/model/channel.schema';
+import { CreateCompanyDto } from '../company/dto/create-company.dto';
+import { Company } from '../company/model/company.schema';
+import { CreateAdminColumnDto } from '../excel/dto/create-column.dto';
+import { UpdateAdminColumnDto } from '../excel/dto/update-column.dto';
+import { Column } from '../excel/model/column.schema';
+import { Excel } from '../excel/model/excel.schema';
+import { SheetRow } from '../excel/model/row-schema';
+import { Sheet } from '../excel/model/sheet.schema';
+import { hashPassword } from '../helper/hashpass';
+import { CreateProjectDto } from '../project/dto/create-project.dto';
+import { Project } from '../project/model/project.schema';
+import { User } from '../user/model/user.schema';
 
 
 @Injectable()

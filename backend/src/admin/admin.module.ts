@@ -2,15 +2,15 @@ import { Module } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Company, CompanySchema } from 'src/company/model/company.schema';
-import { Project, ProjectSchema } from 'src/project/model/project.schema';
+import { Company, CompanySchema } from '../company/model/company.schema';
+import { Project, ProjectSchema } from '../project/model/project.schema';
 import { Channel } from 'diagnostics_channel';
-import { ChannelSchema } from 'src/channel/model/channel.schema';
-import { User, UserSchema } from 'src/user/model/user.schema';
-import { Column, ColumnSchema } from 'src/excel/model/column.schema';
-import { Sheet, SheetSchema } from 'src/excel/model/sheet.schema';
-import { SheetRow, SheetRowSchema } from 'src/excel/model/row-schema';
-import { Excel, ExcelSchema } from 'src/excel/model/excel.schema';
+import { ChannelSchema } from '../channel/model/channel.schema';
+import { User, UserSchema } from '../user/model/user.schema';
+import { Column, ColumnSchema } from '../excel/model/column.schema';
+import { Sheet, SheetSchema } from '../excel/model/sheet.schema';
+import { SheetRow, SheetRowSchema } from '../excel/model/row-schema';
+import { Excel, ExcelSchema } from '../excel/model/excel.schema';
 
 @Module({
   imports: [MongooseModule.forFeature([
