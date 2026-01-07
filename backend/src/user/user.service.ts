@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Column } from 'src/excel/model/column.schema';
-import { Excel } from 'src/excel/model/excel.schema';
-import { Sheet, SheetColumn } from 'src/excel/model/sheet.schema';
+import { Column } from '../excel/model/column.schema';
+import { Excel } from '../excel/model/excel.schema';
+import { Sheet, SheetColumn } from '../excel/model/sheet.schema';
 import { User } from './model/user.schema';
-import { SheetRow } from 'src/excel/model/row-schema';
+import { SheetRow } from '../excel/model/row-schema';
 
 const supId = "695bdad5f2405115af596e1e"
 @Injectable()

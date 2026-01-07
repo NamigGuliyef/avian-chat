@@ -14,13 +14,13 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CreateExcelDto } from "src/excel/dto/create-excel.dto";
-import { CreateSheetColumnDto, CreateSheetDto } from "src/excel/dto/create-sheet.dto";
-import { UpdateExcelDto } from "src/excel/dto/update-excel.dto";
-import { UpdateSheetColumnDto, UpdateSheetDto } from "src/excel/dto/update-sheet.dto";
+import { CreateExcelDto } from "../excel/dto/create-excel.dto";
+import { CreateSheetColumnDto, CreateSheetDto } from "../excel/dto/create-sheet.dto";
+import { UpdateExcelDto } from "../excel/dto/update-excel.dto";
+import { UpdateSheetColumnDto, UpdateSheetDto } from "../excel/dto/update-sheet.dto";
 import { SupervisorService } from './supervisor.service';
 import { Types } from 'mongoose';
-import { SheetCellDto } from 'src/excel/dto/sheet-cell.dto';
+import { SheetCellDto } from '../excel/dto/sheet-cell.dto';
 
 @ApiTags("supervisor")
 @Controller('supervisor')

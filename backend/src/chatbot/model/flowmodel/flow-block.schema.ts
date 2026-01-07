@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { FlowButton } from './flow-button.schema';
 import mongoose, { Types } from 'mongoose';
-import { BlockType, ActionType } from 'src/enum/enum';
+import { ActionType, BlockType } from '../../../enum/enum';
+
 
 @Schema()
 export class FlowBlock {

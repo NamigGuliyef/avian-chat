@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Chatbot, ChatbotSchema } from './model/chatbot.schema';
-import { Company, CompanySchema } from 'src/company/model/company.schema';
+import { Company, CompanySchema } from '../company/model/company.schema';
 import { ChatbotController } from './chatbot.controller';
 import { ChatbotService } from './chatbot.service';
 import { Flow, FlowSchema } from './model/flowmodel/flow.schema';

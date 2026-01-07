@@ -1,13 +1,13 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { CreateCompanyDto } from 'src/company/dto/create-company.dto';
+import { CreateCompanyDto } from '../company/dto/create-company.dto';
 import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CreateProjectDto } from 'src/project/dto/create-project.dto';
-import { CreateChannelDto } from 'src/channel/dto/create-channel.dto';
+import { CreateProjectDto } from '../project/dto/create-project.dto';
+import { CreateChannelDto } from '../channel/dto/create-channel.dto';
 import { Types } from 'mongoose';
-import { CreateUserDto } from 'src/auth/dto/create-user.dto';
-import { CreateAdminColumnDto } from 'src/excel/dto/create-column.dto';
-import { UpdateAdminColumnDto } from 'src/excel/dto/update-column.dto';
+import { CreateUserDto } from '../auth/dto/create-user.dto';
+import { CreateAdminColumnDto } from '../excel/dto/create-column.dto';
+import { UpdateAdminColumnDto } from '../excel/dto/update-column.dto';
 
 @ApiTags('admin')
 @Controller('admin')

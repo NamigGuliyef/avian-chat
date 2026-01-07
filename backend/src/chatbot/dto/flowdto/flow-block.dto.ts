@@ -7,7 +7,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { BlockType, ActionType } from 'src/enum/enum';
+import { BlockType, ActionType } from '../../../enum/enum';
 import { FlowButtonDto } from './flow-button.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Types } from 'mongoose';

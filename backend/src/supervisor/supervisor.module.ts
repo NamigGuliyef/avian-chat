@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Column, ColumnSchema } from 'src/excel/model/column.schema';
-import { Excel, ExcelSchema } from 'src/excel/model/excel.schema';
-import { Sheet, SheetSchema } from 'src/excel/model/sheet.schema';
-import { Project, ProjectSchema } from 'src/project/model/project.schema';
-import { User, UserSchema } from 'src/user/model/user.schema';
+import { Column, ColumnSchema } from '../excel/model/column.schema';
+import { Excel, ExcelSchema } from '../excel/model/excel.schema';
+import { Sheet, SheetSchema } from '../excel/model/sheet.schema';
+import { Project, ProjectSchema } from '../project/model/project.schema';
+import { User, UserSchema } from '../user/model/user.schema';
 import { SupervisorController } from './supervisor.controller';
 import { SupervisorService } from './supervisor.service';
-import { SheetRow, SheetRowSchema } from 'src/excel/model/row-schema';
+import { SheetRow, SheetRowSchema } from '../excel/model/row-schema';
 
 @Module({
   imports: [MongooseModule.forFeature([

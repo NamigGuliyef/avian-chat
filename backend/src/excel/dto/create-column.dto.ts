@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ColumnType } from 'src/enum/enum';
+import { ColumnType } from '../../enum/enum';
 import { ColumnOption } from '../model/column-option.schema';
 import { IsOptional, IsString } from 'class-validator';
 
