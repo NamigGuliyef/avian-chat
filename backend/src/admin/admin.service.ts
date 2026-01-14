@@ -468,113 +468,63 @@ export class AdminService {
   // ümumi hesabat məlumatlarını gətirən funksiyası
   // Proyektde olan sütunların sayı və sütunlara yazılan məlumatlar
 
-  async getProjectTableView(filter?: {
-    companyIds?: string[];
-    projectIds?: string[];
-    sheetIds?: string[];
-    agentIds?: string[];
-    dateFrom?: Date;
-    dateTo?: Date;
-  }): Promise<any[]> {
-    return []; // Müvəqqəti olaraq boş massiv qaytarılır
-
-    const projectQuery: any = { isDeleted: false };
-
-    const projects = await this.projectModel.find({
-      _id: { $in: filter?.projectIds || [] },
-      companyId: { $in: filter?.companyIds || [] },
-    })
-      .select('-agents -sheetIds -columnIds')
+  async getProjectTableView(): Promise<any[]> {
+    // bütün project-ləri çəkirik
+    const projects = await this.projectModel.find({ isDeleted: false }).select('-agents -sheetIds -columnIds')
       .populate({ path: 'supervisors', select: 'name surname email' });
 
-    // const result = await Promise.all(
-    //   projects.map(async (project) => {
-    //     const company = await this.companyModel.findById(project.companyId);
+    const result = await Promise.all(
+      projects.map(async (project) => {
+        // company məlumatı
+        const company = await this.companyModel.findById(project.companyId);
 
-    //     // Şirkət filteri (regex)
-    //     if (filter?.company) {
-    //       const regex = new RegExp(filter.company, 'i');
-    //       if (!regex.test(company?.name ?? '')) return null;
-    //     }
+        // excel məlumatı
+        const excel = await this.excelModel.findOne({ _id: { $in: project.excelIds } });
 
-    //     const excel = await this.excelModel.findOne({ _id: { $in: project.excelIds } });
-    //     const sheets = await this.sheetModel.find({ excelId: excel?._id });
+        // sheet-ləri çəkirik
+        const sheets = await this.sheetModel.find({ excelId: excel?._id });
 
-    //     const sheetData = await Promise.all(
-    //       sheets.map(async (sheet) => {
-    //         // Sheet adı filteri (regex)
-    //         if (filter?.sheetName) {
-    //           const regex = new RegExp(filter.sheetName, 'i');
-    //           if (!regex.test(sheet.name)) return null;
-    //         }
+        // hər sheet üçün column və row-ları çəkirik
 
-    //         const columnIds = sheet.columnIds.map((col) => col.columnId);
-    //         const columns = await this.columnModel.find({ _id: { $in: columnIds } });
 
-    //         const agentIds = sheet.agentIds.map((agent) => agent.agentId);
-    //         const agents = await this.userModel.find({ _id: { $in: agentIds } });
+        const sheetData = await Promise.all(
+          sheets.map(async (sheet) => {
+            // columnId-ləri çıxarırıq
+            const columnIds = sheet.columnIds.map((col) => col.columnId);
+            const columns = await this.columnModel.find({ _id: { $in: columnIds } });
 
-    //         // Agent adı filteri (regex)
-    //         if (filter?.agentName) {
-    //           const regex = new RegExp(filter.agentName, 'i');
-    //           if (!agents.some(a => regex.test(`${a.name} ${a.surname}`))) {
-    //             return null;
-    //           }
-    //         }
+            // agentId-ləri çıxarırıq
+            const agentIds = sheet.agentIds.map((agent) => agent.agentId);
+            const agents = await this.userModel.find({ _id: { $in: agentIds } });
 
-    //         const sheetRowsRaw = await this.sheetRowModel.find({ sheetId: sheet._id });
-    //         let sheetRows = sheetRowsRaw.map((row) => row.data);
+            // sheet row-ları çəkirik
+            const sheetRows = await this.sheetRowModel.find({ sheetId: sheet._id });
 
-    //         // ColumnValue filteri (regex)
-    //         if (filter?.columnValue) {
-    //           const regex = new RegExp(filter.columnValue.value, 'i');
-    //           sheetRows = sheetRows.filter(row => {
-    //             const val = row[filter.columnValue!.column];
-    //             return val && regex.test(val.toString());
-    //           });
-    //         }
+            return {
+              sheetName: sheet.name,
+              columns: columns.map((col) => col.name),
+              agents: agents.map((agent) => ({
+                name: agent.name,
+                surname: agent.surname,
+                startRow: agent.startRow,
+                endRow: agent.endRow,
+              })),
+              sheetRows: sheetRows.map((row) => row.data),
+            };
+          })
+        );
 
-    //         // Date filter
-    //         if (filter?.dateFrom || filter?.dateTo) {
-    //           sheetRows = sheetRows.filter(row => {
-    //             const date = new Date(row.date);
-    //             if (filter.dateFrom && date < filter.dateFrom) return false;
-    //             if (filter.dateTo && date > filter.dateTo) return false;
-    //             return true;
-    //           });
-    //         }
+        return {
+          company: company?.name,
+          project: projects,
+          excel: excel?.name,
+          sheets: sheetData,
+        };
+      })
+    );
 
-    //         if (sheetRows.length === 0) return null;
-
-    //         return {
-    //           sheetName: sheet.name,
-    //           columns: columns.map((col) => col.name),
-    //           agents: agents.map((agent) => ({
-    //             name: agent.name,
-    //             surname: agent.surname,
-    //             startRow: agent.startRow,
-    //             endRow: agent.endRow,
-    //           })),
-    //           sheetRows,
-    //         };
-    //       })
-    //     );
-
-    //     const validSheets = sheetData.filter(Boolean);
-    //     if (validSheets.length === 0) return null;
-
-    //     return {
-    //       company: company?.name,
-    //       project: projects,
-    //       excel: excel?.name,
-    //       sheets: validSheets,
-    //     };
-    //   })
-    // );
-
-    // return result.filter(Boolean);
+    return result;
   }
-
 
 
 }
