@@ -50,21 +50,21 @@ const SupervisorDashboard = () => {
                                     </div>
                                 </div>
 
-                                {agent.onlineStatus === "online" ? (
+                                {/* {agent.onlineStatus === "online" ? (
                                     <Wifi className="h-5 w-5 text-green-500" />
                                 ) : (
                                     <WifiOff className="h-5 w-5 text-muted-foreground" />
-                                )}
+                                )} */}
                             </CardHeader>
 
                             <CardContent className="flex flex-wrap gap-2">
                                 <Badge variant="outline" className="capitalize">{agent.status}</Badge>
                                 <Badge variant="outline">{agent.role}</Badge>
                                 <Badge variant="outline">Projects: {agent.projectIds.length}</Badge>
-                                <Badge variant="outline">Channels: {agent.channelIds.length}</Badge>
+                                {/* <Badge variant="outline">Channels: {agent.channelIds.length}</Badge>
                                 {agent.chatbotEnabled === false && (
                                     <Badge variant="destructive">Chatbot OFF</Badge>
-                                )}
+                                )} */}
                             </CardContent>
                         </Card>
                     </motion.div>
