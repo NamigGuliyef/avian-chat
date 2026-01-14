@@ -38,9 +38,8 @@ export class SupervisorService {
       .populate([
         { path: 'agents', select: '-password' },
         { path: "columnIds" },
-        { path: 'excelIds' },
-        { path: 'sheetIds' },
-      ])
+        { path: 'excelIds', populate: { path: 'sheetIds' } }]);
+
   }
 
 
@@ -378,7 +377,7 @@ export class SupervisorService {
     const row = await this.sheetRowModel.findOneAndUpdate(
       { sheetId, rowNumber }, // mövcud row axtarır
       { $set: { [`data.${sheetCellData.key}`]: sheetCellData.value } },
-      { new: true } 
+      { new: true }
     );
 
     if (!row) {

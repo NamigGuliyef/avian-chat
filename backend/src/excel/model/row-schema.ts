@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 
 
 @Schema({ timestamps: true, versionKey: false })
 export class SheetRow {
-    @Prop({ type: Types.ObjectId, ref: 'Sheet', required: true, index: true })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Sheet', required: true, index: true })
     sheetId: Types.ObjectId;
 
     @Prop({ required: true })

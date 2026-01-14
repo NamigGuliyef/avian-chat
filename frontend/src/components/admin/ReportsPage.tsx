@@ -1,3 +1,4 @@
+import { getReport } from '@/api/admin';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,22 +8,21 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   ArrowUpDown,
+  BarChart3,
   CalendarDays,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
   Download,
-  Filter,
   Hash,
   Search,
   Settings2,
   Type,
   X
 } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
-// Dynamic column types
 type ColumnType = 'text' | 'number' | 'date';
 
 interface DynamicColumn {
@@ -31,7 +31,6 @@ interface DynamicColumn {
   type: ColumnType;
   visible: boolean;
 }
-
 
 // Mock Excel data simulating dynamic columns
 const mockExcelColumns: DynamicColumn[] = [
@@ -63,13 +62,16 @@ const mockData = [
 ];
 
 const ReportsPage: React.FC = () => {
-  // Dynamic columns state
-  const [columns, setColumns] = useState<DynamicColumn[]>(mockExcelColumns);
+  // Data state
+  const [reportData, setReportData] = useState<any[]>([]);
+  const [columns, setColumns] = useState<DynamicColumn[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Filter states
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
-  const [expandedFilters, setExpandedFilters] = useState<string[]>(['company', 'project']);
+  const [expandedFilters, setExpandedFilters] = useState<string[]>([]);
   const [filterSearch, setFilterSearch] = useState<Record<string, string>>({});
 
   // Table states
@@ -77,21 +79,170 @@ const ReportsPage: React.FC = () => {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(5);
+  const [pageSize] = useState(10);
 
   // Column visibility
   const [isColumnPickerOpen, setIsColumnPickerOpen] = useState(false);
 
-  // Get unique values for text columns (for filters)
-  const getUniqueValues = (columnId: string) => {
+  // Statistics card settings
+  const [statsCards, setStatsCards] = useState<string[]>([]);
+
+  // Fetch report data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getReport();
+
+        if (!data || data.length === 0) {
+          setReportData([]);
+          setColumns([]);
+          return;
+        }
+
+        // Transform nested backend data to flat structure
+        const flattenedData = transformBackendData(data);
+        setReportData(flattenedData);
+
+        // Auto-detect columns from data
+        if (flattenedData.length > 0) {
+          const detectedColumns = detectColumns(flattenedData);
+          setColumns(detectedColumns);
+          // Default expand first 2 filter columns
+          setExpandedFilters(detectedColumns.slice(0, 2).map(c => c.id));
+        }
+      } catch (err: any) {
+        console.error('Hesabat yüklənərkən xəta:', err);
+        setError('Hesabat məlumatları yüklənə bilmədi');
+        setReportData([]);
+        setColumns([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Transform nested backend data to flat rows
+  const transformBackendData = (data: any[]): any[] => {
+    const rows: any[] = [];
+
+    data.forEach((companyItem: any) => {
+      if (!companyItem) return;
+
+      const companyName = companyItem.company || '';
+      const projects = companyItem.project || [];
+      const sheets = companyItem.sheets || [];
+
+      // Process sheets with their rows
+      sheets.forEach((sheet: any) => {
+        const sheetName = sheet.sheetName || '';
+        const sheetRows = sheet.sheetRows || [];
+        
+        // Get excel name if available
+        const excelName = companyItem.excel || '';
+
+        // Get first project name (can be enhanced if needed)
+        const projectName = projects.length > 0 ? projects[0].name || '' : '';
+        const supervisors = projects.length > 0 && projects[0].supervisors 
+          ? projects[0].supervisors.map((s: any) => `${s.name} ${s.surname}`).join(', ')
+          : '';
+
+        // Create a row for each sheet row
+        sheetRows.forEach((rowData: any) => {
+          const flatRow: any = {
+            company: companyName,
+            project: projectName,
+            supervisor: supervisors,
+            excel: excelName,
+            sheetName: sheetName,
+          };
+
+          // Add all dynamic fields from sheet row
+          if (typeof rowData === 'object' && rowData !== null) {
+            Object.keys(rowData).forEach(key => {
+              const value = rowData[key];
+              flatRow[key] = value !== null && value !== undefined ? String(value) : '';
+            });
+          }
+
+          rows.push(flatRow);
+        });
+      });
+
+      // If no sheets, still add company info
+      if (sheets.length === 0 && projects.length > 0) {
+        rows.push({
+          company: companyName,
+          project: projects[0].name || '',
+          supervisor: projects[0].supervisors ? projects[0].supervisors.map((s: any) => `${s.name} ${s.surname}`).join(', ') : '',
+          excel: companyItem.excel || '',
+          sheetName: '',
+        });
+      }
+    });
+
+    return rows;
+  };
+
+  // Detect columns from data
+  const detectColumns = (data: any[]): DynamicColumn[] => {
+    const columnSet = new Set<string>();
+    const columnTypes: Record<string, ColumnType> = {};
+
+    data.forEach(row => {
+      Object.keys(row).forEach(key => {
+        if (!columnSet.has(key)) {
+          columnSet.add(key);
+          const value = row[key];
+          // Detect column type
+          // Phone numbers, email, and text fields should be 'text' type
+          if (key.toLowerCase().includes('phone') || 
+              key.toLowerCase().includes('telefon') ||
+              key.toLowerCase().includes('email') ||
+              key.toLowerCase().includes('name') ||
+              key.toLowerCase().includes('ad') ||
+              key.toLowerCase().includes('soyad')) {
+            columnTypes[key] = 'text';
+          } else if (/^\d{4}-\d{2}-\d{2}/.test(value)) {
+            columnTypes[key] = 'date';
+          } else if (!isNaN(Number(value)) && value !== '') {
+            columnTypes[key] = 'number';
+          } else {
+            columnTypes[key] = 'text';
+          }
+        }
+      });
+    });
+
+    return Array.from(columnSet).map((id, idx) => ({
+      id,
+      name: formatColumnName(id),
+      type: columnTypes[id] || 'text',
+      visible: idx < 8, // Show first 8 columns by default
+    }));
+  };
+
+  // Format column name
+  const formatColumnName = (id: string): string => {
+    return id
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, str => str.toUpperCase())
+      .trim();
+  };
+
+  // Get unique values for filter
+  const getUniqueValues = (columnId: string): string[] => {
     const values = new Set<string>();
-    mockData.forEach(row => {
-      const value = row[columnId as keyof typeof row];
+    reportData.forEach(row => {
+      const value = row[columnId];
       if (value !== undefined && value !== null && value !== '') {
         values.add(String(value));
       }
     });
-    return Array.from(values);
+    return Array.from(values).sort();
   };
 
   // Toggle filter expansion
@@ -103,7 +254,7 @@ const ReportsPage: React.FC = () => {
     );
   };
 
-  // Toggle filter value selection
+  // Toggle filter value
   const toggleFilterValue = (columnId: string, value: string) => {
     setFilters(prev => {
       const current = prev[columnId] || [];
@@ -119,7 +270,6 @@ const ReportsPage: React.FC = () => {
   // Clear all filters
   const clearFilters = () => {
     setFilters({});
-    setDateRange({ start: '', end: '' });
     setSearchQuery('');
   };
 
@@ -134,27 +284,17 @@ const ReportsPage: React.FC = () => {
 
   // Filter and sort data
   const filteredData = useMemo(() => {
-    let result = [...mockData];
+    let result = [...reportData];
 
-    // Apply text/select filters
+    // Apply filters
     Object.entries(filters).forEach(([columnId, values]) => {
       if (values.length > 0) {
         result = result.filter(row => {
-          const rowValue = String(row[columnId as keyof typeof row] || '');
+          const rowValue = String(row[columnId] || '');
           return values.includes(rowValue);
         });
       }
     });
-
-    // Apply date range filter
-    if (dateRange.start || dateRange.end) {
-      result = result.filter(row => {
-        const rowDate = row.date;
-        if (dateRange.start && rowDate < dateRange.start) return false;
-        if (dateRange.end && rowDate > dateRange.end) return false;
-        return true;
-      });
-    }
 
     // Apply search
     if (searchQuery) {
@@ -169,8 +309,8 @@ const ReportsPage: React.FC = () => {
     // Apply sorting
     if (sortColumn) {
       result.sort((a, b) => {
-        const aVal = a[sortColumn as keyof typeof a];
-        const bVal = b[sortColumn as keyof typeof b];
+        const aVal = a[sortColumn];
+        const bVal = b[sortColumn];
 
         if (typeof aVal === 'number' && typeof bVal === 'number') {
           return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
@@ -179,13 +319,13 @@ const ReportsPage: React.FC = () => {
         const aStr = String(aVal || '');
         const bStr = String(bVal || '');
         return sortDirection === 'asc'
-          ? aStr.localeCompare(bStr)
-          : bStr.localeCompare(aStr);
+          ? aStr.localeCompare(bStr, 'az')
+          : bStr.localeCompare(aStr, 'az');
       });
     }
 
     return result;
-  }, [filters, dateRange, searchQuery, sortColumn, sortDirection]);
+  }, [reportData, filters, searchQuery, sortColumn, sortDirection]);
 
   // Pagination
   const totalPages = Math.ceil(filteredData.length / pageSize);
@@ -204,20 +344,51 @@ const ReportsPage: React.FC = () => {
     }
   };
 
-  // Export to Excel (mock)
+  // Handle export
   const handleExport = () => {
-    const visibleColumns = columns.filter(c => c.visible);
-    console.log('Exporting data:', {
-      columns: visibleColumns.map(c => c.name),
-      rows: filteredData.length,
-      filters: Object.keys(filters).length
-    });
+    console.log('Excel ixracı başlayır...');
     alert('Excel faylı hazırlanır...');
+  };
+
+  // Calculate statistics for selected columns
+  const calculateStatistics = (columnId: string) => {
+    const values = filteredData
+      .map(row => row[columnId])
+      .filter(val => val !== undefined && val !== null && val !== '');
+
+    if (values.length === 0) return { count: 0, total: 0 };
+
+    // Count UNIQUE values (məsələn supervisor 7 dəfə ola bilər amma eyni adamdır = 1)
+    const uniqueValues = new Set(values);
+    
+    const numbers = values
+      .map(v => Number(v))
+      .filter(n => !isNaN(n));
+
+    // Unique sum for numbers
+    const uniqueNumbers = Array.from(new Set(numbers));
+
+    return {
+      count: uniqueValues.size,
+      total: uniqueNumbers.reduce((sum, n) => sum + n, 0),
+    };
   };
 
   const visibleColumns = columns.filter(c => c.visible);
   const textColumns = columns.filter(c => c.type === 'text');
   const numberColumns = columns.filter(c => c.type === 'number');
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Hesabat yüklənir...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex bg-background min-h-screen">
@@ -352,12 +523,12 @@ const ReportsPage: React.FC = () => {
           })}
         </ScrollArea>
 
-        <div className="p-4 border-t border-border">
+        {/* <div className="p-4 border-t border-border">
           <Button className="w-full" size="sm">
             <Filter className="h-4 w-4 mr-2" />
             Tətbiq et
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {/* Main Content */}
@@ -396,6 +567,41 @@ const ReportsPage: React.FC = () => {
               </PopoverContent>
             </Popover>
 
+            {/* Statistics Column Selector */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <BarChart3 className="h-4 w-4 mr-2" />
+                  Statistika
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48" align="end">
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm mb-3">Statistika Sütunları</h4>
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {columns.filter(c => c.type === 'text' || c.type === 'number').map(column => (
+                      <div key={column.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`stat-${column.id}`}
+                          checked={statsCards.includes(column.id)}
+                          onCheckedChange={() =>
+                            setStatsCards(prev =>
+                              prev.includes(column.id)
+                                ? prev.filter(id => id !== column.id)
+                                : [...prev, column.id]
+                            )
+                          }
+                        />
+                        <label htmlFor={`stat-${column.id}`} className="text-sm cursor-pointer flex-1">
+                          {column.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+
             <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="h-4 w-4 mr-2" />
               Excel-ə ixrac et
@@ -415,6 +621,63 @@ const ReportsPage: React.FC = () => {
             />
           </div>
         </div>
+
+        {/* Statistics Cards Configuration */}
+        {statsCards.length > 0 && (
+          <div className="px-6 py-2 border-b border-border">
+            <div className="flex items-center gap-2 flex-wrap">
+              {statsCards.map(columnId => {
+                const column = columns.find(c => c.id === columnId);
+                return (
+                  <Badge key={columnId} variant="secondary" className="text-xs gap-1.5">
+                    <BarChart3 className="h-3 w-3" />
+                    {column?.name}
+                    <button
+                      onClick={() => setStatsCards(prev => prev.filter(id => id !== columnId))}
+                      className="ml-1 hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Statistics Cards */}
+        {statsCards.length > 0 && (
+          <div className="px-6 py-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+              {statsCards.map(columnId => {
+                const stats = calculateStatistics(columnId);
+                const column = columns.find(c => c.id === columnId);
+                return (
+                  <div 
+                    key={columnId} 
+                    className="bg-card border border-border rounded p-2 hover:shadow-sm transition-shadow"
+                  >
+                    <div className="text-xs text-muted-foreground truncate mb-1">{column?.name}</div>
+                    <div className="space-y-0.5">
+                      <div>
+                        <div className="text-xs text-muted-foreground">Sayı</div>
+                        <div className="text-lg font-bold text-foreground">
+                          {stats.count}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">Cəm</div>
+                        <div className="text-base font-semibold text-foreground">
+                          {typeof stats.total === 'number' ? stats.total.toLocaleString('az-AZ') : '0'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Table */}
         <div className="flex-1 px-6 pb-6 overflow-auto">
@@ -444,15 +707,17 @@ const ReportsPage: React.FC = () => {
               <TableBody>
                 {paginatedData.map((row, idx) => (
                   <TableRow key={idx} className="hover:bg-muted/50">
-                    {visibleColumns.map(column => (
-                      <TableCell key={column.id} className="whitespace-nowrap">
-                        {column.type === 'number'
-                          ? (row[column.id as keyof typeof row] as number).toLocaleString()
-                          : row[column.id as keyof typeof row]
-                        }
-                        {column.id === 'salesAmount' && ' ₼'}
-                      </TableCell>
-                    ))}
+                    {visibleColumns.map(column => {
+                      const cellValue = row[column.id];
+                      return (
+                        <TableCell key={column.id} className="whitespace-nowrap px-3 py-2">
+                          {column.type === 'number' && cellValue !== undefined && cellValue !== null
+                            ? (Number(cellValue) as number).toLocaleString()
+                            : cellValue ?? '-'}
+                          {column.id === 'salesAmount' && cellValue ? ' ₼' : ''}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 ))}
                 {paginatedData.length === 0 && (

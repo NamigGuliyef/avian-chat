@@ -1,12 +1,13 @@
 "use client";
+
 import {
-    CardHeader,
-    CardTitle
+  CardHeader,
+  CardTitle
 } from "../ui/card";
 
 import { getSupervisorProjects } from "@/api/supervisors";
 import { IProject } from "@/types/types";
-import { Eye, FolderKanban } from "lucide-react";
+import { Eye, FolderKanban, Users } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "../ui/badge";
@@ -15,162 +16,209 @@ import { Card, CardContent } from "../ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ScrollArea } from "../ui/scroll-area";
 
-
 const SupervisorProjects: React.FC = () => {
-    const [supervisorProjects, setSupervisorProjects] = useState<IProject[]>([])
-    const navigate = useNavigate()
+  const [supervisorProjects, setSupervisorProjects] = useState<IProject[]>([]);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        getSupervisorProjects('695bdaeff2405115af596e24').then((d) => {
-            console.log('dasssa', d)
-            setSupervisorProjects(d)
-        })
-    }, [])
+  useEffect(() => {
+    getSupervisorProjects("695bdaeff2405115af596e24").then((d) => {
+      setSupervisorProjects(d);
+    });
+  }, []);
 
-    const excelCards = supervisorProjects.reduce((acc, project) => {
-        project.excelIds?.forEach((excel) => {
-            if (!acc[excel._id]) {
-                acc[excel._id] = {
-                    excelId: excel._id,
-                    excelName: excel.name,
-                    agentsCount: 0,
-                };
-            }
+  const excelCards = supervisorProjects.reduce((acc, project) => {
+    project.excelIds?.forEach((excel) => {
+      if (!acc[excel._id]) {
+        acc[excel._id] = {
+          excelId: excel._id,
+          excelName: excel.name,
+          agentsCount: 0,
+        };
+      }
+      acc[excel._id].agentsCount += excel.agentIds.length;
+    });
+    return acc;
+  }, {} as Record<string, { excelId: string; excelName: string; agentsCount: number }>);
 
-            acc[excel._id].agentsCount += excel.agentIds.length;
-        });
+  const cardsArray = Object.values(excelCards);
 
-        return acc;
-    }, {} as Record<string, { excelId: string; excelName: string; agentsCount: number }>);
+  return (
+    <div className="space-y-10">
+      {/* Header */}
+      <div>
+        <h2 className="text-3xl font-bold">Layihələrim</h2>
+        <p className="text-sm text-muted-foreground">
+          Layihə → Excel → Sheet → Sütunlar
+        </p>
+      </div>
 
-    const cardsArray = Object.values(excelCards);
+      {/* Excel Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+        {cardsArray.map((excel) => (
+          <Card
+            key={excel.excelId}
+            className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+          >
+            <CardContent className="p-4">
+              <p className="text-sm text-muted-foreground mb-1">
+                {excel.excelName}
+              </p>
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                <span className="text-3xl font-bold text-primary">
+                  {excel.agentsCount}
+                </span>
+                <span className="text-sm text-muted-foreground">nəfər</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-    return (
-        <div>
-            <div className="mb-6">
-                <h2 className="text-2xl font-bold">Layihələrim</h2>
-                <p className="text-sm text-muted-foreground">Layihə → Excel → Sheet → Sütunlar</p>
-            </div>
+      {/* Detail Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Layihə Statusu – Detal</CardTitle>
+        </CardHeader>
 
-            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mb-8">
-                {cardsArray.map((excel) => {
-                    return (
-                        <Card key={excel.excelId} className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-                            <CardContent className="p-4">
-                                <p className="text-sm text-muted-foreground mb-1">{excel.excelName}</p>
-                                <p className="text-3xl font-bold text-primary">{excel.agentsCount} nəfər</p>
-                            </CardContent>
-                        </Card>
-                    )
-                })}
-            </div>
-            <Card className="mb-6">
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Layihə Statusu – Detal</CardTitle>
-                </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full border-separate border-spacing-y-2">
+              <thead className="bg-muted/40">
+                <tr>
+                  <th className="p-3 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    Layihə
+                  </th>
+                  <th className="p-3 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    Excel
+                  </th>
+                  <th className="p-3 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    Sheet
+                  </th>
+                  <th className="p-3 text-center text-xs uppercase tracking-wide text-muted-foreground">
+                    Agentlər
+                  </th>
+                </tr>
+              </thead>
 
-                <CardContent>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b border-border">
-                                    <th className="text-left p-3 font-medium text-muted-foreground">Layihə adı</th>
-                                    <th className="text-left p-3 font-medium text-muted-foreground">Excel adı</th>
-                                    <th className="text-left p-3 font-medium text-muted-foreground">Sheet adı</th>
-                                    <th className="text-center p-3 font-medium text-muted-foreground">Agentlər</th>
-                                </tr>
-                            </thead>
+              <tbody>
+                {supervisorProjects.flatMap((project) =>
+                  project.excelIds?.flatMap((excel) =>
+                    excel.sheetIds?.map((sheet) => {
+                      const sheetAgents =
+                        sheet.agentIds?.map((a) => ({
+                          _id: a.agentId,
+                          name: a.name,
+                          surname: a.surname,
+                        })) || [];
 
-                            <tbody>
-                                {supervisorProjects.flatMap((project) =>
-                                    project.excelIds?.flatMap((excel) =>
-                                        project.sheetIds
-                                            ?.filter((sheet) => sheet.excelId === excel._id)
-                                            .map((sheet) => {
-                                                const sheetAgents =
-                                                    project.agents?.filter((agent) =>
-                                                        sheet.agentIds.includes(agent._id)
-                                                    ) || [];
+                      return (
+                        <tr
+                          key={sheet._id}
+                          className="bg-background rounded-lg shadow-sm hover:shadow-md transition"
+                        >
+                          <td className="p-3 font-medium rounded-l-lg">
+                            <div className="flex items-center gap-2">
+                              <FolderKanban className="h-4 w-4 text-primary" />
+                              {project.name}
+                            </div>
+                          </td>
 
-                                                return (
-                                                    <tr
-                                                        key={sheet._id}
-                                                        className="border-b border-border/50 hover:bg-muted/50"
-                                                    >
-                                                        <td className="p-3">
-                                                            {project.name || "Adsız layihə"}
-                                                        </td>
+                          <td className="p-3">
+                            <Badge variant="secondary">{excel.name}</Badge>
+                          </td>
 
-                                                        <td className="p-3">{excel.name}</td>
+                          <td className="p-3 text-sm text-muted-foreground">
+                            {sheet.name}
+                          </td>
 
-                                                        <td className="p-3">{sheet.name}</td>
+                          <td className="p-3 text-center rounded-r-lg">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2 rounded-full"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  {sheetAgents.length}
+                                </Button>
+                              </PopoverTrigger>
 
-                                                        <td className="p-3 text-center">
-                                                            <Popover>
-                                                                <PopoverTrigger asChild>
-                                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                                        <Eye />
-                                                                    </Button>
-                                                                </PopoverTrigger>
-                                                                <PopoverContent align="end" side="bottom" className="w-64 p-3">
-                                                                    <p className="font-medium">"{sheet.name}" agentləri</p>
-                                                                    <ScrollArea className="h-32 mt-4">
-                                                                        {sheetAgents.length > 0 ? (
-                                                                            <div className="space-y-2">
-                                                                                {sheetAgents.map((agent) => (
-                                                                                    <div
-                                                                                        key={agent._id}
-                                                                                        className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
-                                                                                    >
-                                                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                                                                                            {agent.name.charAt(0)}
-                                                                                        </div>
-                                                                                        <span className="font-medium">
-                                                                                            {agent.name} {agent.surname}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                ))}
-                                                                            </div>
-                                                                        ) : (
-                                                                            <p className="text-center text-muted-foreground py-4">
-                                                                                Agent yoxdur
-                                                                            </p>
-                                                                        )}
-                                                                    </ScrollArea>
-                                                                </PopoverContent>
-                                                            </Popover>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })
-                                    )
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </CardContent>
+                              <PopoverContent className="w-72 p-4" align="end">
+                                <p className="font-semibold text-sm mb-3">
+                                  {sheet.name} — Agentlər
+                                </p>
+
+                                <ScrollArea className="h-40">
+                                  {sheetAgents.length ? (
+                                    <div className="space-y-2">
+                                      {sheetAgents.map((agent) => (
+                                        <div
+                                          key={agent._id}
+                                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition"
+                                        >
+                                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white font-medium">
+                                            {agent.name.charAt(0)}
+                                          </div>
+                                          <span className="font-medium">
+                                            {agent.name} {agent.surname}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="text-center text-muted-foreground py-4">
+                                      Agent yoxdur
+                                    </p>
+                                  )}
+                                </ScrollArea>
+                              </PopoverContent>
+                            </Popover>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Projects Grid */}
+      <div>
+        <h2 className="text-xl font-bold mb-4">Layihələr</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {supervisorProjects.map((project) => (
+            <Card
+              key={project._id}
+              className="cursor-pointer hover:border-primary transition"
+              onClick={() =>
+                navigate(`/supervisor/projects/${project._id}/${project.name}`)
+              }
+            >
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <FolderKanban className="h-5 w-5 text-primary" />
+                  {project.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {project.description}
+                </p>
+                <Badge variant="outline">
+                  {project.excelIds?.length} excel
+                </Badge>
+              </CardContent>
             </Card>
-
-            <h2 className="text-xl font-bold mb-4">Layihələr</h2>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {supervisorProjects.map((project) => {
-                    return (
-                        <Card key={project._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`/supervisor/projects/${project._id}/${project.name}`) }}>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <FolderKanban className="h-5 w-5 text-primary" />
-                                    {project.name}
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent><p className="text-sm text-muted-foreground mb-3">{project.description}</p>
-                                <Badge variant="outline">{project.excelIds?.length} excel</Badge>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
-            </div>
+          ))}
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default SupervisorProjects;
