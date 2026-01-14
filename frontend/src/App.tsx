@@ -55,8 +55,6 @@ const App = () => (
               <Route path="columns" element={<AdminColumns />} />
               <Route path="companies/:companyId" element={<AdminSingleCompany />} />
               <Route path="projects/:projectId" element={<SingleProject />} />
-              <Route path="chatbots" element={<ChatbotsManagement />} />
-              <Route path="chatbots/:chatbotId" element={<ChatbotFlowBuilder />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route path="logs" element={<OperationLogs />} />

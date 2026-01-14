@@ -21,8 +21,6 @@ interface CompanyDetailProps {
 // Mock projects data
 
 const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack }) => {
-
-
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -37,12 +35,12 @@ const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack }) => {
             </div>
 
             {/* Tabs - Only Channels and Users */}
-            <Tabs defaultValue="channels" className="w-full">
+            <Tabs defaultValue="projects" className="w-full">
                 <TabsList className="mb-6">
-                    <TabsTrigger value="channels" className="gap-2">
+                    {/* <TabsTrigger value="channels" className="gap-2">
                         <Radio className="w-4 h-4" />
                         Kanallar
-                    </TabsTrigger>
+                    </TabsTrigger> */}
                     {/* <TabsTrigger value="users" className="gap-2">
                         <Users className="w-4 h-4" />
                         İstifadəçilər
@@ -54,9 +52,9 @@ const CompanyDetail: React.FC<CompanyDetailProps> = ({ company, onBack }) => {
                 </TabsList>
 
                 {/* Channels Tab */}
-                <TabsContent value="channels">
+                {/* <TabsContent value="channels">
                     <ChannelsTabs companyId={company._id} />
-                </TabsContent>
+                </TabsContent> */}
 
                 {/* Users Tab */}
                 {/* <TabsContent value="users">
