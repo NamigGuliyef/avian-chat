@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateCompanyDto } from '../company/dto/create-company.dto';
-import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateProjectDto } from '../project/dto/create-project.dto';
 import { CreateChannelDto } from '../channel/dto/create-channel.dto';
 import { Types } from 'mongoose';
@@ -208,8 +208,8 @@ export class AdminController {
   @Get('project/company/:companyId')
   @HttpCode(HttpStatus.OK)
   // filter mentiqi ile Query parametri olaraq companyId gonderile biler
-  @ApiQuery({ name: 'companyId', required: false, type: String, description: 'Şirkət İD-si' })
-  async GetAllProjects(@Query('companyId') companyId: string) {
+  @ApiParam({ name: 'companyId', required: false, type: String, description: 'Şirkət İD-si' })
+  async GetAllProjects(@Param('companyId') companyId: string) {
     return await this.adminService.getAllProjects(companyId)
   }
 

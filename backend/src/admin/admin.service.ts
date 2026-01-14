@@ -313,6 +313,7 @@ export class AdminService {
     // Layihəyə məxsus agent və supervisor-ları gətirən və saylarını qaytaran funksiyası
     const projects = await this.projectModel.find(filter).
       populate({ path: 'agents', select: 'name surname email' }).populate({ path: 'supervisors', select: 'name surname email' }).lean();
+
     return projects.map(project => ({
       ...project,
       agentsCount: project.agents.length || 0,

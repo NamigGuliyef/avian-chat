@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 const axios = _axios.create({
     // url: import.meta.env.REACT_BACKEND_URL
-    baseURL: "https://avian-2.vercel.app"
+    baseURL: "http://localhost:8004"
 });
 
 export const LS_ACCESS_TOKEN_NAME = "token_sidbfehfdb"

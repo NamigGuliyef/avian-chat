@@ -1,4 +1,4 @@
-import { IChannel, ICompany, IProject, IUser, mokko, Roles } from "@/types/types";
+import { IChannel, ICompany, IProject, IUser, Roles } from "@/types/types";
 import axios from "."
 
 // company

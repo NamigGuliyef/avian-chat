@@ -38,7 +38,7 @@ const mockExcelColumns: DynamicColumn[] = [
   { id: 'company', name: 'Şirkət', type: 'text', visible: true },
   { id: 'project', name: 'Layihə', type: 'text', visible: true },
   { id: 'date', name: 'Tarix', type: 'date', visible: true },
-  { id: 'callReason', name: 'Zəng səbəbi', type: 'text', visible: true },
+  // { id: 'callReason', name: 'Zəng səbəbi', type: 'text', visible: true },
   { id: 'salesStatus', name: 'Satış statusu', type: 'text', visible: true },
   { id: 'operator', name: 'Operator', type: 'text', visible: true },
   { id: 'callCount', name: 'Zəng sayı', type: 'number', visible: true },

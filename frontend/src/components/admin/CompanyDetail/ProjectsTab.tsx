@@ -17,7 +17,7 @@ import {
     Folder
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 
@@ -29,7 +29,8 @@ const initial: Partial<IProject> = {
     projectName: ProjectName.Survey,
     description: ""
 }
-const ProjectsTab = ({ companyId }: { companyId: string }) => {
+const ProjectsTab = () => {
+    const { companyId } = useParams()
     const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
     const [userModal, setUserModal] = useState(false);
     const [projectForm, setProjectForm] = useState(initial);
@@ -37,10 +38,12 @@ const ProjectsTab = ({ companyId }: { companyId: string }) => {
     const navigate = useNavigate()
 
     useEffect(() => {
-        getProjects(companyId).then((d) => {
-            setProjects(d)
-        })
-    }, [])
+        if (companyId) {
+            getProjects(companyId).then((d) => {
+                setProjects(d)
+            })
+        }
+    }, [companyId])
 
     const resetProjectForm = () => {
         setProjectForm({ name: '' });
