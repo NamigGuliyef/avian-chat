@@ -305,8 +305,10 @@ export class AdminService {
   // Bütün layihələri gətirən funksiyası
   // Layihəyə məxsus agent və supervisor-ları gətirən və saylarını qaytaran funksiyası
   async getAllProjects(companyId: string): Promise<any[]> {
-    let filter = {};
-    companyId ? filter = { companyId: companyId, isDeleted: false } : filter = { isDeleted: false };
+    let filter: any = { isDeleted: false };
+    if (companyId) {
+      filter.companyId = companyId
+    }
 
     // Layihəyə məxsus agent və supervisor-ları gətirən və saylarını qaytaran funksiyası
     const projects = await this.projectModel.find(filter).
@@ -467,111 +469,110 @@ export class AdminService {
   // Proyektde olan sütunların sayı və sütunlara yazılan məlumatlar
 
   async getProjectTableView(filter?: {
-    company?: string;
-    projectName?: string;
-    sheetName?: string;
-    agentName?: string;
-    columnValue?: { column: string; value: string };
+    companyIds?: string[];
+    projectIds?: string[];
+    sheetIds?: string[];
+    agentIds?: string[];
     dateFrom?: Date;
     dateTo?: Date;
   }): Promise<any[]> {
+    return []; // Müvəqqəti olaraq boş massiv qaytarılır
+
     const projectQuery: any = { isDeleted: false };
 
-    // Layihə adı filteri (regex, case-insensitive)
-    if (filter?.projectName) {
-      projectQuery.name = { $regex: filter.projectName, $options: 'i' };
-    }
-
-    const projects = await this.projectModel.find(projectQuery)
+    const projects = await this.projectModel.find({
+      _id: { $in: filter?.projectIds || [] },
+      companyId: { $in: filter?.companyIds || [] },
+    })
       .select('-agents -sheetIds -columnIds')
       .populate({ path: 'supervisors', select: 'name surname email' });
 
-    const result = await Promise.all(
-      projects.map(async (project) => {
-        const company = await this.companyModel.findById(project.companyId);
+    // const result = await Promise.all(
+    //   projects.map(async (project) => {
+    //     const company = await this.companyModel.findById(project.companyId);
 
-        // Şirkət filteri (regex)
-        if (filter?.company) {
-          const regex = new RegExp(filter.company, 'i');
-          if (!regex.test(company?.name ?? '')) return null;
-        }
+    //     // Şirkət filteri (regex)
+    //     if (filter?.company) {
+    //       const regex = new RegExp(filter.company, 'i');
+    //       if (!regex.test(company?.name ?? '')) return null;
+    //     }
 
-        const excel = await this.excelModel.findOne({ _id: { $in: project.excelIds } });
-        const sheets = await this.sheetModel.find({ excelId: excel?._id });
+    //     const excel = await this.excelModel.findOne({ _id: { $in: project.excelIds } });
+    //     const sheets = await this.sheetModel.find({ excelId: excel?._id });
 
-        const sheetData = await Promise.all(
-          sheets.map(async (sheet) => {
-            // Sheet adı filteri (regex)
-            if (filter?.sheetName) {
-              const regex = new RegExp(filter.sheetName, 'i');
-              if (!regex.test(sheet.name)) return null;
-            }
+    //     const sheetData = await Promise.all(
+    //       sheets.map(async (sheet) => {
+    //         // Sheet adı filteri (regex)
+    //         if (filter?.sheetName) {
+    //           const regex = new RegExp(filter.sheetName, 'i');
+    //           if (!regex.test(sheet.name)) return null;
+    //         }
 
-            const columnIds = sheet.columnIds.map((col) => col.columnId);
-            const columns = await this.columnModel.find({ _id: { $in: columnIds } });
+    //         const columnIds = sheet.columnIds.map((col) => col.columnId);
+    //         const columns = await this.columnModel.find({ _id: { $in: columnIds } });
 
-            const agentIds = sheet.agentIds.map((agent) => agent.agentId);
-            const agents = await this.userModel.find({ _id: { $in: agentIds } });
+    //         const agentIds = sheet.agentIds.map((agent) => agent.agentId);
+    //         const agents = await this.userModel.find({ _id: { $in: agentIds } });
 
-            // Agent adı filteri (regex)
-            if (filter?.agentName) {
-              const regex = new RegExp(filter.agentName, 'i');
-              if (!agents.some(a => regex.test(`${a.name} ${a.surname}`))) {
-                return null;
-              }
-            }
+    //         // Agent adı filteri (regex)
+    //         if (filter?.agentName) {
+    //           const regex = new RegExp(filter.agentName, 'i');
+    //           if (!agents.some(a => regex.test(`${a.name} ${a.surname}`))) {
+    //             return null;
+    //           }
+    //         }
 
-            const sheetRowsRaw = await this.sheetRowModel.find({ sheetId: sheet._id });
-            let sheetRows = sheetRowsRaw.map((row) => row.data);
+    //         const sheetRowsRaw = await this.sheetRowModel.find({ sheetId: sheet._id });
+    //         let sheetRows = sheetRowsRaw.map((row) => row.data);
 
-            // ColumnValue filteri (regex)
-            if (filter?.columnValue) {
-              const regex = new RegExp(filter.columnValue.value, 'i');
-              sheetRows = sheetRows.filter(row => {
-                const val = row[filter.columnValue!.column];
-                return val && regex.test(val.toString());
-              });
-            }
+    //         // ColumnValue filteri (regex)
+    //         if (filter?.columnValue) {
+    //           const regex = new RegExp(filter.columnValue.value, 'i');
+    //           sheetRows = sheetRows.filter(row => {
+    //             const val = row[filter.columnValue!.column];
+    //             return val && regex.test(val.toString());
+    //           });
+    //         }
 
-            // Date filter
-            if (filter?.dateFrom || filter?.dateTo) {
-              sheetRows = sheetRows.filter(row => {
-                const date = new Date(row.date);
-                if (filter.dateFrom && date < filter.dateFrom) return false;
-                if (filter.dateTo && date > filter.dateTo) return false;
-                return true;
-              });
-            }
+    //         // Date filter
+    //         if (filter?.dateFrom || filter?.dateTo) {
+    //           sheetRows = sheetRows.filter(row => {
+    //             const date = new Date(row.date);
+    //             if (filter.dateFrom && date < filter.dateFrom) return false;
+    //             if (filter.dateTo && date > filter.dateTo) return false;
+    //             return true;
+    //           });
+    //         }
 
-            if (sheetRows.length === 0) return null;
+    //         if (sheetRows.length === 0) return null;
 
-            return {
-              sheetName: sheet.name,
-              columns: columns.map((col) => col.name),
-              agents: agents.map((agent) => ({
-                name: agent.name,
-                surname: agent.surname,
-                startRow: agent.startRow,
-                endRow: agent.endRow,
-              })),
-              sheetRows,
-            };
-          })
-        );
+    //         return {
+    //           sheetName: sheet.name,
+    //           columns: columns.map((col) => col.name),
+    //           agents: agents.map((agent) => ({
+    //             name: agent.name,
+    //             surname: agent.surname,
+    //             startRow: agent.startRow,
+    //             endRow: agent.endRow,
+    //           })),
+    //           sheetRows,
+    //         };
+    //       })
+    //     );
 
-        const validSheets = sheetData.filter(Boolean);
-        if (validSheets.length === 0) return null;
+    //     const validSheets = sheetData.filter(Boolean);
+    //     if (validSheets.length === 0) return null;
 
-        return {
-          company: company?.name,
-          project: projects,
-          excel: excel?.name,
-          sheets: validSheets,
-        };
-      })
-    );
+    //     return {
+    //       company: company?.name,
+    //       project: projects,
+    //       excel: excel?.name,
+    //       sheets: validSheets,
+    //     };
+    //   })
+    // );
 
-    return result.filter(Boolean);
+    // return result.filter(Boolean);
   }
 
 
