@@ -24,7 +24,7 @@ export default function UserLogin() {
 
     if (result.success) {
       toast({ title: "Uğurlu", description: "Daxil oldunuz" });
-      navigate('/user/dashboard');
+      navigate('/user/excels');
     } else {
       toast({
         title: "Xəta",

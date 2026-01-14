@@ -7,12 +7,12 @@ import { ChevronDown, LogOut, MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
-const statusColors: Record<OnlineStatus, string> = {
-  online: "bg-green-500",
-  busy: "bg-red-500",
-  break: "bg-yellow-500",
-  offline: "bg-gray-400",
-};
+// const statusColors: Record<OnlineStatus, string> = {
+//   online: "bg-green-500",
+//   busy: "bg-red-500",
+//   break: "bg-yellow-500",
+//   offline: "bg-gray-400",
+// };
 
 export default function UserOutlet() {
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ export default function UserOutlet() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Select value={userStatus} onValueChange={(v: OnlineStatus) => setUserStatus(v)}>
+          {/* <Select value={userStatus} onValueChange={(v: OnlineStatus) => setUserStatus(v)}>
             <SelectTrigger className="w-32 h-9">
               <div className="flex items-center gap-2">
                 <div className={cn("w-2 h-2 rounded-full", statusColors[userStatus])} />
@@ -49,7 +49,7 @@ export default function UserOutlet() {
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select> */}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -62,9 +62,6 @@ export default function UserOutlet() {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate("/user/dashboard")}>
-                Dashboard
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/user/excels")}>
                 Excels
               </DropdownMenuItem>

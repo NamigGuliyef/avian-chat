@@ -71,7 +71,7 @@ const App = () => (
 
             {/* User */}
             <Route path="/user" element={<UserOutlet />}>
-              <Route path="dashboard" element={<UserDashboard />} />
+              {/* <Route path="dashboard" element={<UserDashboard />} /> */}
               <Route path="excels" element={<UserExcels />} />
               <Route path="sheets/:excelId/:excelName" element={<UserSheets />} />
               <Route path="columns/:sheetId/:sheetName" element={<UserColumns />} />
