@@ -1,33 +1,26 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  Filter, 
-  Calendar, 
-  Download, 
-  Search, 
-  ChevronDown, 
-  ChevronUp,
-  X,
-  Plus,
-  Eye,
-  EyeOff,
-  ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-  Hash,
-  Type,
-  CalendarDays,
-  Settings2
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
+import {
+  ArrowUpDown,
+  CalendarDays,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Download,
+  Filter,
+  Hash,
+  Search,
+  Settings2,
+  Type,
+  X
+} from 'lucide-react';
+import React, { useMemo, useState } from 'react';
 
 // Dynamic column types
 type ColumnType = 'text' | 'number' | 'date';
@@ -39,12 +32,6 @@ interface DynamicColumn {
   visible: boolean;
 }
 
-interface StatCard {
-  id: string;
-  columnId: string;
-  operation: 'count' | 'sum' | 'avg';
-  label: string;
-}
 
 // Mock Excel data simulating dynamic columns
 const mockExcelColumns: DynamicColumn[] = [
@@ -78,32 +65,22 @@ const mockData = [
 const ReportsPage: React.FC = () => {
   // Dynamic columns state
   const [columns, setColumns] = useState<DynamicColumn[]>(mockExcelColumns);
-  
+
   // Filter states
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [expandedFilters, setExpandedFilters] = useState<string[]>(['company', 'project']);
   const [filterSearch, setFilterSearch] = useState<Record<string, string>>({});
-  
+
   // Table states
   const [searchQuery, setSearchQuery] = useState('');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(5);
-  
+
   // Column visibility
   const [isColumnPickerOpen, setIsColumnPickerOpen] = useState(false);
-  
-  // Stat cards state
-  const [statCards, setStatCards] = useState<StatCard[]>([
-    { id: '1', columnId: 'callCount', operation: 'sum', label: 'Ümumi zəng sayı' },
-    { id: '2', columnId: 'salesAmount', operation: 'sum', label: 'Ümumi satış məbləği' },
-    { id: '3', columnId: 'duration', operation: 'avg', label: 'Orta müddət' },
-  ]);
-  const [isAddCardOpen, setIsAddCardOpen] = useState(false);
-  const [newCardColumn, setNewCardColumn] = useState('');
-  const [newCardOperation, setNewCardOperation] = useState<'count' | 'sum' | 'avg'>('count');
 
   // Get unique values for text columns (for filters)
   const getUniqueValues = (columnId: string) => {
@@ -194,14 +171,14 @@ const ReportsPage: React.FC = () => {
       result.sort((a, b) => {
         const aVal = a[sortColumn as keyof typeof a];
         const bVal = b[sortColumn as keyof typeof b];
-        
+
         if (typeof aVal === 'number' && typeof bVal === 'number') {
           return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
         }
-        
+
         const aStr = String(aVal || '');
         const bStr = String(bVal || '');
-        return sortDirection === 'asc' 
+        return sortDirection === 'asc'
           ? aStr.localeCompare(bStr)
           : bStr.localeCompare(aStr);
       });
@@ -216,51 +193,6 @@ const ReportsPage: React.FC = () => {
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-
-  // Calculate stat card values
-  const calculateStatValue = (columnId: string, operation: 'count' | 'sum' | 'avg') => {
-    const values = filteredData.map(row => {
-      const val = row[columnId as keyof typeof row];
-      return typeof val === 'number' ? val : 0;
-    });
-
-    if (operation === 'count') {
-      return filteredData.length;
-    } else if (operation === 'sum') {
-      return values.reduce((acc, val) => acc + val, 0);
-    } else if (operation === 'avg') {
-      const sum = values.reduce((acc, val) => acc + val, 0);
-      return values.length > 0 ? Math.round(sum / values.length) : 0;
-    }
-    return 0;
-  };
-
-  // Add new stat card
-  const handleAddStatCard = () => {
-    if (!newCardColumn) return;
-    
-    const column = columns.find(c => c.id === newCardColumn);
-    const operationLabels = { count: 'Say', sum: 'Cəm', avg: 'Orta' };
-    
-    setStatCards(prev => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        columnId: newCardColumn,
-        operation: newCardOperation,
-        label: `${column?.name} (${operationLabels[newCardOperation]})`
-      }
-    ]);
-    
-    setNewCardColumn('');
-    setNewCardOperation('count');
-    setIsAddCardOpen(false);
-  };
-
-  // Remove stat card
-  const removeStatCard = (cardId: string) => {
-    setStatCards(prev => prev.filter(c => c.id !== cardId));
-  };
 
   // Handle sort
   const handleSort = (columnId: string) => {
@@ -299,7 +231,7 @@ const ReportsPage: React.FC = () => {
               Təmizlə
             </Button>
           </div>
-          
+
           {/* Active filters count */}
           {Object.values(filters).flat().length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
@@ -307,9 +239,9 @@ const ReportsPage: React.FC = () => {
                 values.map(val => (
                   <Badge key={`${colId}-${val}`} variant="secondary" className="text-xs gap-1">
                     {val}
-                    <X 
-                      className="h-3 w-3 cursor-pointer" 
-                      onClick={() => toggleFilterValue(colId, val)} 
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={() => toggleFilterValue(colId, val)}
                     />
                   </Badge>
                 ))
@@ -363,10 +295,10 @@ const ReportsPage: React.FC = () => {
           {textColumns.map(column => {
             const uniqueValues = getUniqueValues(column.id);
             const searchValue = filterSearch[column.id] || '';
-            const filteredValues = uniqueValues.filter(v => 
+            const filteredValues = uniqueValues.filter(v =>
               v.toLowerCase().includes(searchValue.toLowerCase())
             );
-            
+
             return (
               <div key={column.id} className="mb-4">
                 <button
@@ -404,8 +336,8 @@ const ReportsPage: React.FC = () => {
                             checked={(filters[column.id] || []).includes(value)}
                             onCheckedChange={() => toggleFilterValue(column.id, value)}
                           />
-                          <label 
-                            htmlFor={`${column.id}-${value}`} 
+                          <label
+                            htmlFor={`${column.id}-${value}`}
                             className="text-xs cursor-pointer truncate"
                           >
                             {value}
@@ -471,83 +403,8 @@ const ReportsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="p-6 pb-0">
-          <div className="flex items-center gap-2 mb-4">
-            <h3 className="text-sm font-medium">Statistik kartlar</h3>
-            <Popover open={isAddCardOpen} onOpenChange={setIsAddCardOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64" align="start">
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm">Yeni kart əlavə et</h4>
-                  <div>
-                    <label className="text-xs text-muted-foreground">Sütun</label>
-                    <Select value={newCardColumn} onValueChange={setNewCardColumn}>
-                      <SelectTrigger className="h-8">
-                        <SelectValue placeholder="Sütun seçin" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {numberColumns.map(col => (
-                          <SelectItem key={col.id} value={col.id}>{col.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground">Əməliyyat</label>
-                    <Select value={newCardOperation} onValueChange={(v: 'count' | 'sum' | 'avg') => setNewCardOperation(v)}>
-                      <SelectTrigger className="h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="count">Say (COUNT)</SelectItem>
-                        <SelectItem value="sum">Cəm (SUM)</SelectItem>
-                        <SelectItem value="avg">Orta (AVG)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button size="sm" className="w-full" onClick={handleAddStatCard}>
-                    Əlavə et
-                  </Button>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-            {statCards.map(card => (
-              <Card key={card.id} className="relative group">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => removeStatCard(card.id)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {card.label}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {calculateStatValue(card.columnId, card.operation).toLocaleString()}
-                    {card.operation === 'avg' && card.columnId === 'duration' && ' dəq'}
-                    {card.columnId === 'salesAmount' && ' ₼'}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
         {/* Search */}
-        <div className="px-6 pb-4">
+        <div className="px-6 pb-4 py-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -566,7 +423,7 @@ const ReportsPage: React.FC = () => {
               <TableHeader className="sticky top-0 bg-muted z-10">
                 <TableRow>
                   {visibleColumns.map(column => (
-                    <TableHead 
+                    <TableHead
                       key={column.id}
                       className="cursor-pointer hover:bg-muted/80 transition-colors whitespace-nowrap"
                       onClick={() => handleSort(column.id)}
@@ -589,7 +446,7 @@ const ReportsPage: React.FC = () => {
                   <TableRow key={idx} className="hover:bg-muted/50">
                     {visibleColumns.map(column => (
                       <TableCell key={column.id} className="whitespace-nowrap">
-                        {column.type === 'number' 
+                        {column.type === 'number'
                           ? (row[column.id as keyof typeof row] as number).toLocaleString()
                           : row[column.id as keyof typeof row]
                         }
