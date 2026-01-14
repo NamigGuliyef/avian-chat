@@ -1,4 +1,4 @@
-import { addProjectMember, addUserToChannel, getChannels, getProjectById, removeChannelFromUser, removeProjectMember } from "@/api/admin";
+import { addProjectMember, getProjectById, removeProjectMember } from "@/api/admin";
 import { searchUsers } from "@/api/users";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,11 +19,10 @@ import {
 } from "@/components/ui/dialog";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getEnumKeyByValue } from "@/lib/utils";
-import { IChannel, IProject, IUser, ProjectDirection, ProjectName, ProjectType, Roles } from "@/types/types";
+import { IProject, IUser, ProjectDirection, ProjectName, ProjectType, Roles } from "@/types/types";
 import {
     ArrowLeft,
     Check,
-    Edit,
     UserPlus
 } from 'lucide-react';
 import { useEffect, useState } from "react";
@@ -34,13 +33,13 @@ const SingleProject = () => {
         supervisors: [] as Partial<IUser>[],
         agents: [] as Partial<IUser>[]
     } as IProject);
-    const [isUserChannelDialog, setIsUserChannelDialog] = useState(['', ''])
-    const [selectedChannels, setSelectedChannels] = useState([])
+    // const [isUserChannelDialog, setIsUserChannelDialog] = useState(['', ''])
+    // const [selectedChannels, setSelectedChannels] = useState([])
     const [isMemberDialogOpen, setIsMemberDialogOpen] = useState<"A" | "S" | null>(null);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<IUser[]>([]);
-    const [channels, setChannels] = useState<IChannel[]>([]);
+    // const [channels, setChannels] = useState<IChannel[]>([]);
     const debouncedSearch = useDebounce(search, 400);
     const { projectId } = useParams();
 
@@ -66,9 +65,9 @@ const SingleProject = () => {
 
     useEffect(() => {
         getProjectById(projectId).then((d) => {
-            getChannels(d.companyId).then((c) => {
-                setChannels(c)
-            })
+            // getChannels(d.companyId).then((c) => {
+            //     setChannels(c)
+            // })
             setProject(d)
         });
     }, [projectId]);
@@ -103,20 +102,20 @@ const SingleProject = () => {
 
     const memberName = isMemberDialogOpen === "S" ? "Supervisor" : "Agent"
 
-    const handleAddChannel = (userId, channelId) => {
-        addUserToChannel(userId, channelId).then(() => {
-            getProjectById(projectId).then((d) => {
-                setProject(d)
-            });
-        })
-    }
-    const handleRemoveChannel = (userId, channelId) => {
-        removeChannelFromUser(userId, channelId).then(() => {
-            getProjectById(projectId).then((d) => {
-                setProject(d)
-            });
-        })
-    }
+    // const handleAddChannel = (userId, channelId) => {
+    //     addUserToChannel(userId, channelId).then(() => {
+    //         getProjectById(projectId).then((d) => {
+    //             setProject(d)
+    //         });
+    //     })
+    // }
+    // const handleRemoveChannel = (userId, channelId) => {
+    //     removeChannelFromUser(userId, channelId).then(() => {
+    //         getProjectById(projectId).then((d) => {
+    //             setProject(d)
+    //         });
+    //     })
+    // }
 
     return (
         <div className="space-y-6">
@@ -220,15 +219,15 @@ const SingleProject = () => {
                                                 <div>
                                                     <p className="font-medium">{s.name}</p>
                                                     <p className="text-sm text-muted-foreground">{s.email}</p>
-                                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                    {/* <div className="flex items-center gap-2 mt-1 flex-wrap">
                                                         {(s.channelIds).map((ch) => <Badge key={ch._id} variant="outline" className="text-xs">
                                                             {ch.name}
                                                         </Badge>
                                                         )}
-                                                    </div>
+                                                    </div> */}
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
+                                            {/* <div className="flex items-center gap-2">
                                                 <Dialog open={Boolean(isUserChannelDialog[0])} onOpenChange={() => setIsUserChannelDialog(['', ''])}>
                                                     <div>
                                                         <Button variant="ghost" size="icon" onClick={() => {
@@ -271,15 +270,15 @@ const SingleProject = () => {
                                                         </Command>
                                                     </DialogContent>
                                                 </Dialog>
-                                                {/* <Button
+                                                <Button
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => removeUserFromProject(project._id, s._id, "S")}
                                                     className="text-destructive hover:text-destructive"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
-                                                </Button> */}
-                                            </div>
+                                                </Button>
+                                            </div> */}
                                         </CardContent>
                                     </Card>
                                 ))
@@ -303,15 +302,15 @@ const SingleProject = () => {
                                                 <div>
                                                     <p className="font-medium">{a.name}</p>
                                                     <p className="text-sm text-muted-foreground">{a.email}</p>
-                                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                    {/* <div className="flex items-center gap-2 mt-1 flex-wrap">
                                                         {(a.channelIds).map((ch) => <Badge key={ch._id} variant="outline" className="text-xs">
                                                             {ch.name}
                                                         </Badge>
                                                         )}
-                                                    </div>
+                                                    </div> */}
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
+                                            {/* <div className="flex items-center gap-2">
                                                 <Dialog open={Boolean(isUserChannelDialog[0])} onOpenChange={() => setIsUserChannelDialog(['', ''])}>
                                                     <div>
                                                         <Button variant="ghost" size="icon" onClick={() => {
@@ -354,15 +353,15 @@ const SingleProject = () => {
                                                         </Command>
                                                     </DialogContent>
                                                 </Dialog>
-                                                {/* <Button
+                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => removeUserFromProject(project._id, s._id, "S")}
                                                     className="text-destructive hover:text-destructive"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
-                                                </Button> */}
-                                            </div>
+                                                </Button>
+                                            </div> */}
                                         </CardContent>
                                     </Card>
                                 ))
