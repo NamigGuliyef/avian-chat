@@ -466,37 +466,84 @@ export class AdminService {
   // ümumi hesabat məlumatlarını gətirən funksiyası
   // Proyektde olan sütunların sayı və sütunlara yazılan məlumatlar
 
-  async getProjectTableView(): Promise<any[]> {
-    // bütün project-ləri çəkirik
-    const projects = await this.projectModel.find({ isDeleted: false }).select('-agents -sheetIds -columnIds')
+  async getProjectTableView(filter?: {
+    company?: string;
+    projectName?: string;
+    sheetName?: string;
+    agentName?: string;
+    columnValue?: { column: string; value: string };
+    dateFrom?: Date;
+    dateTo?: Date;
+  }): Promise<any[]> {
+    const projectQuery: any = { isDeleted: false };
+
+    // Layihə adı filteri (regex, case-insensitive)
+    if (filter?.projectName) {
+      projectQuery.name = { $regex: filter.projectName, $options: 'i' };
+    }
+
+    const projects = await this.projectModel.find(projectQuery)
+      .select('-agents -sheetIds -columnIds')
       .populate({ path: 'supervisors', select: 'name surname email' });
 
     const result = await Promise.all(
       projects.map(async (project) => {
-        // company məlumatı
         const company = await this.companyModel.findById(project.companyId);
 
-        // excel məlumatı
+        // Şirkət filteri (regex)
+        if (filter?.company) {
+          const regex = new RegExp(filter.company, 'i');
+          if (!regex.test(company?.name ?? '')) return null;
+        }
+
         const excel = await this.excelModel.findOne({ _id: { $in: project.excelIds } });
-
-        // sheet-ləri çəkirik
         const sheets = await this.sheetModel.find({ excelId: excel?._id });
-
-        // hər sheet üçün column və row-ları çəkirik
-
 
         const sheetData = await Promise.all(
           sheets.map(async (sheet) => {
-            // columnId-ləri çıxarırıq
+            // Sheet adı filteri (regex)
+            if (filter?.sheetName) {
+              const regex = new RegExp(filter.sheetName, 'i');
+              if (!regex.test(sheet.name)) return null;
+            }
+
             const columnIds = sheet.columnIds.map((col) => col.columnId);
             const columns = await this.columnModel.find({ _id: { $in: columnIds } });
 
-            // agentId-ləri çıxarırıq
             const agentIds = sheet.agentIds.map((agent) => agent.agentId);
             const agents = await this.userModel.find({ _id: { $in: agentIds } });
 
-            // sheet row-ları çəkirik
-            const sheetRows = await this.sheetRowModel.find({ sheetId: sheet._id });
+            // Agent adı filteri (regex)
+            if (filter?.agentName) {
+              const regex = new RegExp(filter.agentName, 'i');
+              if (!agents.some(a => regex.test(`${a.name} ${a.surname}`))) {
+                return null;
+              }
+            }
+
+            const sheetRowsRaw = await this.sheetRowModel.find({ sheetId: sheet._id });
+            let sheetRows = sheetRowsRaw.map((row) => row.data);
+
+            // ColumnValue filteri (regex)
+            if (filter?.columnValue) {
+              const regex = new RegExp(filter.columnValue.value, 'i');
+              sheetRows = sheetRows.filter(row => {
+                const val = row[filter.columnValue!.column];
+                return val && regex.test(val.toString());
+              });
+            }
+
+            // Date filter
+            if (filter?.dateFrom || filter?.dateTo) {
+              sheetRows = sheetRows.filter(row => {
+                const date = new Date(row.date);
+                if (filter.dateFrom && date < filter.dateFrom) return false;
+                if (filter.dateTo && date > filter.dateTo) return false;
+                return true;
+              });
+            }
+
+            if (sheetRows.length === 0) return null;
 
             return {
               sheetName: sheet.name,
@@ -507,22 +554,26 @@ export class AdminService {
                 startRow: agent.startRow,
                 endRow: agent.endRow,
               })),
-              sheetRows: sheetRows.map((row) => row.data),
+              sheetRows,
             };
           })
         );
+
+        const validSheets = sheetData.filter(Boolean);
+        if (validSheets.length === 0) return null;
 
         return {
           company: company?.name,
           project: projects,
           excel: excel?.name,
-          sheets: sheetData,
+          sheets: validSheets,
         };
       })
     );
 
-    return result;
+    return result.filter(Boolean);
   }
+
 
 
 }

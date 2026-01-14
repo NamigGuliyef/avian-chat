@@ -321,10 +321,40 @@ export class AdminController {
   }
 
 
-  @ApiOperation({ summary: "Bütün məlumatları cədvələ gətir" })
-  @Get('all-report')
+
+  @ApiOperation({ summary: 'Hesabat filter ilə' })
+  @Get('table-view')
   @HttpCode(HttpStatus.OK)
-  async getProjectTableView() {
-    return await this.adminService.getProjectTableView();
+  @ApiQuery({ name: 'company', required: false, type: String })
+  @ApiQuery({ name: 'projectName', required: false, type: String })
+  @ApiQuery({ name: 'sheetName', required: false, type: String })
+  @ApiQuery({ name: 'agentName', required: false, type: String })
+  @ApiQuery({ name: 'column', required: false, type: String })
+  @ApiQuery({ name: 'value', required: false, type: String })
+  @ApiQuery({ name: 'dateFrom', required: false, type: String })
+  @ApiQuery({ name: 'dateTo', required: false, type: String })
+  async getProjectTableView(
+    @Query('company') company: string,
+    @Query('projectName') projectName: string,
+    @Query('sheetName') sheetName: string,
+    @Query('agentName') agentName: string,
+    @Query('column') column: string,
+    @Query('value') value: string,
+    @Query('dateFrom') dateFrom: string,
+    @Query('dateTo') dateTo?: string,
+  ) {
+    const filter: any = {};
+
+    if (company) filter.company = company;
+    if (projectName) filter.projectName = projectName;
+    if (sheetName) filter.sheetName = sheetName;
+    if (agentName) filter.agentName = agentName;
+    if (column && value) filter.columnValue = { column, value };
+    if (dateFrom) filter.dateFrom = new Date(dateFrom);
+    if (dateTo) filter.dateTo = new Date(dateTo);
+
+    return this.adminService.getProjectTableView(filter);
   }
 }
+
+
