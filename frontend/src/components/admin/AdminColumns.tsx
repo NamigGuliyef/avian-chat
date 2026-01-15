@@ -1,18 +1,18 @@
 'use client';
 
-import { createAdminColumn, deleteAdminColumn, getAdminColumns, IAdminColumn, updateAdminColumn } from '@/api/column';
+import { createAdminColumn, deleteAdminColumn, getAdminColumns, updateAdminColumn } from '@/api/column';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ColumnType } from '@/types/types';
+import { ColumnType, ISheetColumn } from '@/types/types';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-const initialColumn: Partial<IAdminColumn> = {
+const initialColumn: Partial<ISheetColumn> = {
     name: '',
     dataKey: '',
     type: ColumnType.Text,
@@ -20,9 +20,10 @@ const initialColumn: Partial<IAdminColumn> = {
 };
 
 const AdminColumns = () => {
-    const [columns, setColumns] = useState<IAdminColumn[]>([]);
+    const [columns, setColumns] = useState<ISheetColumn[]>([]);
     const [open, setOpen] = useState(false);
-    const [editing, setEditing] = useState<Partial<IAdminColumn>>(initialColumn);
+    const [editing, setEditing] = useState<Partial<ISheetColumn>>(initialColumn);
+    const [optionValue, setOptionValue] = useState({ value: '', label: '' });
 
     useEffect(() => {
         getAdminColumns().then(setColumns);
@@ -56,7 +57,7 @@ const AdminColumns = () => {
     //     toast.success('Column silindi');
     // };
 
-    const startEdit = (column: IAdminColumn) => {
+    const startEdit = (column: ISheetColumn) => {
         setEditing(column);
         setOpen(true);
     };
@@ -95,6 +96,65 @@ const AdminColumns = () => {
                                         ))}
                                     </SelectContent>
                                 </Select>
+                            </div>
+                            {
+                                editing.type === ColumnType.Select && (
+                                    <div>
+                                        <Label>Options (vergül ilə ayrılmış)</Label>
+                                        {(editing.options || []).map((opt, idx) => (
+                                            <div key={idx} className="flex gap-2 mb-2 items-center">
+                                                <div className="flex-1 flex gap-2">
+                                                    <span className="font-medium">Label:</span>
+                                                    <span>{opt.label}</span>
+                                                </div>
+                                                <div className="flex-1 flex gap-2">
+                                                    <span className="font-medium">Value:</span>
+                                                    <span>{opt.value}</span>
+                                                </div>
+                                                <Button
+                                                    size="icon"
+                                                    variant="ghost"
+                                                    onClick={() => {
+                                                        setEditing({
+                                                            ...editing,
+                                                            options: (editing.options || []).filter((_, i) => i !== idx)
+                                                        });
+                                                    }}
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                        <div className="flex gap-2 mb-2">
+                                            <Input
+                                                value={optionValue.label}
+                                                onChange={(e) => setOptionValue({ ...optionValue, label: e.target.value })}
+                                                placeholder='label əlavə et'
+                                            />
+                                            <Input
+                                                value={optionValue.value}
+                                                onChange={(e) => setOptionValue({ ...optionValue, value: e.target.value })}
+                                                placeholder='value əlavə et'
+                                            />
+                                        </div>
+                                        <Button
+                                            onClick={() => {
+                                                if (!optionValue.label || !optionValue.value) return;
+                                                setEditing({
+                                                    ...editing,
+                                                    options: [
+                                                        ...(editing.options || []),
+                                                        { label: optionValue.label, value: optionValue.value }
+                                                    ]
+                                                });
+                                                setOptionValue({ value: '', label: '' });
+                                            }}
+                                        >əlavə et</Button>
+                                    </div>
+                                )
+                            }
+                            <div>
+
                             </div>
 
                             <Button className="w-full" onClick={handleSave}>

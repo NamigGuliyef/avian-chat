@@ -200,23 +200,6 @@ export class SupervisorController {
 
   // -----------------------------------------------------
 
-  @ApiOperation({ summary: 'Row-u tam update et' })
-  @Patch('sheet/:sheetId/rows/:rowNumber')
-  @HttpCode(HttpStatus.OK)
-  updateRow(
-    @Param('sheetId') sheetId: Types.ObjectId,
-    @Param('rowNumber') rowNumber: string,
-    @Body() data: Record<string, any>,
-  ) {
-    return this.supervisorService.updateRow(
-      sheetId,
-      Number(rowNumber),
-      data,
-    );
-  }
-
-  // -----------------------------------------------------
-
   @ApiOperation({ summary: 'Row-un tək bir cell-ni update et' })
   @ApiBody({
     type: SheetCellDto
@@ -228,6 +211,7 @@ export class SupervisorController {
     @Param('rowNumber') rowNumber: string,
     @Body() sheetCellData: SheetCellDto
   ) {
+    console.log('testttt')
     return this.supervisorService.updateCell(
       sheetId,
       Number(rowNumber),

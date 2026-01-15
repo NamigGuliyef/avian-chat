@@ -15,6 +15,9 @@ export const createAdminColumn = async (payload: Partial<ISheetColumn>) => {
 
 
 export const updateAdminColumn = async (id: string, payload: Partial<ISheetColumn>) => {
+    delete payload._id;
+    delete (payload as any).createdAt;
+    delete (payload as any).updatedAt;
     const { data } = await axios.patch(`/admin/column/${id}`, payload);
     return data;
 };

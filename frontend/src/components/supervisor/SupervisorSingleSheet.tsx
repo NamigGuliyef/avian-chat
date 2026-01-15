@@ -68,9 +68,10 @@ const SupervisorSingleSheet: React.FC = () => {
         try {
             await updateCell(sheetId, rowIndex, key, value);
             setRows(prev => {
-                const updated = [...prev];
-                updated[rowIndex][key] = value;
-                return updated;
+                return prev.map((r) => {
+                    if (r.rowNumber === rowIndex) return { ...r, data: { ...r.data, [key]: value } };
+                    return r;
+                })
             });
         } catch (e) {
             toast.error("Cell yenilənərkən xəta baş verdi");
@@ -137,10 +138,11 @@ const SupervisorSingleSheet: React.FC = () => {
                                         return (
                                             <td key={colDef._id} className="border px-1 py-0">
                                                 <EditableCell
+                                                    colDef={colDef}
                                                     value={row.data[colDef.dataKey]}
                                                     editable={col.editable}
                                                     onSave={(val) =>
-                                                        handleUpdateCell(rowIndex, colDef.name, val)
+                                                        handleUpdateCell(row.rowNumber, colDef.dataKey, val)
                                                     }
                                                 />
                                             </td>
