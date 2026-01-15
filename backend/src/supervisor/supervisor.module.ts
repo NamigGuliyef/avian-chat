@@ -8,6 +8,7 @@ import { User, UserSchema } from '../user/model/user.schema';
 import { SupervisorController } from './supervisor.controller';
 import { SupervisorService } from './supervisor.service';
 import { SheetRow, SheetRowSchema } from '../excel/model/row-schema';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [MongooseModule.forFeature([
@@ -16,12 +17,9 @@ import { SheetRow, SheetRowSchema } from '../excel/model/row-schema';
     { name: Column.name, schema: ColumnSchema },
     { name: Project.name, schema: ProjectSchema },
     { name: User.name, schema: UserSchema },
-    { name: Sheet.name, schema: SheetSchema },
-    { name: Column.name, schema: ColumnSchema },
-    { name: User.name, schema: UserSchema },
     { name: SheetRow.name, schema: SheetRowSchema }
   ])],
   controllers: [SupervisorController],
-  providers: [SupervisorService],
+  providers: [SupervisorService, JwtService],
 })
 export class SupervisorModule { }

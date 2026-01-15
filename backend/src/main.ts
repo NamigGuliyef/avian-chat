@@ -6,17 +6,17 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
 
- app.useGlobalPipes(
-  new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    exceptionFactory: (errors) => {
-      console.log('🔥 VALIDATION ERRORS:', errors);
-      return new BadRequestException(errors);
-    },
-  }),
-);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      exceptionFactory: (errors) => {
+        console.log('🔥 VALIDATION ERRORS:', errors);
+        return new BadRequestException(errors);
+      },
+    }),
+  );
 
   // swagger setup
   const config = new DocumentBuilder()

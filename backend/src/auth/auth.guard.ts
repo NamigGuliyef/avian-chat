@@ -5,8 +5,6 @@ import { Observable } from 'rxjs';
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) { }
-
-
   canActivate(
     context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
 
@@ -25,6 +23,6 @@ export class AuthGuard implements CanActivate {
     }
 
     return true; // Əgər autentifikasiya uğurludursa, icazə verin
-    
+
   }
 }

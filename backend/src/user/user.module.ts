@@ -7,6 +7,7 @@ import { Sheet, SheetColumn, SheetColumnSchema, SheetSchema } from '../excel/mod
 import { User, UserSchema } from './model/user.schema';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
+import { JwtService } from '@nestjs/jwt';
 
 
 @Module({
@@ -21,6 +22,6 @@ import { UserService } from './user.service';
     ]),
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, JwtService],
 })
 export class UserModule { }

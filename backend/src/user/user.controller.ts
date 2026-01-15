@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, UseGuards } from '@nestjs/common';
-import { UserService } from './user.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { UserService } from './user.service';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @UseGuards(AuthGuard)
 @ApiTags('user')
@@ -44,7 +44,7 @@ export class UserController {
     async getColumnsBySheetId(@Param('sheetId') sheetId: string) {
         return await this.userService.getColumnsBySheetId(sheetId);
     }
-    
+
 
 
     // Agent aid olan proyketlerin column-larını gətirən endpoint olacaq burada
