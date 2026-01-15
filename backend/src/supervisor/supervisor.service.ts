@@ -13,6 +13,7 @@ import { Sheet, SheetColumn } from "../excel/model/sheet.schema";
 import { Project } from "../project/model/project.schema";
 import { User } from "../user/model/user.schema";
 import * as XLSX from 'xlsx';
+import { maskPhone } from "src/helper/mask";
 
 
 const supId = "695bdaeff2405115af596e24"
@@ -348,12 +349,22 @@ export class SupervisorService {
         .find({ sheetId })
         .sort({ rowNumber: 1 })
         .skip(skip)
-        .limit(limit),
+        .limit(limit)
+        .lean(), // IMPORTANT: plain objects
       this.sheetRowModel.countDocuments({ sheetId }),
     ]);
 
-    return { data: rows, total, page, limit };
+    const maskedRows = rows.map(row => ({
+      ...row,
+      data: {
+        ...row.data,
+        phone: maskPhone(row.data?.phone),
+      },
+    }));
+
+    return { data: maskedRows, total, page, limit };
   }
+
 
   // ---------------- UPDATE ROW ----------------
   async updateRow(sheetId: Types.ObjectId, rowNumber: number, data: Record<string, any>) {
