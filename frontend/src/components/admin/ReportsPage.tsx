@@ -88,40 +88,39 @@ const ReportsPage: React.FC = () => {
   const [statsCards, setStatsCards] = useState<string[]>([]);
 
   // Fetch report data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getReport();
+  const fetchData = async (query?: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getReport(query);
 
-        if (!data || data.length === 0) {
-          setReportData([]);
-          setColumns([]);
-          return;
-        }
-
-        // Transform nested backend data to flat structure
-        const flattenedData = transformBackendData(data);
-        setReportData(flattenedData);
-
-        // Auto-detect columns from data
-        if (flattenedData.length > 0) {
-          const detectedColumns = detectColumns(flattenedData);
-          setColumns(detectedColumns);
-          // Default expand first 2 filter columns
-          setExpandedFilters(detectedColumns.slice(0, 2).map(c => c.id));
-        }
-      } catch (err: any) {
-        console.error('Hesabat yüklənərkən xəta:', err);
-        setError('Hesabat məlumatları yüklənə bilmədi');
+      if (!data || data.length === 0) {
         setReportData([]);
         setColumns([]);
-      } finally {
-        setLoading(false);
+        return;
       }
-    };
 
+      // Transform nested backend data to flat structure
+      const flattenedData = transformBackendData(data);
+      setReportData(flattenedData);
+
+      // Auto-detect columns from data
+      if (flattenedData.length > 0) {
+        const detectedColumns = detectColumns(flattenedData);
+        setColumns(detectedColumns);
+        // Default expand first 2 filter columns
+        setExpandedFilters(detectedColumns.slice(0, 2).map(c => c.id));
+      }
+    } catch (err: any) {
+      console.error('Hesabat yüklənərkən xəta:', err);
+      setError('Hesabat məlumatları yüklənə bilmədi');
+      setReportData([]);
+      setColumns([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -140,13 +139,13 @@ const ReportsPage: React.FC = () => {
       sheets.forEach((sheet: any) => {
         const sheetName = sheet.sheetName || '';
         const sheetRows = sheet.sheetRows || [];
-        
+
         // Get excel name if available
         const excelName = companyItem.excel || '';
 
         // Get first project name (can be enhanced if needed)
         const projectName = projects.length > 0 ? projects[0].name || '' : '';
-        const supervisors = projects.length > 0 && projects[0].supervisors 
+        const supervisors = projects.length > 0 && projects[0].supervisors
           ? projects[0].supervisors.map((s: any) => `${s.name} ${s.surname}`).join(', ')
           : '';
 
@@ -199,12 +198,12 @@ const ReportsPage: React.FC = () => {
           const value = row[key];
           // Detect column type
           // Phone numbers, email, and text fields should be 'text' type
-          if (key.toLowerCase().includes('phone') || 
-              key.toLowerCase().includes('telefon') ||
-              key.toLowerCase().includes('email') ||
-              key.toLowerCase().includes('name') ||
-              key.toLowerCase().includes('ad') ||
-              key.toLowerCase().includes('soyad')) {
+          if (key.toLowerCase().includes('phone') ||
+            key.toLowerCase().includes('telefon') ||
+            key.toLowerCase().includes('email') ||
+            key.toLowerCase().includes('name') ||
+            key.toLowerCase().includes('ad') ||
+            key.toLowerCase().includes('soyad')) {
             columnTypes[key] = 'text';
           } else if (/^\d{4}-\d{2}-\d{2}/.test(value)) {
             columnTypes[key] = 'date';
@@ -256,6 +255,7 @@ const ReportsPage: React.FC = () => {
 
   // Toggle filter value
   const toggleFilterValue = (columnId: string, value: string) => {
+    console.log('Toggle filter:', columnId, value);
     setFilters(prev => {
       const current = prev[columnId] || [];
       return {
@@ -360,7 +360,7 @@ const ReportsPage: React.FC = () => {
 
     // Count UNIQUE values (məsələn supervisor 7 dəfə ola bilər amma eyni adamdır = 1)
     const uniqueValues = new Set(values);
-    
+
     const numbers = values
       .map(v => Number(v))
       .filter(n => !isNaN(n));
@@ -375,8 +375,6 @@ const ReportsPage: React.FC = () => {
   };
 
   const visibleColumns = columns.filter(c => c.visible);
-  const textColumns = columns.filter(c => c.type === 'text');
-  const numberColumns = columns.filter(c => c.type === 'number');
 
   // Loading state
   if (loading) {
@@ -422,48 +420,7 @@ const ReportsPage: React.FC = () => {
         </div>
 
         <ScrollArea className="flex-1 p-4">
-          {/* Date Range Filter */}
-          <div className="mb-4">
-            <button
-              onClick={() => toggleFilterExpansion('date')}
-              className="flex items-center justify-between w-full text-sm font-medium mb-2"
-            >
-              <span className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                Tarix
-              </span>
-              {expandedFilters.includes('date') ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </button>
-            {expandedFilters.includes('date') && (
-              <div className="space-y-2 ml-6">
-                <div>
-                  <label className="text-xs text-muted-foreground">Başlanğıc</label>
-                  <Input
-                    type="date"
-                    value={dateRange.start}
-                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                    className="h-8 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground">Son</label>
-                  <Input
-                    type="date"
-                    value={dateRange.end}
-                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                    className="h-8 text-sm"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Dynamic Text Filters */}
-          {textColumns.map(column => {
+          {visibleColumns.map(column => {
             const uniqueValues = getUniqueValues(column.id);
             const searchValue = filterSearch[column.id] || '';
             const filteredValues = uniqueValues.filter(v =>
@@ -521,6 +478,57 @@ const ReportsPage: React.FC = () => {
               </div>
             );
           })}
+          <div className="mb-4">
+            <button
+              onClick={() => toggleFilterExpansion('date')}
+              className="flex items-center justify-between w-full text-sm font-medium mb-2"
+            >
+              <span className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                Tarix
+              </span>
+              {expandedFilters.includes('date') ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
+            {expandedFilters.includes('date') && (
+              <div className="space-y-2 ml-6">
+                <div>
+                  <label className="text-xs text-muted-foreground">Başlanğıc</label>
+                  <Input
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Son</label>
+                  <Input
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <Button className="w-full mt-2" size="sm" onClick={() => {
+            // Apply filters action
+            let query = '';
+            if (dateRange.start) {
+              query += `startDate=${encodeURIComponent(dateRange.start)}&`;
+            }
+            if (dateRange.end) {
+              query += `endDate=${encodeURIComponent(dateRange.end)}&`;
+            }
+            fetchData(query)
+          }}>
+            Tarixlər üzrə filtrləri tətbiq et
+          </Button>
         </ScrollArea>
 
         {/* <div className="p-4 border-t border-border">
@@ -653,8 +661,8 @@ const ReportsPage: React.FC = () => {
                 const stats = calculateStatistics(columnId);
                 const column = columns.find(c => c.id === columnId);
                 return (
-                  <div 
-                    key={columnId} 
+                  <div
+                    key={columnId}
                     className="bg-card border border-border rounded p-2 hover:shadow-sm transition-shadow"
                   >
                     <div className="text-xs text-muted-foreground truncate mb-1">{column?.name}</div>

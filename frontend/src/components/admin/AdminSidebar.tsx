@@ -33,8 +33,8 @@ type Props = {
 
 const menuItems = [
     { id: '/admin/companies', icon: Building2, label: 'Şirkətlər' },
-    { id: '/admin/chatbots', icon: Bot, label: 'Chatbot-lar' },
-    { divider: true },
+    // { id: '/admin/chatbots', icon: Bot, label: 'Chatbot-lar' },
+    // { divider: true },
     { id: '/admin/columns', icon: Columns, label: 'Sütunlar' },
     // { id: '/admin/supervisors', icon: UserCog, label: 'Supervayzerlər' },
     { id: '/admin/users', icon: Users, label: 'Userlər' },

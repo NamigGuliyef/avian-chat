@@ -116,7 +116,7 @@ export const deleteProject = async (projectId) => {
 
 // report
 
-export const getReport = async () => {
-    const res = await axios.get(`/admin/all-report`)
+export const getReport = async (query?: string) => {
+    const res = await axios.get(`/admin/all-report${query ? `?query=${encodeURIComponent(query)}` : ""}`)
     return res.data;
 }

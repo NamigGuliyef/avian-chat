@@ -498,7 +498,7 @@ export class AdminService {
             const agentIds = sheet.agentIds.map((agent) => agent.agentId);
             const agents = await this.userModel.find({ _id: { $in: agentIds } });
 
-            // sheet row-ları çəkirik
+            // sheet row-ları çəkirik 
             const sheetRows = await this.sheetRowModel.find({ sheetId: sheet._id });
 
             return {

@@ -33,7 +33,7 @@ export class SupervisorController {
   @ApiOperation({ summary: "Supervayzerin layihələrini göstər" })
   @Get('/projects/:supervisorId')
   @HttpCode(HttpStatus.OK)
-  async getSupervisorProjects(@Param("supervisorId") supervisorId: string) {
+  async getSupervisorProjects(@Param("supervisorId") supervisorId: Types.ObjectId) {
     return await this.supervisorService.getSupervisorProjects(supervisorId)
   }
 
@@ -41,7 +41,7 @@ export class SupervisorController {
   @ApiOperation({ summary: "Proyektə aid agentləri gətir" })
   @Get('/project/:projectId')
   @HttpCode(HttpStatus.OK)
-  async getProjectAgents(@Param("projectId") projectId: string) {
+  async getProjectAgents(@Param("projectId") projectId: Types.ObjectId) {
     return await this.supervisorService.getProjectAgents(projectId);
   }
 
@@ -62,7 +62,7 @@ export class SupervisorController {
   @ApiOperation({ summary: 'Proyektə aid bütün Excelleri gətir' })
   @Get('excel/:projectId')
   @HttpCode(HttpStatus.OK)
-  async getExcels(@Param('projectId') projectId: string) {
+  async getExcels(@Param('projectId') projectId: Types.ObjectId) {
     return await this.supervisorService.getExcels(projectId);
   }
 
@@ -97,7 +97,7 @@ export class SupervisorController {
   )
   @Patch('sheet/:_id')
   @HttpCode(HttpStatus.OK)
-  async updateSheetInExcel(@Param('_id') _id: string, @Body() updateSheetData: UpdateSheetDto) {
+  async updateSheetInExcel(@Param('_id') _id: Types.ObjectId, @Body() updateSheetData: UpdateSheetDto) {
     return await this.supervisorService.updateSheetInExcel(_id, updateSheetData);
   }
 
@@ -118,7 +118,7 @@ export class SupervisorController {
   @Post('sheet/:sheetId/column/:columnId')
   @HttpCode(HttpStatus.CREATED)
   async addColumnToSheet(
-    @Param('sheetId') sheetId: string,
+    @Param('sheetId') sheetId: Types.ObjectId,
     @Body() createColumnData: CreateSheetColumnDto
   ) {
     return await this.supervisorService.addColumnToSheet(sheetId, createColumnData);
@@ -129,8 +129,8 @@ export class SupervisorController {
   @Patch('sheet/:sheetId/column/:columnId')
   @HttpCode(HttpStatus.OK)
   async updateColumnInSheet(
-    @Param('sheetId') sheetId: string,
-    @Param('columnId') columnId: string,
+    @Param('sheetId') sheetId: Types.ObjectId,
+    @Param('columnId') columnId: Types.ObjectId,
     @Body() updateColumnData: UpdateSheetColumnDto
   ) {
     return await this.supervisorService.updateColumnInSheet(sheetId, columnId, updateColumnData);
@@ -140,7 +140,7 @@ export class SupervisorController {
   @ApiOperation({ summary: " Sheet-ə aid column-ları gətir" })
   @Get('sheet/:sheetId')
   @HttpCode(HttpStatus.OK)
-  async getColumnsOfSheet(@Param('sheetId') sheetId: string) {
+  async getColumnsOfSheet(@Param('sheetId') sheetId: Types.ObjectId) {
     return await this.supervisorService.getColumnsOfSheet(sheetId);
   }
 
@@ -150,7 +150,7 @@ export class SupervisorController {
   @Post('sheet/:sheetId/rows')
   @HttpCode(HttpStatus.CREATED)
   addRow(
-    @Param('sheetId') sheetId: string,
+    @Param('sheetId') sheetId: Types.ObjectId,
     @Body() data: Record<string, any>,
   ) {
     return this.supervisorService.addRow(sheetId, data);
@@ -175,7 +175,7 @@ export class SupervisorController {
   @Post('sheet/:sheetId/rows/import')
   @HttpCode(HttpStatus.CREATED)
   importFromExcel(
-    @Param('sheetId') sheetId: string,
+    @Param('sheetId') sheetId: Types.ObjectId,
     @UploadedFile() file: Express.Multer.File,
   ) {
     return this.supervisorService.importFromExcel(sheetId, file);
@@ -187,7 +187,7 @@ export class SupervisorController {
   @Get('sheet/:sheetId/rows')
   @HttpCode(HttpStatus.OK)
   getRows(
-    @Param('sheetId') sheetId: string,
+    @Param('sheetId') sheetId: Types.ObjectId,
     @Query('page') page = '1',
     @Query('limit') limit = '50',
   ) {
@@ -204,7 +204,7 @@ export class SupervisorController {
   @Patch('sheet/:sheetId/rows/:rowNumber')
   @HttpCode(HttpStatus.OK)
   updateRow(
-    @Param('sheetId') sheetId: string,
+    @Param('sheetId') sheetId: Types.ObjectId,
     @Param('rowNumber') rowNumber: string,
     @Body() data: Record<string, any>,
   ) {
@@ -224,7 +224,7 @@ export class SupervisorController {
   @Patch('sheet/:sheetId/rows/:rowNumber')
   @HttpCode(HttpStatus.OK)
   updateCell(
-    @Param('sheetId') sheetId: string,
+    @Param('sheetId') sheetId: Types.ObjectId,
     @Param('rowNumber') rowNumber: string,
     @Body() sheetCellData: SheetCellDto
   ) {
@@ -241,7 +241,7 @@ export class SupervisorController {
   @Delete('sheet/:sheetId/rows/:rowNumber')
   @HttpCode(HttpStatus.OK)
   deleteRow(
-    @Param('sheetId') sheetId: string,
+    @Param('sheetId') sheetId: Types.ObjectId,
     @Param('rowNumber') rowNumber: string,
   ) {
     return this.supervisorService.deleteRow(

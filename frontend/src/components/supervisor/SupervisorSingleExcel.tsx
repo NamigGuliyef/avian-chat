@@ -148,9 +148,17 @@ const SupervisorSingleExcel: React.FC = () => {
 
     const updateColumnField = (
         columnId: any,
-        field: keyof Omit<SheetColumnForm, "columnId" | "order">,
-        value: boolean
+        field: keyof Omit<SheetColumnForm, "columnId">,
+        value: boolean | number
     ) => {
+        if (field === "order" && typeof value === "number" && value <= 0) {
+            toast("Sıra 1-dən başlayır!");
+            return;
+        }
+        if (sheetForm.columnIds.map(c => c.order).includes(value as number) && field === "order") {
+            toast("Eyni sıranı təyin etmək olmaz!");
+            return;
+        }
         setSheetForm((prev) => ({
             ...prev,
             columnIds: prev.columnIds.map((c) =>
@@ -238,6 +246,20 @@ const SupervisorSingleExcel: React.FC = () => {
                                                                 <div className="flex items-center gap-2">
                                                                     <Checkbox checked={selected.required} onCheckedChange={(v) => updateColumnField(col._id, 'required', Boolean(v))} />
                                                                     <span>Required</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 max-w-20">
+                                                                    <Input
+                                                                        type="text"
+                                                                        value={selected.order}
+                                                                        onChange={(e) =>
+                                                                            updateColumnField(
+                                                                                col._id,
+                                                                                "order",
+                                                                                Number(e.target.value)
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                    <span>Sıra</span>
                                                                 </div>
                                                             </div>
                                                         )}

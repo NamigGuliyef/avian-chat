@@ -33,7 +33,7 @@ export class SupervisorService {
   ///  ---------------------------  Project function --------------------------------//
 
   // Supervisor uyğun layihələri gətir
-  async getSupervisorProjects(supervisorId: string) {
+  async getSupervisorProjects(supervisorId: Types.ObjectId) {
     return await this.projectModel.find({ supervisors: { $in: [supervisorId] } })
       .populate([
         { path: 'agents', select: '-password' },
@@ -44,7 +44,7 @@ export class SupervisorService {
 
 
   // Proyektə aid agentləri gətir
-  async getProjectAgents(projectId: string) {
+  async getProjectAgents(projectId: Types.ObjectId) {
     const project = await this.projectModel.findById(projectId).populate('agents', '-password')
     if (!project) {
       throw new Error('Layihə tapılmadı');
@@ -73,7 +73,7 @@ export class SupervisorService {
 
 
   // Proyektə aid bütün Excelleri gətir
-  async getExcels(projectId: string) {
+  async getExcels(projectId: Types.ObjectId) {
     const data = await this.excelModel.find({ projectId }).populate([{ path: 'sheetIds' }, { path: 'agentIds', select: '-password' }]);
     return data;
   }
@@ -172,7 +172,7 @@ export class SupervisorService {
 
 
   // Excel-də mövcud olan Sheeti yeniləmək üçün
-  async updateSheetInExcel(_id: string, updateSheetData: UpdateSheetDto) {
+  async updateSheetInExcel(_id: Types.ObjectId, updateSheetData: UpdateSheetDto) {
     {
       /* 1. Sheet yoxlanışı */
       const sheet = await this.sheetModel.findById(_id);
@@ -207,7 +207,7 @@ export class SupervisorService {
 
 
   // Sheet-ə column əlavə et
-  async addColumnToSheet(sheetId: string, createColumnData: SheetColumn) {
+  async addColumnToSheet(sheetId: Types.ObjectId, createColumnData: SheetColumn) {
     const sheet = await this.sheetModel.findById(sheetId);
     if (!sheet) {
       throw new NotFoundException('Sheet tapılmadı');
@@ -220,7 +220,7 @@ export class SupervisorService {
 
     // Sheet-də eyni column varsa, blokla
     const exists = sheet.columnIds.some(
-      (c) => c.columnId.toString() === column._id.toString(),
+      (c) => c.columnId === column._id,
     );
 
     if (exists) {
@@ -242,8 +242,8 @@ export class SupervisorService {
 
   // Sheet-ə aid column-ları yenilə
   async updateColumnInSheet(
-    sheetId: string,
-    columnId: string,
+    sheetId: Types.ObjectId,
+    columnId: Types.ObjectId,
     updateColumnData: UpdateSheetColumnDto,
   ) {
     const sheet = await this.sheetModel.findById(sheetId);
@@ -252,7 +252,7 @@ export class SupervisorService {
     }
 
     const columnConfig = sheet.columnIds.find(
-      (c) => c.columnId.toString() === columnId,
+      (c) => c.columnId === columnId,
     );
 
     if (!columnConfig) {
@@ -271,7 +271,7 @@ export class SupervisorService {
 
 
   // Sheet-ə aid column-ları gətir
-  async getColumnsOfSheet(sheetId: string) {
+  async getColumnsOfSheet(sheetId: Types.ObjectId) {
     const sheet = await this.sheetModel
       .findById(sheetId)
       .populate({
@@ -288,7 +288,7 @@ export class SupervisorService {
   }
   // row-lara aid isler
 
-  async addRow(sheetId: string, data: Record<string, any>) {
+  async addRow(sheetId: Types.ObjectId, data: Record<string, any>) {
     const sheet = await this.sheetModel.findById(sheetId);
     if (!sheet) throw new NotFoundException('Sheet tapılmadı');
 
@@ -305,7 +305,7 @@ export class SupervisorService {
     });
   }
 
-  async importFromExcel(sheetId: string, file: Express.Multer.File) {
+  async importFromExcel(sheetId: Types.ObjectId, file: Express.Multer.File) {
     const sheet = await this.sheetModel.findById(sheetId);
     if (!sheet) throw new NotFoundException('Sheet tapılmadı');
 
@@ -340,7 +340,7 @@ export class SupervisorService {
   }
 
   // ---------------- GET ROWS ----------------
-  async getRows(sheetId: string, page = 1, limit = 50) {
+  async getRows(sheetId: Types.ObjectId, page = 1, limit = 50) {
     const skip = (page - 1) * limit;
 
     const [rows, total] = await Promise.all([
@@ -356,7 +356,7 @@ export class SupervisorService {
   }
 
   // ---------------- UPDATE ROW ----------------
-  async updateRow(sheetId: string, rowNumber: number, data: Record<string, any>) {
+  async updateRow(sheetId: Types.ObjectId, rowNumber: number, data: Record<string, any>) {
     const row = await this.sheetRowModel.findOneAndUpdate(
       { sheetId, rowNumber },
       { $set: { data } },
@@ -370,7 +370,7 @@ export class SupervisorService {
 
   // ---------------- UPDATE CELL ----------------
   async updateCell(
-    sheetId: string,
+    sheetId: Types.ObjectId,
     rowNumber: number,
     sheetCellData: SheetCellDto
   ) {
@@ -391,7 +391,7 @@ export class SupervisorService {
 
 
   // ---------------- DELETE ROW ----------------
-  async deleteRow(sheetId: string, rowNumber: number) {
+  async deleteRow(sheetId: Types.ObjectId, rowNumber: number) {
     const deleted = await this.sheetRowModel.findOneAndDelete({
       sheetId,
       rowNumber,
