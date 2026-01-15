@@ -1,15 +1,20 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateCompanyDto } from '../company/dto/create-company.dto';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateProjectDto } from '../project/dto/create-project.dto';
 import { CreateChannelDto } from '../channel/dto/create-channel.dto';
 import { Types } from 'mongoose';
 import { CreateUserDto } from '../auth/dto/create-user.dto';
 import { CreateAdminColumnDto } from '../excel/dto/create-column.dto';
 import { UpdateAdminColumnDto } from '../excel/dto/update-column.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+
+@UseGuards(AuthGuard)
 @ApiTags('admin')
+@ApiBearerAuth()
+
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) { }

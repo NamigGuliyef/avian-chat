@@ -10,10 +10,11 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateExcelDto } from "../excel/dto/create-excel.dto";
 import { CreateSheetColumnDto, CreateSheetDto } from "../excel/dto/create-sheet.dto";
 import { UpdateExcelDto } from "../excel/dto/update-excel.dto";
@@ -21,8 +22,13 @@ import { UpdateSheetColumnDto, UpdateSheetDto } from "../excel/dto/update-sheet.
 import { SupervisorService } from './supervisor.service';
 import { Types } from 'mongoose';
 import { SheetCellDto } from '../excel/dto/sheet-cell.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+
+@UseGuards(AuthGuard) 
 @ApiTags("supervisor")
+@ApiBearerAuth()
+
 @Controller('supervisor')
 export class SupervisorController {
   constructor(private readonly supervisorService: SupervisorService) { }

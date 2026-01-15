@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { Column } from '../excel/model/column.schema';
 import { Excel } from '../excel/model/excel.schema';
-import { Sheet, SheetColumn } from '../excel/model/sheet.schema';
-import { User } from './model/user.schema';
 import { SheetRow } from '../excel/model/row-schema';
+import { Sheet } from '../excel/model/sheet.schema';
+import { User } from './model/user.schema';
 
 const supId = "695e0b4690d5dca3abdd31ae"
 @Injectable()
@@ -16,7 +16,6 @@ export class UserService {
         @InjectModel(Column.name) private readonly columnModel: Model<Column>,
         @InjectModel(User.name) private readonly userModel: Model<User>,
         @InjectModel(SheetRow.name) private readonly rowModel: Model<SheetRow>,
-        @InjectModel(SheetColumn.name) private readonly sheetColumnModel: Model<SheetColumn>,
     ) { }
 
 

@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
+import { maskPhone } from "src/helper/mask";
+import * as XLSX from 'xlsx';
 import { CreateExcelDto } from "../excel/dto/create-excel.dto";
 import { CreateSheetDto } from "../excel/dto/create-sheet.dto";
 import { SheetCellDto } from "../excel/dto/sheet-cell.dto";
@@ -11,12 +13,9 @@ import { Excel } from "../excel/model/excel.schema";
 import { SheetRow } from "../excel/model/row-schema";
 import { Sheet, SheetColumn } from "../excel/model/sheet.schema";
 import { Project } from "../project/model/project.schema";
-import { User } from "../user/model/user.schema";
-import * as XLSX from 'xlsx';
-import { maskPhone } from "src/helper/mask";
 
 
-const supId = "695bdaeff2405115af596e24"
+
 
 @Injectable()
 export class SupervisorService {
@@ -25,11 +24,11 @@ export class SupervisorService {
     @InjectModel(Project.name) private projectModel: Model<Project>,
     @InjectModel(Sheet.name) private sheetModel: Model<Sheet>,
     @InjectModel(Column.name) private columnModel: Model<Column>,
-    @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(SheetRow.name) private sheetRowModel: Model<SheetRow>,
 
   ) { }
 
+  
 
   ///  ---------------------------  Project function --------------------------------//
 
