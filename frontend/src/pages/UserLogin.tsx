@@ -38,6 +38,9 @@ export default function UserLogin() {
       if (resp.user.role === "Agent") {
         navigate('/user/excels');
       }
+      if (resp.user.role === "Supervisor") {
+        navigate('/supervisor/dashboard');
+      }
     } else {
       toast({
         title: "Xəta",
