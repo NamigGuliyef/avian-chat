@@ -44,6 +44,9 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException('İstifadeçi tapılmadı');
     }
+    if (!user.isActive) {
+      throw new BadRequestException('İstifadəçi deaktiv edilib!');
+    }
 
     // Şifrənin yoxlanılması və digər lazımi əməliyyatlar
     if (!password) {
