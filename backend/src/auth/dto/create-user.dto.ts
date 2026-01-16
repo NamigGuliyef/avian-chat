@@ -64,14 +64,12 @@ export class CreateUserDto {
 
   @ApiProperty()
   @IsArray()
-  @IsMongoId({ each: true })
   @IsOptional()
   channelIds: Types.ObjectId[]; // user-e aid channel-lerin id-lerinin massivi
 
 
   @ApiProperty({ required: false })
   @IsArray()
-  @IsMongoId({ each: true })
   @IsOptional()
   projectIds: Types.ObjectId[];
 
