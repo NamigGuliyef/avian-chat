@@ -12,6 +12,7 @@ import { Sheet, SheetSchema } from '../excel/model/sheet.schema';
 import { SheetRow, SheetRowSchema } from '../excel/model/row-schema';
 import { Excel, ExcelSchema } from '../excel/model/excel.schema';
 import { JwtService } from '@nestjs/jwt';
+import { AuditLog, AuditLogSchema } from 'src/logger/model/logger.schema';
 
 @Module({
   imports: [MongooseModule.forFeature([
@@ -24,6 +25,7 @@ import { JwtService } from '@nestjs/jwt';
     { name: SheetRow.name, schema: SheetRowSchema },
     { name: Excel.name, schema: ExcelSchema },
     { name: User.name, schema: UserSchema },
+    { name: AuditLog.name, schema: AuditLogSchema },
 
   ])],
   controllers: [AdminController],

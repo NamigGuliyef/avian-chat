@@ -16,6 +16,7 @@ import { hashPassword } from '../helper/hashpass';
 import { CreateProjectDto } from '../project/dto/create-project.dto';
 import { Project } from '../project/model/project.schema';
 import { User } from '../user/model/user.schema';
+import { AuditLog } from 'src/logger/model/logger.schema';
 
 
 @Injectable()
@@ -30,6 +31,7 @@ export class AdminService {
     @InjectModel(SheetRow.name) private readonly sheetRowModel: Model<SheetRow>,
     @InjectModel(Excel.name) private readonly excelModel: Model<Excel>,
     @InjectModel(Sheet.name) private readonly sheetModel: Model<Sheet>,
+    @InjectModel(AuditLog.name) private readonly auditLogModel: Model<AuditLog>
 
   ) { }
 
@@ -525,6 +527,11 @@ export class AdminService {
     );
 
     return result;
+  }
+  // logging
+  async getLogs(): Promise<any[]> {
+    const res = await this.auditLogModel.find()
+    return res;
   }
 
 

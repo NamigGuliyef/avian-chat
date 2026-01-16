@@ -15,6 +15,9 @@ export class AuditLog {
     @Prop({ required: true })
     field: string;
 
+    @Prop({ required: true })
+    method: string;
+
     @Prop()
     oldValue?: string;
 

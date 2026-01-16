@@ -332,4 +332,12 @@ export class AdminController {
   async getProjectTableView() {
     return await this.adminService.getProjectTableView();
   }
+
+  // logging
+  @ApiOperation({ summary: "Bütün log-ları gətir" })
+  @Get('all-logs')
+  @HttpCode(HttpStatus.OK)
+  async getLogs() {
+    return await this.adminService.getLogs();
+  }
 }

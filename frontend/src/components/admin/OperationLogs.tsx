@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { format } from 'date-fns';
-import { CalendarIcon, Filter, Search } from 'lucide-react';
-import { OperationLog, User } from '@/types/crm';
+import { getAllLogs } from '@/api/admin';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -12,13 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
+import { OperationLog, User } from '@/types/crm';
+import { format } from 'date-fns';
+import { motion } from 'framer-motion';
+import { CalendarIcon, Filter, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface OperationLogsProps {
   logs: OperationLog[];
@@ -29,7 +30,12 @@ export function OperationLogs() {
   const [selectedUser, setSelectedUser] = useState<string>('all');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
-  const logs = []
+  const [logs, setLogs] = useState([])
+  // const logs = []
+
+  useEffect(() => {
+    getAllLogs().then(setLogs)
+  }, [])
   const users = []
   const filteredLogs = logs.filter((log) => {
     const matchesUser = selectedUser === 'all' || log.userId === selectedUser;
@@ -140,9 +146,9 @@ export function OperationLogs() {
               <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Sahə
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              {/* <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Köhnə dəyər
-              </th>
+              </th> */}
               <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Yeni dəyər
               </th>
@@ -172,7 +178,7 @@ export function OperationLogs() {
                   </td>
                   <td className="px-4 py-3">
                     <span className="px-2 py-1 text-xs font-medium rounded bg-primary/10 text-primary">
-                      {log.operation}
+                      {log.method}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -180,14 +186,14 @@ export function OperationLogs() {
                       {log.field}
                     </code>
                   </td>
-                  <td className="px-4 py-3 text-sm text-destructive">
+                  {/* <td className="px-4 py-3 text-sm text-destructive">
                     {log.oldValue}
-                  </td>
+                  </td> */}
                   <td className="px-4 py-3 text-sm text-success">
                     {log.newValue}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {log.timestamp}
+                    {formatDate(log.createdAt)}
                   </td>
                 </motion.tr>
               ))

@@ -120,3 +120,10 @@ export const getReport = async (query?: string) => {
     const res = await axios.get(`/admin/all-report${query ? `?query=${encodeURIComponent(query)}` : ""}`)
     return res.data;
 }
+
+
+// logs
+export const getAllLogs = async (query?: string) => {
+    const res = await axios.get(`/admin/all-logs${query ? `?query=${encodeURIComponent(query)}` : ""}`)
+    return res.data;
+}
