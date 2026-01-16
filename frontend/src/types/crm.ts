@@ -24,6 +24,7 @@ export interface Lead {
 export interface User {
   id: string;
   name: string;
+  surname: string;
   email: string;
   password: string;
   role: CrmUserRole;
@@ -70,11 +71,14 @@ export interface OperationLog {
   id: string;
   userId: string;
   userName: string;
+  userSurname: string;
   operation: string;
   field: string;
   oldValue: string;
   newValue: string;
   timestamp: string;
+  method: string;
+  createdAt: string;
 }
 
 export interface Stats {

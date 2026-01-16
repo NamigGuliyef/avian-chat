@@ -10,11 +10,10 @@ import {
   Post,
   Query,
   UploadedFile,
-  UseGuards,
   UseInterceptors
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { CreateExcelDto } from "../excel/dto/create-excel.dto";
 import { CreateSheetColumnDto, CreateSheetDto } from "../excel/dto/create-sheet.dto";
@@ -22,12 +21,11 @@ import { SheetCellDto } from '../excel/dto/sheet-cell.dto';
 import { UpdateExcelDto } from "../excel/dto/update-excel.dto";
 import { UpdateSheetColumnDto, UpdateSheetDto } from "../excel/dto/update-sheet.dto";
 import { SupervisorService } from './supervisor.service';
-import { AuthGuard } from 'src/auth/auth.guard';
 
 
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 @ApiTags("supervisor")
-@ApiBearerAuth()
+// @ApiBearerAuth()
 
 @Controller('supervisor')
 export class SupervisorController {
@@ -239,5 +237,15 @@ export class SupervisorController {
       Number(rowNumber),
     );
   }
+
+
+  @ApiOperation({ summary: "Supervayzerin table view məlumatlarını gətir" })
+  @Get('/table-view/:supervisorId')
+  @HttpCode(HttpStatus.OK)
+  @ApiParam({ name: 'supervisorId', type: 'string', description: 'Supervayzer ID-si' })
+  getSupervisorTableView(@Param("supervisorId") supervisorId: Types.ObjectId) {
+    return  this.supervisorService.getSupervisorTableView(supervisorId)
+  }
+
 
 }

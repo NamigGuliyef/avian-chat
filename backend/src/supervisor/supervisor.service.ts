@@ -13,6 +13,8 @@ import { Excel } from "../excel/model/excel.schema";
 import { SheetRow } from "../excel/model/row-schema";
 import { Sheet, SheetColumn } from "../excel/model/sheet.schema";
 import { Project } from "../project/model/project.schema";
+import { Company } from "src/company/model/company.schema";
+import { User } from "src/user/model/user.schema";
 
 
 
@@ -25,10 +27,11 @@ export class SupervisorService {
     @InjectModel(Sheet.name) private sheetModel: Model<Sheet>,
     @InjectModel(Column.name) private columnModel: Model<Column>,
     @InjectModel(SheetRow.name) private sheetRowModel: Model<SheetRow>,
-
+    @InjectModel(Company.name) private companyModel: Model<Company>,
+    @InjectModel(User.name) private userModel: Model<User>,
   ) { }
 
-  
+
 
   ///  ---------------------------  Project function --------------------------------//
 
@@ -416,4 +419,72 @@ export class SupervisorService {
 
     return { success: true };
   }
+
+
+  async getSupervisorTableView(supervisorId: Types.ObjectId): Promise<any[]> {
+    // 1. Supervisorun aid olduğu layihələri çəkirik
+    const projects = await this.projectModel
+      .find({
+        isDeleted: false,
+        supervisors: supervisorId  // yalnız bu supervisorun layihələri
+      })
+      .select('-agents -sheetIds -columnIds')
+      .populate({ path: 'supervisors', select: 'name surname email' });
+
+    const result = await Promise.all(
+      projects.map(async (project) => {
+        // 2. Company məlumatı
+        const company = await this.companyModel.findById(project.companyId);
+
+        // 3. Excel məlumatları
+        const excelDocs = await this.excelModel.find({ _id: { $in: project.excelIds } });
+
+        // 4. Hər Excel üçün sheet-ləri çəkirik
+        const excelData = await Promise.all(
+          excelDocs.map(async (excel) => {
+            const sheets = await this.sheetModel.find({ excelId: excel._id });
+
+            // 5. Hər sheet üçün agent və sütun məlumatları
+            const sheetData = await Promise.all(
+              sheets.map(async (sheet) => {
+                const columnIds = sheet.columnIds.map(c => c.columnId);
+                const columns = await this.columnModel.find({ _id: { $in: columnIds } });
+
+                const agentIds = sheet.agentIds.map(a => a.agentId);
+                const agents = await this.userModel.find({ _id: { $in: agentIds } });
+
+                const sheetRows = await this.sheetRowModel.find({ sheetId: sheet._id });
+
+                return {
+                  sheetName: sheet.name,
+                  columns: columns.map(c => c.name),
+                  agents: agents.map(a => ({
+                    name: a.name,
+                    surname: a.surname,
+                    startRow: a.startRow,
+                    endRow: a.endRow,
+                  })),
+                  sheetRows: sheetRows.map(r => r.data),
+                };
+              })
+            );
+
+            return {
+              excelName: excel.name,
+              sheets: sheetData,
+            };
+          })
+        );
+
+        return {
+          supervisorProjects: project.name,
+          company: company?.name,
+          excels: excelData,
+        };
+      })
+    );
+
+    return result;
+  }
+
 }

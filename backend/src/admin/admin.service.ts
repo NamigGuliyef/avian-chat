@@ -528,6 +528,8 @@ export class AdminService {
 
     return result;
   }
+
+  
   // logging
   async getLogs(): Promise<any[]> {
     const res = await this.auditLogModel.find()
