@@ -1,26 +1,22 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { MessageSquare, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { login } from '@/api/users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useChat } from '@/contexts/ChatContext';
 import { useToast } from '@/hooks/use-toast';
+import { useSession } from '@/lib/auth';
+import { AlertCircle, Eye, EyeOff, Lock, Mail, MessageSquare } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('admin@culture.gov.az');
-  const [password, setPassword] = useState('demo123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const { login, currentUser } = useChat();
+  const { setSession } = useSession()
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
-
-  // Get redirect path from location state or default based on role
-  const from = (location.state as { from?: string })?.from;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,25 +24,25 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const success = await login(email, password);
-      if (success) {
+      const resp = await login({ email, password });
+      if (resp.token) {
+        setSession({
+          token: resp.token,
+          user: resp.user,
+        });
         toast({
           title: 'Uğurlu giriş',
           description: 'Yönləndirilirsiniz...',
+          duration: 1000
         });
-        // Navigate to the requested page or role-based default
-        if (from) {
-          navigate(from);
-        } else {
-          // Check user role from mock data (admin goes to /admin, agent goes to /user)
-          const isAdmin = email === 'admin@culture.gov.az';
-          navigate(isAdmin ? '/admin/companies' : '/user');
-        }
+        setTimeout(() => {
+          if (resp.user.role === "Admin") {
+            navigate('/admin/companies');
+          }
+        }, 500);
       } else {
-        setError('Email və ya şifrə yanlışdır');
+        setError('Giriş zamanı xəta baş verdi. Email və ya şifrə yanlışdır');
       }
-    } catch {
-      setError('Giriş zamanı xəta baş verdi');
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +56,7 @@ const Login: React.FC = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-primary-foreground mb-4">
             <MessageSquare className="h-8 w-8" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">LiveChat Admin</h1>
+          <h1 className="text-2xl font-bold text-foreground">Web App Admin</h1>
           <p className="text-muted-foreground mt-2">Dəstək panelini idarə edin</p>
         </div>
 
@@ -121,13 +117,6 @@ const Login: React.FC = () => {
               {isLoading ? 'Giriş edilir...' : 'Daxil ol'}
             </Button>
           </form>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 rounded-lg bg-muted/50 text-sm">
-            <p className="font-medium text-foreground mb-2">Demo məlumatları:</p>
-            <p className="text-muted-foreground">Email: admin@culture.gov.az</p>
-            <p className="text-muted-foreground">Şifrə: demo123</p>
-          </div>
         </div>
       </div>
     </div>

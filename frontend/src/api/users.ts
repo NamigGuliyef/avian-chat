@@ -10,6 +10,20 @@ export const searchUsers = async (params?: {
     });
     return data.data;
 };
+
+export interface ILoginUser {
+    _id: string;
+    name: string;
+    surname: string;
+    email: string;
+    role: string;
+    onlineStatus: string;
+    chatbotEnabled: string;
+}
+export const login = async (body: { email: string; password: string }): Promise<{ token: string; user: ILoginUser; }> => {
+    const { data } = await axios.post("/auth/login", body);
+    return data;
+};
 export const signUp = async (_data: Partial<IUser>): Promise<IUser[]> => {
     const { data } = await axios.post("/auth/signup", _data);
     return data.data;

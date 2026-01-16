@@ -1,11 +1,7 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
-import { useAuth } from "@/hooks/useAuth";
-import { cn } from "@/lib/utils";
-import { OnlineStatus } from "@/types/types";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { ChevronDown, LogOut, MessageSquare } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Navigate, Outlet, useNavigate } from "react-router-dom";
 
 // const statusColors: Record<OnlineStatus, string> = {
 //   online: "bg-green-500",
@@ -16,16 +12,11 @@ import { Outlet, useNavigate } from "react-router-dom";
 
 export default function UserOutlet() {
   const navigate = useNavigate();
-  const { session, isLoading, logout } = useAuth();
-  const [userStatus, setUserStatus] = useState<OnlineStatus>(OnlineStatus.online);
+  const { session, logout, isAuthenticated } = useAuthContext();
 
-  useEffect(() => {
-    if (!isLoading && (!session.isAuthenticated || session.user?.role !== "agent")) {
-      navigate("/user/login");
-    }
-  }, [isLoading, session, navigate]);
-
-  if (isLoading) return null;
+  if (!isAuthenticated || session.user.role !== 'Agent') {
+    return <Navigate to="/user/login" replace />;
+  }
 
   return (
     <div className="flex flex-col h-screen bg-background">
@@ -33,7 +24,7 @@ export default function UserOutlet() {
       <header className="h-14 border-b bg-card px-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <MessageSquare className="h-5 w-5 text-primary" />
-          <span className="font-semibold">Live Chat</span>
+          <span className="font-semibold">Avian Web App</span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -55,7 +46,7 @@ export default function UserOutlet() {
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted">
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  {session.user?.name?.charAt(0)}
+                  {session?.user?.name?.charAt?.(0)}
                 </div>
                 <ChevronDown className="h-4 w-4" />
               </button>

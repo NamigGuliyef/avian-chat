@@ -1,5 +1,27 @@
+import { ILoginUser } from "@/api/users";
 import { Shield, UserCog, UserIcon } from "lucide-react";
 
+
+// auth-----------------------------------------------
+export interface AuthUser {
+    id: string;
+    email: string;
+    role?: string;
+}
+
+export interface AuthSession {
+    token: string | null;
+    user?: ILoginUser;
+}
+
+export interface AuthContextType {
+    session: AuthSession;
+    isAuthenticated: boolean;
+    setSession: (session: AuthSession) => void;
+    logout: () => void;
+}
+
+// -----------------------------------------------
 export enum UserRole {
     admin = 'Admin',
     supervisor = 'Supervisor',

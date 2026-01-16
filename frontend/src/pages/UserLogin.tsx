@@ -1,18 +1,19 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, LogIn, User } from 'lucide-react';
+import { login } from '@/api/users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { useSession } from '@/lib/auth';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, LogIn, User } from 'lucide-react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function UserLogin() {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [email, setEmail] = useState('user@culture.gov.az');
-  const [password, setPassword] = useState('demo123');
+  const { setSession } = useSession()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,15 +21,27 @@ export default function UserLogin() {
     e.preventDefault();
     setIsLoading(true);
 
-    const result = login(email, password);
+    const resp = await login({ email, password });
 
-    if (result.success) {
-      toast({ title: "Uğurlu", description: "Daxil oldunuz" });
-      navigate('/user/excels');
+    if (resp.token) {
+
+      setSession({
+        token: resp.token,
+        user: resp.user,
+      });
+      toast({
+        title: 'Uğurlu giriş',
+        description: 'Yönləndirilirsiniz...',
+        duration: 1000
+      });
+
+      if (resp.user.role === "Agent") {
+        navigate('/user/excels');
+      }
     } else {
       toast({
         title: "Xəta",
-        description: result.error || "Daxil olmaq mümkün olmadı",
+        description: "Daxil olmaq mümkün olmadı",
         variant: "destructive"
       });
     }
@@ -96,11 +109,6 @@ export default function UserLogin() {
               Daxil ol
             </Button>
           </form>
-
-          <div className="mt-6 p-4 bg-muted rounded-lg">
-            <p className="text-xs text-muted-foreground mb-2">Demo məlumatları:</p>
-            <p className="text-xs font-mono">user@culture.gov.az / demo123</p>
-          </div>
         </div>
       </motion.div>
     </div>

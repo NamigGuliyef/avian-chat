@@ -1,17 +1,17 @@
-import { motion } from 'framer-motion';
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import { useChat } from '@/contexts/ChatContext';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const AdminOutlet: React.FC = () => {
-    const { isAuthenticated, currentUser, logout } = useChat();
+    const { isAuthenticated, session, logout } = useAuthContext();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
-    if (!isAuthenticated || currentUser?.role !== 'admin') {
-        return <Navigate to="/" replace />;
+    if (!isAuthenticated || session?.user?.role !== 'Admin') {
+        return <Navigate to="/admin/login" replace />;
     }
 
     return (
@@ -19,7 +19,7 @@ const AdminOutlet: React.FC = () => {
             <AdminSidebar
                 activeSection={location.pathname}
                 sidebarCollapsed={sidebarCollapsed}
-                currentUserEmail={currentUser.email}
+                currentUserEmail={session?.user?.email}
                 onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
                 onSelect={(path) => navigate(path)}
                 onLogout={logout}

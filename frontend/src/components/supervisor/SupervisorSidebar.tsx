@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useChat } from "@/contexts/ChatContext";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import {
     ChevronLeft,
@@ -11,14 +11,13 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 const menuItems = [
     { id: 'dashboard', icon: UserIcon, label: 'Dashboard' },
     { id: 'projects', icon: FileSpreadsheet, label: 'Layihələrim' },
 ];
 
 const SupervisorSidebar = () => {
-    const { currentUser, logout } = useChat();
+    const { session, logout } = useAuthContext();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [activeSection, setActiveSection] = useState('dashboard');
     const navigate = useNavigate()
@@ -27,7 +26,7 @@ const SupervisorSidebar = () => {
         <div className={cn("bg-card border-r border-border flex flex-col transition-all duration-300", sidebarCollapsed ? "w-16" : "w-64")}>
             <div className="p-4 border-b border-border flex items-center justify-between">
                 {!sidebarCollapsed && <div><h1 className="text-xl font-bold text-primary">Supervayzer</h1>
-                    <p className="text-xs text-muted-foreground mt-1">{currentUser?.email}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{session?.user?.email}</p>
                 </div>}
                 <Button variant="ghost" size="icon" onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className={cn(sidebarCollapsed && "mx-auto")}>
                     {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
