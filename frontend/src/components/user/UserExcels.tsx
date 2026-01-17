@@ -33,19 +33,55 @@ const UserExcels: React.FC = () => {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {excels.map((item) => {
                     return (
-                        <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => { navigate(`/user/sheets/${item._id}/${item.name}`) }}>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-lg flex items-center gap-2 justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <Table2 className="h-5 w-5 text-primary" />
-                                        {item.name}
+                        <Card
+                            key={item._id}
+                            onClick={() => navigate(`/user/sheets/${item._id}/${item.name}`)}
+                            className="
+        group cursor-pointer
+        transition-all duration-300
+        hover:shadow-xl hover:-translate-y-1
+        border-muted hover:border-primary/50
+        rounded-2xl
+        min-h-[180px]
+    "
+                        >
+                            <CardHeader className="pb-4 px-5 pt-5">
+                                <CardTitle className="text-lg font-semibold flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="
+                    p-3 rounded-2xl
+                    bg-primary/10 text-primary
+                    group-hover:bg-primary group-hover:text-white
+                    transition-colors
+                ">
+                                            <Table2 className="h-5 w-5" />
+                                        </div>
+                                        <span className="line-clamp-1">{item.name}</span>
                                     </div>
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent><p className="text-sm text-muted-foreground mb-3">{item.description}</p>
-                                <Badge variant="outline">{item.sheetIds?.length} sheet</Badge>
+
+                            <CardContent className="px-5 pb-5 space-y-4">
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                    {item.description || "Açıqlama mövcud deyil"}
+                                </p>
+
+                                <div className="flex items-center justify-between pt-2">
+                                    <Badge variant="secondary" className="text-sm px-3 py-1">
+                                        📄 {item.sheetIds?.length ?? 0} sheet
+                                    </Badge>
+
+                                    <span className="
+                text-sm text-primary font-medium
+                opacity-0 group-hover:opacity-100
+                transition-opacity
+            ">
+
+                                    </span>
+                                </div>
                             </CardContent>
                         </Card>
+
                     );
                 })}
             </div>

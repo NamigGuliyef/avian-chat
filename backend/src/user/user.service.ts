@@ -1,13 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { userRequest } from 'src/auth/req-auth.type';
 import { Column } from '../excel/model/column.schema';
 import { Excel } from '../excel/model/excel.schema';
 import { SheetRow } from '../excel/model/row-schema';
 import { Sheet } from '../excel/model/sheet.schema';
 import { User } from './model/user.schema';
 
-const supId = "695e0b4690d5dca3abdd31ae"
+
 @Injectable()
 export class UserService {
     constructor(
@@ -16,6 +18,7 @@ export class UserService {
         @InjectModel(Column.name) private readonly columnModel: Model<Column>,
         @InjectModel(User.name) private readonly userModel: Model<User>,
         @InjectModel(SheetRow.name) private readonly rowModel: Model<SheetRow>,
+        @Inject(REQUEST) private readonly request: userRequest,
     ) { }
 
 
@@ -24,7 +27,7 @@ export class UserService {
     // İstifadəçiyə aid Excelleri gətirən function
     async getUserExcels(): Promise<Excel[]> {
         // İstifadəçinin aid olduğu proyektlərin ID-lərini tap
-        const projects = await this.userModel.findById(supId).select('projectIds').exec();
+        const projects = await this.userModel.findById(this.request.user._id).select('projectIds').exec();
 
         // Proyektlərin ID-lərinə əsaslanaraq Excelleri tap
         if (projects && projects.projectIds.length > 0) {
@@ -41,7 +44,7 @@ export class UserService {
     // İstifadəçiyə aid Excellerin Sheet-lərini gətirən function
     async getUserSheets(): Promise<Sheet[]> {
         // İstifadəçinin aid olduğu proyektlərin ID-lərini tap
-        const projects = await this.userModel.findById(supId).select('projectIds').exec();
+        const projects = await this.userModel.findById(this.request.user._id).select('projectIds').exec();
 
         // Proyektlərin ID-lərinə əsaslanaraq Excelleri tap
         if (projects && projects.projectIds.length > 0) {
@@ -69,7 +72,7 @@ export class UserService {
     // İstifadəçiyə aid Sheet-lərin Column-larını gətirən function
     async getUserColumns(): Promise<Column[]> {
         // İstifadəçinin aid olduğu proyektlərin ID-lərini tap
-        const projects = await this.userModel.findById(supId).select('projectIds').exec();
+        const projects = await this.userModel.findById(this.request.user._id).select('projectIds').exec();
 
         // Proyektlərin ID-lərinə əsaslanaraq Excelleri tap
         if (projects && projects.projectIds.length > 0) {
@@ -90,22 +93,20 @@ export class UserService {
 
 
     async getColumnsBySheetId(sheetId: string): Promise<any> {
-        const userId = "695e0b4690d5dca3abdd31ae";
         const sheet = await this.sheetModel.findById(sheetId).populate({ path: "columnIds.columnId", model: "Column" }).exec();
         console.log(sheet?.columnIds)
         if (!sheet) throw new Error("Sheet not found");
 
-        const agent = sheet.agentIds.find(ag => ag.agentId.toString() === userId);
+        const agent = sheet.agentIds.find(ag => ag.agentId.toString() === this.request.user._id.toString());
         if (!agent) throw new Error("Agent not assigned to this sheet");
 
         const rows = await this.rowModel.find({
             sheetId: sheetId,
             rowNumber: {
                 $gte: Number(agent.startRow),
-                $lte: Number(agent.endRow)
+                $lte: Number(agent.endRow) 
             }
         });
-
         return {
             columns: sheet.columnIds,
             rows
@@ -114,13 +115,13 @@ export class UserService {
 
 
     // User-in təyin olunduğu sheet-e uyğun column-ları gətirən function - startRow və endRow ilə filterlənmiş
-    async getUserColumnsBySheetWithRowFilter(sheetId: string, startRow: number, endRow: number): Promise<Column[]> {
-        const user = await this.userModel.findById(supId).exec();
+    async getUserColumnsBySheetWithRowFilter(sheetId: string): Promise<Column[]> {
+        const user = await this.userModel.findById(this.request.user._id).exec();
         if (!user) {
             throw new NotFoundException('İstifadəçi tapılmadı');
         }
         // İstifadəçinin təyin olunduğu column-ları sheet modelində olan agentIds den tap
-        const sheet = await this.sheetModel.find({
+        await this.sheetModel.find({
             _id: sheetId,
             "agentRowPermissions.agentId": user._id
         }).exec();
@@ -130,7 +131,6 @@ export class UserService {
             sheetId: sheetId,
 
         }).exec();
-
         return filteredColumns;
 
     }
