@@ -81,6 +81,11 @@ export const updateCell = async (sheetId: string, rowNumber: number, key: string
     return data;
 };
 
+export const getSupervisorReports = async (supid: string) => {
+    const { data } = await axios.get(`/supervisor/table-view/${supid}`);
+    return data;
+};
+
 export const deleteRow = async (sheetId: string, rowNumber: number) => {
     const { data } = await axios.delete(`/supervisor/sheet/${sheetId}/rows/${rowNumber}`);
     return data;

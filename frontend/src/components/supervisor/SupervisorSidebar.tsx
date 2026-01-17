@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import {
+    BarChart3,
     ChevronLeft,
     ChevronRight,
     FileSpreadsheet,
@@ -14,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 const menuItems = [
     { id: 'dashboard', icon: UserIcon, label: 'Dashboard' },
     { id: 'projects', icon: FileSpreadsheet, label: 'Layihələrim' },
+    { id: 'reports', icon: BarChart3, label: 'Hesabatlar' },
 ];
 
 const SupervisorSidebar = () => {

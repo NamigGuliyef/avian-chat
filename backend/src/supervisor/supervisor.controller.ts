@@ -244,7 +244,7 @@ export class SupervisorController {
   @HttpCode(HttpStatus.OK)
   @ApiParam({ name: 'supervisorId', type: 'string', description: 'Supervayzer ID-si' })
   getSupervisorTableView(@Param("supervisorId") supervisorId: Types.ObjectId) {
-    return  this.supervisorService.getSupervisorTableView(supervisorId)
+    return this.supervisorService.getSupervisorTableView(supervisorId)
   }
 
 

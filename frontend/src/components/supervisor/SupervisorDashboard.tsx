@@ -4,16 +4,18 @@ import { getSupervisorAgents } from "@/api/users";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useSession } from "@/lib/auth";
 import { IUser } from "@/types/types";
 import { motion } from "framer-motion";
 import { Mail, Wifi, WifiOff } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const SupervisorDashboard = () => {
+    const { session } = useSession()
     const [agents, setAgents] = useState<any[]>([]);
 
     useEffect(() => {
-        getSupervisorAgents("695bdaeff2405115af596e24").then(setAgents);
+        getSupervisorAgents(session.user._id).then(setAgents);
     }, []);
 
     return (
