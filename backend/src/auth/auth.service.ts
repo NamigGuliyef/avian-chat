@@ -57,7 +57,7 @@ export class AuthService {
     if (!comparePass) {
       throw new BadRequestException('Yanlış şifrə');
     }
-    const token = this.jwtService.sign({ id: user._id, name: user.name, surname: user.surname, email: user.email, role: user.role });
+    const token = this.jwtService.sign({ _id: user._id, name: user.name, surname: user.surname, email: user.email, role: user.role });
     const notPasswordUser = {
       _id: user._id,
       name: user.name,

@@ -10,11 +10,13 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateExcelDto } from "../excel/dto/create-excel.dto";
 import { CreateSheetColumnDto, CreateSheetDto } from "../excel/dto/create-sheet.dto";
 import { SheetCellDto } from '../excel/dto/sheet-cell.dto';
@@ -23,9 +25,9 @@ import { UpdateSheetColumnDto, UpdateSheetDto } from "../excel/dto/update-sheet.
 import { SupervisorService } from './supervisor.service';
 
 
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 @ApiTags("supervisor")
-// @ApiBearerAuth()
+@ApiBearerAuth()
 
 @Controller('supervisor')
 export class SupervisorController {
@@ -35,10 +37,10 @@ export class SupervisorController {
   // -------------------------- Project function ---------------------------------//
 
   @ApiOperation({ summary: "Supervayzerin layihələrini göstər" })
-  @Get('/projects/:supervisorId')
+  @Get('/projects')
   @HttpCode(HttpStatus.OK)
-  async getSupervisorProjects(@Param("supervisorId") supervisorId: Types.ObjectId) {
-    return await this.supervisorService.getSupervisorProjects(supervisorId)
+  async getSupervisorProjects() {
+    return await this.supervisorService.getSupervisorProjects()
   }
 
 
@@ -240,11 +242,10 @@ export class SupervisorController {
 
 
   @ApiOperation({ summary: "Supervayzerin table view məlumatlarını gətir" })
-  @Get('/table-view/:supervisorId')
+  @Get('/table-view')
   @HttpCode(HttpStatus.OK)
-  @ApiParam({ name: 'supervisorId', type: 'string', description: 'Supervayzer ID-si' })
-  getSupervisorTableView(@Param("supervisorId") supervisorId: Types.ObjectId) {
-    return this.supervisorService.getSupervisorTableView(supervisorId)
+  getSupervisorTableView() {
+    return this.supervisorService.getSupervisorTableView()
   }
 
 

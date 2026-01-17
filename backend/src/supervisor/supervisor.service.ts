@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { maskPhone } from "src/helper/mask";
@@ -15,6 +15,8 @@ import { Sheet, SheetColumn } from "../excel/model/sheet.schema";
 import { Project } from "../project/model/project.schema";
 import { Company } from "src/company/model/company.schema";
 import { User } from "src/user/model/user.schema";
+import { REQUEST } from "@nestjs/core";
+import { userRequest } from "src/auth/auth.type";
 
 
 
@@ -29,6 +31,7 @@ export class SupervisorService {
     @InjectModel(SheetRow.name) private sheetRowModel: Model<SheetRow>,
     @InjectModel(Company.name) private companyModel: Model<Company>,
     @InjectModel(User.name) private userModel: Model<User>,
+    @Inject(REQUEST) private readonly request: userRequest
   ) { }
 
 
@@ -36,8 +39,8 @@ export class SupervisorService {
   ///  ---------------------------  Project function --------------------------------//
 
   // Supervisor uyğun layihələri gətir
-  async getSupervisorProjects(supervisorId: Types.ObjectId) {
-    return await this.projectModel.find({ supervisors: { $in: [supervisorId] } })
+  async getSupervisorProjects() {
+    return await this.projectModel.find({ supervisors: { $in: [this.request.user._id] } })
       .populate([
         { path: 'agents', select: '-password' },
         { path: "columnIds" },
@@ -342,6 +345,7 @@ export class SupervisorService {
     };
   }
 
+
   // ---------------- GET ROWS ----------------
   async getRows(sheetId: Types.ObjectId, page = 1, limit = 50) {
     const skip = (page - 1) * limit;
@@ -363,7 +367,7 @@ export class SupervisorService {
         phone: maskPhone(row.data?.phone),
       },
     }));
-
+    console.log('Masked Rows:', ...rows);
     return { data: maskedRows, total, page, limit };
   }
 
@@ -421,12 +425,12 @@ export class SupervisorService {
   }
 
 
-  async getSupervisorTableView(supervisorId: Types.ObjectId): Promise<any[]> {
+  async getSupervisorTableView(): Promise<any[]> {
     // 1. Supervisorun aid olduğu layihələri çəkirik
     const projects = await this.projectModel
       .find({
         isDeleted: false,
-        supervisors: supervisorId  // yalnız bu supervisorun layihələri
+        supervisors: this.request.user._id  // yalnız bu supervisorun layihələri
       })
       .select('-agents -sheetIds -columnIds')
       .populate({ path: 'supervisors', select: 'name surname email' });
