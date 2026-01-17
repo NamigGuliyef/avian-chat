@@ -18,7 +18,7 @@ export function formatDate(inputDate: string) {
     return "~";
   }
 
-  let date: any = null;
+  let date: Date = null;
 
   if (inputDate.endsWith("Z")) {
     date = new Date(`${inputDate}`);
@@ -41,11 +41,13 @@ export function formatDate(inputDate: string) {
     "dec",
   ];
 
+  date.setHours(date.getUTCHours() + 4)
+
   const month = months[date.getUTCMonth()];
   const day = date.getUTCDate();
   const year = date.getUTCFullYear();
-  const hour = (date.getUTCHours() + 4).toString().padStart(2, "0");
-  const minute = (date.getUTCMinutes() + 4).toString().padStart(2, "0");
+  const hour = date.getHours().toString().padStart(2, "0");
+  const minute = date.getMinutes().toString().padStart(2, "0");
 
   return `${day} ${month} ${year} / ${hour}:${minute}`;
 }
