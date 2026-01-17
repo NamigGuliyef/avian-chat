@@ -41,7 +41,6 @@ export class LoggerMiddleware implements NestMiddleware {
                     oldValue: method === 'PATCH' ? JSON.stringify(req.body?.old) : null,
                     newValue: JSON.stringify(body),
                 });
-                console.log('log', log)
                 await log.save();
             } catch (err) {
                 console.error('Audit log error:', err.message);
