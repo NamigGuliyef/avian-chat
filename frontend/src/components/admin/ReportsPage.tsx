@@ -32,35 +32,6 @@ interface DynamicColumn {
   visible: boolean;
 }
 
-// Mock Excel data simulating dynamic columns
-const mockExcelColumns: DynamicColumn[] = [
-  { id: 'company', name: 'Şirkət', type: 'text', visible: true },
-  { id: 'project', name: 'Layihə', type: 'text', visible: true },
-  { id: 'date', name: 'Tarix', type: 'date', visible: true },
-  // { id: 'callReason', name: 'Zəng səbəbi', type: 'text', visible: true },
-  { id: 'salesStatus', name: 'Satış statusu', type: 'text', visible: true },
-  { id: 'operator', name: 'Operator', type: 'text', visible: true },
-  { id: 'callCount', name: 'Zəng sayı', type: 'number', visible: true },
-  { id: 'salesAmount', name: 'Satış məbləği', type: 'number', visible: true },
-  { id: 'duration', name: 'Müddət (dəq)', type: 'number', visible: true },
-  { id: 'customerName', name: 'Müştəri adı', type: 'text', visible: true },
-  { id: 'phone', name: 'Telefon', type: 'text', visible: false },
-  { id: 'city', name: 'Şəhər', type: 'text', visible: false },
-  { id: 'notes', name: 'Qeydlər', type: 'text', visible: false },
-];
-
-// Mock data rows
-const mockData = [
-  { company: 'ABC Corp', project: 'Survey', date: '2024-01-15', callReason: 'Anket', salesStatus: 'Uğurlu', operator: 'Anar Məmmədov', callCount: 45, salesAmount: 2500, duration: 120, customerName: 'Rəşad İsmayılov', phone: '+994501234567', city: 'Bakı', notes: 'İlk əlaqə' },
-  { company: 'XYZ Ltd', project: 'Telesales', date: '2024-01-15', callReason: 'Satış', salesStatus: 'Gözləmədə', operator: 'Leyla Həsənova', callCount: 32, salesAmount: 1800, duration: 95, customerName: 'Səid Quliyev', phone: '+994551234567', city: 'Gəncə', notes: 'Geri zəng' },
-  { company: 'ABC Corp', project: 'Survey', date: '2024-01-16', callReason: 'Anket', salesStatus: 'Uğurlu', operator: 'Anar Məmmədov', callCount: 38, salesAmount: 3200, duration: 145, customerName: 'Nigar Əliyeva', phone: '+994701234567', city: 'Bakı', notes: '' },
-  { company: 'DEF Inc', project: 'Telemarketing', date: '2024-01-16', callReason: 'Reklam', salesStatus: 'Rədd', operator: 'Orxan Hüseynov', callCount: 28, salesAmount: 0, duration: 65, customerName: 'Kamran Vəliyev', phone: '+994771234567', city: 'Sumqayıt', notes: 'Maraqlanmadı' },
-  { company: 'XYZ Ltd', project: 'Telesales', date: '2024-01-17', callReason: 'Satış', salesStatus: 'Uğurlu', operator: 'Leyla Həsənova', callCount: 51, salesAmount: 4500, duration: 180, customerName: 'Elçin Nəsirli', phone: '+994601234567', city: 'Bakı', notes: 'VIP müştəri' },
-  { company: 'ABC Corp', project: 'Survey', date: '2024-01-17', callReason: 'Anket', salesStatus: 'Gözləmədə', operator: 'Günel Rəhimova', callCount: 22, salesAmount: 800, duration: 55, customerName: 'Fərid Məmmədov', phone: '+994501234568', city: 'Şəki', notes: '' },
-  { company: 'DEF Inc', project: 'Telemarketing', date: '2024-01-18', callReason: 'Reklam', salesStatus: 'Uğurlu', operator: 'Orxan Hüseynov', callCount: 35, salesAmount: 2100, duration: 110, customerName: 'Aysel Əhmədova', phone: '+994551234568', city: 'Bakı', notes: 'Yeni müştəri' },
-  { company: 'XYZ Ltd', project: 'Survey', date: '2024-01-18', callReason: 'Anket', salesStatus: 'Uğurlu', operator: 'Anar Məmmədov', callCount: 42, salesAmount: 2800, duration: 130, customerName: 'Rauf Qəhrəmanov', phone: '+994701234568', city: 'Gəncə', notes: '' },
-];
-
 const ReportsPage: React.FC = () => {
   // Data state
   const [reportData, setReportData] = useState<any[]>([]);
@@ -87,11 +58,31 @@ const ReportsPage: React.FC = () => {
   // Statistics card settings
   const [statsCards, setStatsCards] = useState<string[]>([]);
 
+
+  const buildReportQuery = () => {
+    const payload = {
+      filters,
+      dateRange: dateRange.start || dateRange.end ? dateRange : undefined,
+      search: searchQuery || undefined,
+      sort: sortColumn
+        ? { column: sortColumn, direction: sortDirection }
+        : undefined,
+      pagination: {
+        page: currentPage,
+        pageSize,
+      },
+    };
+
+    return encodeURIComponent(JSON.stringify(payload));
+  };
+
+
   // Fetch report data
-  const fetchData = async (query?: string) => {
+  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
+      const query = buildReportQuery();
       const data = await getReport(query);
 
       if (!data || data.length === 0) {
@@ -517,15 +508,7 @@ const ReportsPage: React.FC = () => {
             )}
           </div>
           <Button className="w-full mt-2" size="sm" onClick={() => {
-            // Apply filters action
-            let query = '';
-            if (dateRange.start) {
-              query += `startDate=${encodeURIComponent(dateRange.start)}&`;
-            }
-            if (dateRange.end) {
-              query += `endDate=${encodeURIComponent(dateRange.end)}&`;
-            }
-            fetchData(query)
+            fetchData()
           }}>
             Tarixlər üzrə filtrləri tətbiq et
           </Button>
