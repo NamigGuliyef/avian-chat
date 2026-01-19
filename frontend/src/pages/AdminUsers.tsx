@@ -114,6 +114,14 @@ export function AdminUsers() {
                 });
                 return;
             }
+            if (formData.password.length < 8) {
+                toast({
+                    title: "Xəta",
+                    description: "Parol 8 simvoldan azdır",
+                    variant: "destructive",
+                });
+                return;
+            }
             const newUser: Partial<IUser> = {
                 name: formData.name,
                 surname: formData.surname,
