@@ -20,7 +20,7 @@ import { userRequest } from "src/auth/req-auth.type";
 
 
 
-@Injectable() 
+@Injectable()
 export class SupervisorService {
   constructor(
     @InjectModel(Excel.name) private excelModel: Model<Excel>,
@@ -319,7 +319,11 @@ export class SupervisorService {
 
     const rows = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet, {
       defval: null,
-    });
+      // todo ali
+      // cellDates: true
+      // dateNF: ""
+      // cellDates: true, 
+    } as XLSX.ParsingOptions);
 
     if (!rows.length) {
       throw new BadRequestException('Excel boşdur');
@@ -460,7 +464,7 @@ export class SupervisorService {
 
                 return {
                   sheetName: sheet.name,
-                  columns: columns.map(c => c.name),
+                  columns: columns.map(c => c.dataKey),
                   agents: agents.map(a => ({
                     name: a.name,
                     surname: a.surname,
