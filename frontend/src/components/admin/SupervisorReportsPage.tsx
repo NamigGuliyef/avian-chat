@@ -85,7 +85,7 @@ const SupervisorReportsPage: React.FC = () => {
       setLoading(true);
       setError(null);
       const query = buildReportQuery();
-      const data = await getSupervisorReports(session.user._id);
+      const data = await getSupervisorReports();
 
       if (!data || data.length === 0) {
         setReportData([]);
