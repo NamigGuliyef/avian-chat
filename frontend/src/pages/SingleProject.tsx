@@ -17,6 +17,7 @@ import {
     DialogHeader,
     DialogTitle
 } from "@/components/ui/dialog";
+import { toast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import { getEnumKeyByValue } from "@/lib/utils";
 import { IProject, IUser, ProjectDirection, ProjectName, ProjectType, Roles } from "@/types/types";
@@ -74,6 +75,15 @@ const SingleProject = () => {
     }, [projectId]);
 
     const handleAddMember = (member: Partial<IUser>, type: "S" | "A") => {
+        const isExist = project.agents.find((a) => a._id === member._id)
+        if (isExist) {
+            toast({
+                title: "Xəta",
+                description: "Agent artıq əlavə edilib",
+                variant: "destructive",
+            });
+            return;
+        }
         addProjectMember(projectId, member._id, type).then(() => {
             if (type === "S") {
                 setProject((pre) => ({ ...pre, supervisors: [...pre.supervisors, member] as any }))
