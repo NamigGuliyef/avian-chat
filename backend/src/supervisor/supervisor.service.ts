@@ -16,12 +16,11 @@ import { Project } from "../project/model/project.schema";
 import { Company } from "src/company/model/company.schema";
 import { User } from "src/user/model/user.schema";
 import { REQUEST } from "@nestjs/core";
-import { userRequest } from "src/auth/auth.type";
+import { userRequest } from "src/auth/req-auth.type";
 
 
 
-
-@Injectable()
+@Injectable() 
 export class SupervisorService {
   constructor(
     @InjectModel(Excel.name) private excelModel: Model<Excel>,
