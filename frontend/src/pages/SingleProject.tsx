@@ -75,11 +75,16 @@ const SingleProject = () => {
     }, [projectId]);
 
     const handleAddMember = (member: Partial<IUser>, type: "S" | "A") => {
-        const isExist = project.agents.find((a) => a._id === member._id)
+        let isExist = null;
+        if (type === "S") {
+            isExist = project.supervisors.find((s) => s._id === member._id)
+        } else if (type === "A") {
+            isExist = project.agents.find((a) => a._id === member._id)
+        }
         if (isExist) {
             toast({
                 title: "Xəta",
-                description: "Agent artıq əlavə edilib",
+                description: "Əməkdaş artıq əlavə edilib",
                 variant: "destructive",
             });
             return;
