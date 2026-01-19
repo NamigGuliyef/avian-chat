@@ -168,7 +168,7 @@ export class AdminController {
     type: CreateProjectDto,
     description: 'Layihəyə üzv əlavə etmək üçün məlumatlar',
   })
-  @Patch('add-project-members')
+  @Post('add-project-members')
   @HttpCode(HttpStatus.OK)
   async addProjectMembers(@Body() body: {
     projectId: string,
@@ -185,10 +185,14 @@ export class AdminController {
     type: CreateProjectDto,
     description: 'Layihədən üzv çıxarmaq üçün məlumatlar',
   })
-  @Delete('remove-project-members/:projectId/:userId/:type')
+  @Patch('remove-project-members')
   @HttpCode(HttpStatus.OK)
-  async deleteProjectMember(@Param('projectId') projectId: string, @Param('userId') userId: string, @Param('type') type: string) {
-    return await this.adminService.deleteProjectMember(projectId, userId, type);
+  async deleteProjectMember(@Body() body: {
+    projectId: string,
+    userId: string,
+    type: string,
+  }) {
+    return await this.adminService.deleteProjectMember(body.projectId, body.userId, body.type);
   }
 
 

@@ -101,7 +101,7 @@ export const updateProject = async (projectId, data: any) => {
     return d.data.project
 }
 export const addProjectMember = async (projectId, userId, type) => {
-    const d = await axios.patch(`/admin/add-project-members`, {
+    const d = await axios.post(`/admin/add-project-members`, {
         projectId,
         userId,
         type,
@@ -109,7 +109,11 @@ export const addProjectMember = async (projectId, userId, type) => {
     return d.data.project
 }
 export const removeProjectMember = async (projectId, userId, type) => {
-    const d = await axios.delete(`/admin/remove-project-members/${projectId}/${userId}/${type}`)
+    const d = await axios.patch(`/admin/remove-project-members`, {
+        projectId,
+        userId,
+        type
+    })
     return d.data.project
 }
 

@@ -23,6 +23,7 @@ import { IProject, IUser, ProjectDirection, ProjectName, ProjectType, Roles } fr
 import {
     ArrowLeft,
     Check,
+    Trash2,
     UserPlus
 } from 'lucide-react';
 import { useEffect, useState } from "react";
@@ -205,10 +206,15 @@ const SingleProject = () => {
                                                 <div>
                                                     <p className="font-medium">{s.name}</p>
                                                     <p className="text-sm text-muted-foreground">{s.email}</p>
-                                                   
                                                 </div>
                                             </div>
-                                    
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={() => removeUserFromProject(projectId, s._id, "S")}
+                                            >
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
                                         </CardContent>
                                     </Card>
                                 ))
@@ -240,7 +246,13 @@ const SingleProject = () => {
                                                     </div> */}
                                                 </div>
                                             </div>
-                                   
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={() => removeUserFromProject(projectId, a._id, "A")}
+                                            >
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
                                         </CardContent>
                                     </Card>
                                 ))
@@ -252,7 +264,7 @@ const SingleProject = () => {
                 </CardContent >
             </Card >
 
-       
+
         </div >
     );
 };
