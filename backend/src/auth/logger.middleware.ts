@@ -33,7 +33,7 @@ export class LoggerMiddleware implements NestMiddleware {
 
                 const actionField = originalUrl.split('/')[1] || 'unknown';
                 const log = new this.auditLogModel({
-                    userId: req.user.id,
+                    userId: req.user.id || req.user._id,
                     userName: req.user.name,
                     userSurname: req.user.surname,
                     method,
