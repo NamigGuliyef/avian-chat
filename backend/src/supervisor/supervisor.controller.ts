@@ -23,6 +23,7 @@ import { SheetCellDto } from '../excel/dto/sheet-cell.dto';
 import { UpdateExcelDto } from "../excel/dto/update-excel.dto";
 import { UpdateSheetColumnDto, UpdateSheetDto } from "../excel/dto/update-sheet.dto";
 import { SupervisorService } from './supervisor.service';
+import { MulterOptionsExcel } from 'src/multer';
 
 
 @UseGuards(AuthGuard)
@@ -180,11 +181,12 @@ export class SupervisorController {
   @UseInterceptors(FileInterceptor('file'))
   @Post('sheet/:sheetId/rows/import')
   @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(FileInterceptor("file", MulterOptionsExcel))
   importFromExcel(
     @Param('sheetId') sheetId: Types.ObjectId,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.supervisorService.importFromExcel(sheetId, file);
+    return this.supervisorService.importExcel(sheetId, file);
   }
 
   // -----------------------------------------------------

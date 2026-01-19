@@ -3,6 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { maskPhone } from "src/helper/mask";
 import * as XLSX from 'xlsx';
+import * as ExcelJS from "exceljs"
 import { CreateExcelDto } from "../excel/dto/create-excel.dto";
 import { CreateSheetDto } from "../excel/dto/create-sheet.dto";
 import { SheetCellDto } from "../excel/dto/sheet-cell.dto";
@@ -310,6 +311,79 @@ export class SupervisorService {
     });
   }
 
+  async importExcel(sheetId: Types.ObjectId, file) {
+    const sheet = await this.sheetModel.findById(sheetId);
+    if (!sheet) throw new NotFoundException('Sheet tapılmadı');
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(file.buffer);
+
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new BadRequestException('Excel sheet tapılmadı');
+    }
+
+    // Get header row (first row)
+    const headerRow = worksheet.getRow(1);
+    const headers: string[] = [];
+
+    headerRow.eachCell((cell, colNumber) => {
+      headers[colNumber] = String(cell.value).trim();
+    });
+
+    if (!headers.length) {
+      throw new BadRequestException('Excel boşdur');
+    }
+
+    const rows: Record<string, any>[] = [];
+
+    worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+      if (rowNumber === 1) return; // skip header
+
+      const rowData: Record<string, any> = {};
+
+      row.eachCell((cell, colNumber) => {
+        const key = headers[colNumber];
+        if (!key) return;
+
+        // Normalize ExcelJS cell values
+        let value: any = cell.value;
+
+        if (value && typeof value === 'object') {
+          if ('text' in value) value = value.text;
+          if (value instanceof Date) value = value;
+        }
+
+        rowData[key] = value ?? null;
+      });
+
+      rows.push(rowData);
+    });
+
+    if (!rows.length) {
+      throw new BadRequestException('Excel boşdur');
+    }
+
+    const lastRow = await this.sheetRowModel
+      .findOne({ sheetId })
+      .sort({ rowNumber: -1 });
+
+    let rowNumber = lastRow ? lastRow.rowNumber + 1 : 1;
+    console.log('dsc', rows)
+    const docs = rows.map((row) => ({
+      sheetId,
+      rowNumber: rowNumber++,
+      data: row,
+    }));
+
+    // await this.sheetRowModel.insertMany(docs, { ordered: false });
+
+    return {
+      inserted: docs.length,
+    };
+  }
+
+
   async importFromExcel(sheetId: Types.ObjectId, file: Express.Multer.File) {
     const sheet = await this.sheetModel.findById(sheetId);
     if (!sheet) throw new NotFoundException('Sheet tapılmadı');
@@ -318,12 +392,13 @@ export class SupervisorService {
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
 
     const rows = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet, {
-      defval: null,
+      // defval: null,
       // todo ali
-      // cellDates: true
-      // dateNF: ""
+      // cellDates: true,
+      // dateNF: "14"
+      dateNF: "FMT 14"
       // cellDates: true, 
-    } as XLSX.ParsingOptions);
+    });
 
     if (!rows.length) {
       throw new BadRequestException('Excel boşdur');
@@ -340,8 +415,8 @@ export class SupervisorService {
       rowNumber: rowNumber++,
       data: row,
     }));
-
-    await this.sheetRowModel.insertMany(docs, { ordered: false });
+    console.log('docs', rows)
+    // await this.sheetRowModel.insertMany(docs, { ordered: false });
 
     return {
       inserted: docs.length,

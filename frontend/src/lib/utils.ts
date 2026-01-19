@@ -51,3 +51,38 @@ export function formatDate(inputDate: string) {
 
   return `${day} ${month} ${year} / ${hour}:${minute}`;
 }
+
+
+export const formatDateForEditableCell = (value: any) => {
+  if (!value) return "";
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (isNaN(date.getTime())) return "";
+
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yyyy = date.getFullYear();
+
+  return `${dd}/${mm}/${yyyy}`;
+};
+
+export const parseDate = (value: string) => {
+  const [dd, mm, yyyy] = value.split("/").map(Number);
+  if (!dd || !mm || !yyyy) return null;
+
+  const date = new Date(yyyy, mm - 1, dd);
+  return isNaN(date.getTime()) ? null : date;
+};
+
+export const toDateInputValue = (value: any) => {
+  if (!value) return "";
+  const d = value instanceof Date ? value : new Date(value);
+  if (isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10); // yyyy-MM-dd
+};
+
+export const fromDateInputValue = (value: string) => {
+  if (!value) return null;
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
