@@ -45,7 +45,7 @@ const App = () => (
 
           <Routes>
             {/* Public */}
-            <Route path="/user/login" element={<UserLogin />} />
+            <Route path="/" element={<UserLogin />} />
             <Route path="/admin/login" element={<Login />} />
 
             {/* Admin */}
