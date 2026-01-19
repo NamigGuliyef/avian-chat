@@ -95,10 +95,16 @@ export const deleteRow = async (sheetId: string, rowNumber: number) => {
 // ----------------- Excel Import -----------------
 export const importFromExcel = async (sheetId: string, file: File) => {
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file, file.name);
 
-    const { data } = await axios.post(`/supervisor/sheet/${sheetId}/rows/import`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-    });
+    const { data } = await axios.post(
+        `/supervisor/sheet/${sheetId}/rows/import`,
+        formData,
+        {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        },
+    );
+
     return data;
 };
+

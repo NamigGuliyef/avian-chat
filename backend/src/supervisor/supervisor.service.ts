@@ -1,9 +1,12 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { REQUEST } from "@nestjs/core";
 import { InjectModel } from "@nestjs/mongoose";
+import * as ExcelJS from 'exceljs';
 import { Model, Types } from "mongoose";
+import { userRequest } from "src/auth/req-auth.type";
+import { Company } from "src/company/model/company.schema";
 import { maskPhone } from "src/helper/mask";
-import * as XLSX from 'xlsx';
-import * as ExcelJS from "exceljs"
+import { User } from "src/user/model/user.schema";
 import { CreateExcelDto } from "../excel/dto/create-excel.dto";
 import { CreateSheetDto } from "../excel/dto/create-sheet.dto";
 import { SheetCellDto } from "../excel/dto/sheet-cell.dto";
@@ -14,11 +17,6 @@ import { Excel } from "../excel/model/excel.schema";
 import { SheetRow } from "../excel/model/row-schema";
 import { Sheet, SheetColumn } from "../excel/model/sheet.schema";
 import { Project } from "../project/model/project.schema";
-import { Company } from "src/company/model/company.schema";
-import { User } from "src/user/model/user.schema";
-import { REQUEST } from "@nestjs/core";
-import { userRequest } from "src/auth/req-auth.type";
-
 
 
 @Injectable()
@@ -311,20 +309,94 @@ export class SupervisorService {
     });
   }
 
+  // async importFromExcel(sheetId: Types.ObjectId, file: Express.Multer.File) {
+  //   const sheet = await this.sheetModel.findById(sheetId);
+  //   if (!sheet) throw new NotFoundException('Sheet tapılmadı');
+
+  //   const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+  //   const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+  //   const rows = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet, {
+  //     // defval: null,
+  //     // todo ali
+  //     // cellDates: true,
+  //     // dateNF: "14"
+  //     dateNF: "FMT 14"
+  //     // cellDates: true, 
+  //   });
+
+  //   if (!rows.length) {
+  //     throw new BadRequestException('Excel boşdur');
+  //   }
+
+  //   const lastRow = await this.sheetRowModel
+  //     .findOne({ sheetId })
+  //     .sort({ rowNumber: -1 });
+
+  //   let rowNumber = lastRow ? lastRow.rowNumber + 1 : 1;
+
+  //   const docs = rows.map((row) => ({
+  //     sheetId,
+  //     rowNumber: rowNumber++,
+  //     data: row,
+  //   }));
+  //   console.log('docs', rows)
+  //   // await this.sheetRowModel.insertMany(docs, { ordered: false });
+
+  //   return {
+  //     inserted: docs.length,
+  //   };
+  // }
+
+
   async importFromExcel(sheetId: Types.ObjectId, file: Express.Multer.File) {
     const sheet = await this.sheetModel.findById(sheetId);
     if (!sheet) throw new NotFoundException('Sheet tapılmadı');
 
-    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(file.buffer as unknown as ArrayBuffer);
 
-    const rows = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet, {
-      // defval: null,
-      // todo ali
-      // cellDates: true,
-      // dateNF: "14"
-      dateNF: "FMT 14"
-      // cellDates: true, 
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new BadRequestException('Worksheet tapılmadı');
+    }
+
+    const rows: Record<string, any>[] = [];
+
+    // Header-ları götürürük
+    const headerRow = worksheet.getRow(1);
+    const headers: string[] = [];
+
+    headerRow.eachCell((cell, colNumber) => {
+      headers[colNumber] = String(cell.value).trim();
+    });
+
+    // Data row-lar
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+
+      const rowData: Record<string, any> = {};
+
+      row.eachCell((cell, colNumber) => {
+        const key = headers[colNumber];
+        if (!key) return;
+
+        let value: any = cell.value;
+
+        // 🔥 Tarix handling
+        if (value instanceof Date) {
+          value = value; // artıq JS Date-dir
+        }
+
+        // Formula varsa
+        if (typeof value === 'object' && value?.result) {
+          value = value.result;
+        }
+
+        rowData[key] = value;
+      });
+      console.log('rowData', rowData)
+      rows.push(rowData);
     });
 
     if (!rows.length) {
@@ -342,14 +414,13 @@ export class SupervisorService {
       rowNumber: rowNumber++,
       data: row,
     }));
-    console.log('docs', rows)
-    // await this.sheetRowModel.insertMany(docs, { ordered: false });
+
+    await this.sheetRowModel.insertMany(docs, { ordered: false });
 
     return {
       inserted: docs.length,
     };
   }
-
 
   // ---------------- GET ROWS ----------------
   async getRows(sheetId: Types.ObjectId, page = 1, limit = 50) {
@@ -372,7 +443,6 @@ export class SupervisorService {
         phone: maskPhone(row.data?.phone),
       },
     }));
-    console.log('Masked Rows:', ...rows);
     return { data: maskedRows, total, page, limit };
   }
 
