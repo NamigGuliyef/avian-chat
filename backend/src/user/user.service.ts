@@ -92,7 +92,8 @@ export class UserService {
     }
 
 
-    async getColumnsBySheetId(sheetId: string): Promise<any> {
+    async getColumnsBySheetId(sheetId: string, page = 1, limit = 50): Promise<any> {
+        const skip = (page - 1) * limit;
         const sheet = await this.sheetModel.findById(sheetId).populate({ path: "columnIds.columnId", model: "Column" }).exec();
         console.log(sheet?.columnIds)
         if (!sheet) throw new Error("Sheet not found");
@@ -104,9 +105,12 @@ export class UserService {
             sheetId: sheetId,
             rowNumber: {
                 $gte: Number(agent.startRow),
-                $lte: Number(agent.endRow) 
-            }
-        });
+                $lte: Number(agent.endRow)
+            },
+        })
+            .sort({ rowNumber: 1 })
+            .skip(skip)
+            .limit(limit);
         return {
             columns: sheet.columnIds,
             rows

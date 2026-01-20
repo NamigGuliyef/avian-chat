@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -41,8 +41,16 @@ export class UserController {
     @ApiOperation({ summary: 'Sheet ID-sinə əsasən Column-ları gətir' })
     @Get('/columns/sheet/:sheetId')
     @HttpCode(HttpStatus.OK)
-    async getColumnsBySheetId(@Param('sheetId') sheetId: string) {
-        return await this.userService.getColumnsBySheetId(sheetId);
+    async getColumnsBySheetId(
+        @Param('sheetId') sheetId: string,
+        @Query('page') page = '1',
+        @Query('limit') limit = '50'
+    ) {
+        return await this.userService.getColumnsBySheetId(
+            sheetId,
+            Number(page),
+            Number(limit)
+        );
     }
 
 

@@ -48,8 +48,8 @@ export const getSheetsByExcelId = async (excelId) => {
     const { data } = await axios.get(`/user/sheets/excel/${excelId}`);
     return data;
 }
-export const getColumnsBySheetId = async (sheetId): Promise<IUserSheetResponse> => {
-    const { data } = await axios.get(`/user/columns/sheet/${sheetId}`);
+export const getColumnsBySheetId = async (sheetId, page = 1, limit = 50): Promise<IUserSheetResponse> => {
+    const { data } = await axios.get(`/user/columns/sheet/${sheetId}?page=${page}&limit=${limit}`);
     return data;
 }
 
