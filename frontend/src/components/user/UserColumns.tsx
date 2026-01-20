@@ -3,7 +3,6 @@ import {
     updateCell
 } from "@/api/supervisors";
 import { getColumnsBySheetId } from "@/api/users";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { SheetColumnForm, SheetRowForm } from "@/types/types";
 import { ArrowLeft, ChevronLeft, ChevronRight, RefreshCw, FileText } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -126,77 +125,77 @@ const UserColumns: React.FC = () => {
             </div>
 
             <Card className="border-slate-200 shadow-lg overflow-hidden flex-1 flex flex-col mb-3">
-                <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
-                    <div className="overflow-x-auto overflow-y-auto flex-1 w-full">
-                    <Table>
-                        <TableHeader className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 z-10">
-                            <TableRow>
-                                <TableHead className="cursor-pointer hover:bg-slate-700 transition-colors whitespace-nowrap text-white font-bold">
-                                    #
-                                </TableHead>
-                                {columns.sort((a, b) => a.order - b.order).map((c) => c.columnId).map((col) => (
-                                    <TableHead
-                                        key={col?._id}
-                                        className="px-4 py-3 text-left text-white font-semibold text-sm border-b-2 border-slate-700 whitespace-nowrap min-w-[150px]"
+                <CardContent className="p-0">
+                    <div className="overflow-x-auto overflow-y-auto flex-1 w-full bg-white">
+                        <table className="w-full border-collapse">
+                            <thead className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 z-10">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-white font-semibold text-sm border-b-2 border-slate-700 min-w-[60px]">
+                                        #
+                                    </th>
+                                    {columns.sort((a, b) => a.order - b.order).map((c) => c.columnId).map((col) => (
+                                        <th
+                                            key={col?._id}
+                                            className="px-4 py-3 text-left text-white font-semibold text-sm border-b-2 border-slate-700 whitespace-nowrap min-w-[150px]"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span>{col?.name}</span>
+                                                <Badge variant="secondary" className="text-xs bg-slate-700 text-slate-200">
+                                                    {col?.type || "Text"}
+                                                </Badge>
+                                            </div>
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows.map((row, rowIndex) => (
+                                    <tr
+                                        key={rowIndex}
+                                        className="border-b border-slate-200 hover:bg-blue-50 transition-colors duration-150 group"
                                     >
-                                        <div className="flex items-center gap-2">
-                                            <span>{col?.name}</span>
-                                            <Badge variant="secondary" className="text-xs bg-slate-700 text-slate-200">
-                                                {col?.type || "Text"}
-                                            </Badge>
-                                        </div>
-                                    </TableHead>
-                                ))}
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {rows.map((row, rowIndex) => (
-                                <TableRow
-                                    key={rowIndex}
-                                    className="hover:bg-blue-50 transition-colors border-b border-slate-100"
-                                >
-                                    <TableCell className="px-4 py-3 text-slate-600 font-medium text-sm bg-slate-50 group-hover:bg-blue-100 min-w-[60px]">
-                                        {row.rowNumber}
-                                    </TableCell>
-                                    {columns
-                                        .sort((a, b) => a.order - b.order)
-                                        .map((col) => {
-                                            const colDef = col.columnId;
-                                            if (!colDef) return null;
+                                        <td className="px-4 py-3 text-slate-600 font-medium text-sm bg-slate-50 group-hover:bg-blue-100 min-w-[60px]">
+                                            {row.rowNumber}
+                                        </td>
+                                        {columns
+                                            .sort((a, b) => a.order - b.order)
+                                            .map((col) => {
+                                                const colDef = col.columnId;
+                                                if (!colDef) return null;
 
-                                            return (
-                                                <TableCell
-                                                    key={colDef._id}
-                                                    className="px-4 py-3 text-slate-700 text-sm border-r border-slate-100 hover:bg-blue-100 transition-colors min-w-[150px]"
-                                                >
-                                                    <div className="max-h-20 overflow-auto">
-                                                        <EditableCell
-                                                            colDef={colDef}
-                                                            value={row.data[colDef.dataKey]}
-                                                            editable={col.editable}
-                                                            onSave={(val) =>
-                                                                handleUpdateCell(row.rowNumber, colDef.dataKey, val)
-                                                            }
-                                                        />
-                                                    </div>
-                                                </TableCell>
-                                            );
-                                        })}
-                                </TableRow>
-                            ))}
-                            {rows.length === 0 && (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={columns.length + 1}
-                                        className="px-4 py-8 text-center text-slate-500"
-                                    >
-                                        <p className="font-medium">Heç bir sətir tapılmadı</p>
-                                        <p className="text-sm">Excel faylı importlaymaqla başlayın</p>
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                                                return (
+                                                    <td
+                                                        key={colDef._id}
+                                                        className="px-4 py-3 text-slate-700 text-sm border-r border-slate-100 hover:bg-blue-100 transition-colors min-w-[150px]"
+                                                    >
+                                                        <div className="max-h-20 overflow-auto">
+                                                            <EditableCell
+                                                                colDef={colDef}
+                                                                value={row.data[colDef.dataKey]}
+                                                                editable={col.editable}
+                                                                onSave={(val) =>
+                                                                    handleUpdateCell(row.rowNumber, colDef.dataKey, val)
+                                                                }
+                                                            />
+                                                        </div>
+                                                    </td>
+                                                );
+                                            })}
+                                    </tr>
+                                ))}
+                                {rows.length === 0 && (
+                                    <tr>
+                                        <td
+                                            colSpan={columns.length + 1}
+                                            className="px-4 py-8 text-center text-slate-500"
+                                        >
+                                            <p className="font-medium">Heç bir sətir tapılmadı</p>
+                                            <p className="text-sm">Excel faylı importlaymaqla başlayın</p>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </CardContent>
             </Card>

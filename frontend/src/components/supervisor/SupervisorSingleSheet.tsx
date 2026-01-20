@@ -285,28 +285,7 @@ const SupervisorSingleSheet: React.FC = () => {
                 </CardContent>
             </Card>
 
-            {/* Footer Stats */}
-            {rows.length > 0 && (
-                <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-                    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                        <p className="text-slate-600 text-sm font-medium">Cari Səhifə</p>
-                        <p className="text-2xl font-bold text-blue-600">{currentPage}</p>
-                    </div>
-                    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                        <p className="text-slate-600 text-sm font-medium">Bu Səhifədə</p>
-                        <p className="text-2xl font-bold text-green-600">{rows.length}</p>
-                    </div>
-                    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                        <p className="text-slate-600 text-sm font-medium">Sütunlar</p>
-                        <p className="text-2xl font-bold text-purple-600">{columns.length}</p>
-                    </div>
-                    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                        <p className="text-slate-600 text-sm font-medium">Son Yeniləmə</p>
-                        <p className="text-sm font-semibold text-slate-900">{new Date().toLocaleTimeString("az-AZ")}</p>
-                    </div>
-                </div>
-            )}
-
+        
             {/* Pagination Controls */}
             {rows.length > 0 && (
                 <div className="mt-6 flex items-center justify-center gap-2">
