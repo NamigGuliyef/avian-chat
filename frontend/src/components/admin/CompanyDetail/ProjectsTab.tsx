@@ -221,7 +221,7 @@ const ProjectsTab = () => {
                                 <p className="gap-2 text-sm text-muted-foreground">
                                     {project.agents?.length} Agents
                                 </p>
-                                <Button
+                                {/* <Button
                                     variant="ghost"
                                     size="icon"
                                     onClick={(e) => {
@@ -231,7 +231,7 @@ const ProjectsTab = () => {
                                     className="text-destructive hover:text-destructive"
                                 >
                                     <Trash2 className="h-4 w-4" />
-                                </Button>
+                                </Button> */}
                             </div>
                         </CardContent>
                     </Card>

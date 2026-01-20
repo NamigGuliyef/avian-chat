@@ -62,12 +62,12 @@ const AdminCompanies = () => {
         setIsCompanyDialogOpen(false);
     };
 
-    const handleDeleteCompany = (companyId) => {
-        deleteCompany(companyId).then(() => {
-            setCompanies((pre) => pre.filter((cm) => cm._id !== companyId))
-        });
-        toast.success('Şirkət silindi');
-    };
+    // const handleDeleteCompany = (companyId) => {
+    //     deleteCompany(companyId).then(() => {
+    //         setCompanies((pre) => pre.filter((cm) => cm._id !== companyId))
+    //     });
+    //     toast.success('Şirkət silindi');
+    // };
 
 
     const startEditCompany = (company: ICompany) => {
@@ -110,7 +110,7 @@ const AdminCompanies = () => {
                                     </Popover> */}
                                     <div className="flex gap-1">
                                         <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); startEditCompany(_company); }}><Edit className="h-4 w-4" /></Button>
-                                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDeleteCompany(_company._id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                        {/* <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDeleteCompany(_company._id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button> */}
                                     </div>
                                 </div>
                             </CardContent>

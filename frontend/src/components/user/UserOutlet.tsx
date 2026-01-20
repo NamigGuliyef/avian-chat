@@ -15,7 +15,7 @@ export default function UserOutlet() {
   const { session, logout, isAuthenticated } = useAuthContext();
 
   if (!isAuthenticated || session.user.role !== 'Agent') {
-    return <Navigate to="/user/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -56,7 +56,7 @@ export default function UserOutlet() {
               <DropdownMenuItem onClick={() => navigate("/user/excels")}>
                 Excels
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { logout(); navigate("/user/login"); }} className="text-destructive">
+              <DropdownMenuItem onClick={() => { logout(); navigate("/"); }} className="text-destructive">
                 <LogOut className="h-4 w-4 mr-2" />
                 Çıxış
               </DropdownMenuItem>

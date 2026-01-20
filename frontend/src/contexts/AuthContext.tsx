@@ -34,7 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setSessionState(defaultSession);
         localStorage.removeItem(SESSION_KEY);
         localStorage.removeItem(SESSION_TOKEN_KEY);
-        navigate('/user/login')
+        navigate('/')
     };
 
     const value: AuthContextType = {

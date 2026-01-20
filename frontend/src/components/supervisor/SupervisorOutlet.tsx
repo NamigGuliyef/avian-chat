@@ -7,7 +7,7 @@ const SupervisorOutlet: React.FC = () => {
     const { session, isAuthenticated } = useAuthContext();
 
     if (!isAuthenticated || session?.user?.role !== 'Supervisor') {
-        return <Navigate to="/user/login" replace />;
+        return <Navigate to="/" replace />;
     }
 
     return (

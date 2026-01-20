@@ -98,16 +98,16 @@ const SingleProject = () => {
         })
         setIsMemberDialogOpen(null);
     };
-    const removeUserFromProject = (projectId, id: string, type: "S" | "A") => {
-        removeProjectMember(projectId, id, type).then(() => {
-            if (type === "S") {
-                setProject((pre) => ({ ...pre, supervisors: pre.supervisors.filter((sp) => sp._id !== id) }))
-            } else if (type === "A") {
-                setProject((pre) => ({ ...pre, agents: pre.agents.filter((ag) => ag._id !== id) }))
-            }
-        })
-        setIsMemberDialogOpen(null);
-    }
+    // const removeUserFromProject = (projectId, id: string, type: "S" | "A") => {
+    //     removeProjectMember(projectId, id, type).then(() => {
+    //         if (type === "S") {
+    //             setProject((pre) => ({ ...pre, supervisors: pre.supervisors.filter((sp) => sp._id !== id) }))
+    //         } else if (type === "A") {
+    //             setProject((pre) => ({ ...pre, agents: pre.agents.filter((ag) => ag._id !== id) }))
+    //         }
+    //     })
+    //     setIsMemberDialogOpen(null);
+    // }
 
     useEffect(() => {
         if (!isMemberDialogOpen) {
@@ -223,13 +223,13 @@ const SingleProject = () => {
                                                     <p className="text-sm text-muted-foreground">{s.email}</p>
                                                 </div>
                                             </div>
-                                            <Button
+                                            {/* <Button
                                                 size="icon"
                                                 variant="ghost"
                                                 onClick={() => removeUserFromProject(projectId, s._id, "S")}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
+                                            </Button> */}
                                         </CardContent>
                                     </Card>
                                 ))
@@ -261,13 +261,13 @@ const SingleProject = () => {
                                                     </div> */}
                                                 </div>
                                             </div>
-                                            <Button
+                                            {/* <Button
                                                 size="icon"
                                                 variant="ghost"
                                                 onClick={() => removeUserFromProject(projectId, a._id, "A")}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
+                                            </Button> */}
                                         </CardContent>
                                     </Card>
                                 ))

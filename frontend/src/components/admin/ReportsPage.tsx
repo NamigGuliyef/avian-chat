@@ -22,6 +22,7 @@ import {
   X
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import TableComponent from '../Table/TableComponent';
 
 type ColumnType = 'text' | 'number' | 'date';
 
@@ -670,86 +671,16 @@ const ReportsPage: React.FC = () => {
           </div>
         )}
 
-        {/* Table */}
-        <div className="flex-1 px-6 pb-6 overflow-auto">
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader className="sticky top-0 bg-muted z-10">
-                <TableRow>
-                  {visibleColumns.map(column => (
-                    <TableHead
-                      key={column.id}
-                      className="cursor-pointer hover:bg-muted/80 transition-colors whitespace-nowrap"
-                      onClick={() => handleSort(column.id)}
-                    >
-                      <div className="flex items-center gap-1">
-                        {column.name}
-                        <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
-                        {sortColumn === column.id && (
-                          <span className="text-xs text-primary">
-                            {sortDirection === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </div>
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedData.map((row, idx) => (
-                  <TableRow key={idx} className="hover:bg-muted/50">
-                    {visibleColumns.map(column => {
-                      const cellValue = row[column.id];
-                      return (
-                        <TableCell key={column.id} className="whitespace-nowrap px-3 py-2">
-                          {column.type === 'number' && cellValue !== undefined && cellValue !== null
-                            ? (Number(cellValue) as number).toLocaleString()
-                            : cellValue ?? '-'}
-                          {column.id === 'salesAmount' && cellValue ? ' ₼' : ''}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))}
-                {paginatedData.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={visibleColumns.length} className="text-center py-8 text-muted-foreground">
-                      Heç bir nəticə tapılmadı
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Pagination */}
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-muted-foreground">
-              {filteredData.length} nəticədən {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, filteredData.length)} göstərilir
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm">
-                Səhifə {currentPage} / {totalPages || 1}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages || totalPages === 0}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
+        <TableComponent
+          columns={columns}
+          data={paginatedData}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          handleSort={handleSort}
+          visibleColumns={visibleColumns}
+          pageSize={pageSize}
+          currentPage={currentPage}
+        />
       </div>
     </div>
   );
