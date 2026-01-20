@@ -5,13 +5,14 @@ import {
 import { getColumnsBySheetId } from "@/api/users";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { SheetColumnForm, SheetRowForm } from "@/types/types";
-import { ArrowLeft, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, RefreshCw, FileText } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { EditableCell } from "../Table/EditableCell";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
 
 
 const UserColumns: React.FC = () => {
@@ -24,7 +25,7 @@ const UserColumns: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalRows, setTotalRows] = useState(0);
     const [loading, setLoading] = useState(false)
-    const rowsPerPage = 100;
+    const rowsPerPage = 50;
 
     useEffect(() => {
         if (sheetId) {
@@ -39,7 +40,7 @@ const UserColumns: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            const data = await getColumnsBySheetId(sheetId!);
+            const data = await getColumnsBySheetId(sheetId!, currentPage, rowsPerPage);
             setColumns(data.columns);
             setRows(data.rows)
         } catch (e) {
@@ -81,9 +82,9 @@ const UserColumns: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+        <div className="h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 flex flex-col overflow-hidden">
             {/* Header Section */}
-            <div className="mb-8">
+            <div className="flex-shrink-0 mb-4">
                 <div className="flex items-center justify-between mb-4">
                     <Button
                         variant="ghost"
@@ -102,12 +103,31 @@ const UserColumns: React.FC = () => {
                         <RefreshCw className="w-4 h-4 mr-2" /> Yenilə
                     </Button>
                 </div>
-                <h1 className="text-4xl font-bold text-slate-900 mb-2">{sheetName}</h1>
-                <p className="text-slate-600">Cəmi {rows.length} sətir | {columns.length} sütun</p>
+
+                <div className="mb-3">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                            <FileText className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-bold text-slate-900">{sheetName}</h1>
+                            <p className="text-slate-500 text-xs mt-0.5">Sütun məlumatlarını əlavə və redaktə edin</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-3 text-xs text-slate-600">
+                        <span className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded">
+                            <span className="font-semibold">{rows.length}</span> Sətir
+                        </span>
+                        <span className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded">
+                            <span className="font-semibold">{columns.length}</span> Sütun
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            <div className="flex-1 px-6 pb-6 pt-4 overflow-auto">
-                <div className="border border-slate-200 rounded-xl overflow-hidden shadow-lg bg-white">
+            <Card className="border-slate-200 shadow-lg overflow-hidden flex-1 flex flex-col mb-3">
+                <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
+                    <div className="overflow-x-auto overflow-y-auto flex-1 w-full">
                     <Table>
                         <TableHeader className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 z-10">
                             <TableRow>
@@ -177,36 +197,14 @@ const UserColumns: React.FC = () => {
                             )}
                         </TableBody>
                     </Table>
-                </div>
-            </div>
-            {/* Footer Stats */}
-            {
-                rows.length > 0 && (
-                    <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-                        <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                            <p className="text-slate-600 text-sm font-medium">Cari Səhifə</p>
-                            <p className="text-2xl font-bold text-blue-600">{currentPage}</p>
-                        </div>
-                        <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                            <p className="text-slate-600 text-sm font-medium">Bu Səhifədə</p>
-                            <p className="text-2xl font-bold text-green-600">{rows.length}</p>
-                        </div>
-                        <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                            <p className="text-slate-600 text-sm font-medium">Sütunlar</p>
-                            <p className="text-2xl font-bold text-purple-600">{columns.length}</p>
-                        </div>
-                        <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                            <p className="text-slate-600 text-sm font-medium">Son Yeniləmə</p>
-                            <p className="text-sm font-semibold text-slate-900">{new Date().toLocaleTimeString("az-AZ")}</p>
-                        </div>
                     </div>
-                )
-            }
+                </CardContent>
+            </Card>
 
-            {/* Pagination Controls */}
-            {
-                rows.length > 0 && (
-                    <div className="mt-6 flex items-center justify-center gap-2">
+            {/* Footer Stats & Pagination */}
+            <div className="flex-shrink-0 max-h-[23%] overflow-y-auto">
+                {rows.length > 0 && (
+                    <div className="flex items-center justify-center gap-2">
                         <Button
                             variant="outline"
                             size="sm"
@@ -238,8 +236,8 @@ const UserColumns: React.FC = () => {
                             Sonraki <ChevronRight className="w-4 h-4 ml-1" />
                         </Button>
                     </div>
-                )
-            }
+                )}
+            </div>
         </div >
     );
 };
