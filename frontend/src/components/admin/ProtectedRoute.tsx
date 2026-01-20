@@ -15,7 +15,7 @@ const ProtectedRoute = ({ allowedRoles }: Props) => {
     }
 
     if (!allowedRoles.includes(session?.user?.role as Roles)) {
-        return <Navigate to="/404" replace />;
+        return <Navigate to="/" replace />;
     }
 
     return <Outlet />;
