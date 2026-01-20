@@ -1,8 +1,8 @@
 "use client";
 import {
-    getColumns, getRows,
     updateCell
 } from "@/api/supervisors";
+import { getColumnsBySheetId } from "@/api/users";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { SheetColumnForm, SheetRowForm } from "@/types/types";
 import { ArrowLeft, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
@@ -28,40 +28,22 @@ const UserColumns: React.FC = () => {
 
     useEffect(() => {
         if (sheetId) {
-            fetchColumns();
+            fetchData();
             setCurrentPage(1);
         }
     }, [sheetId]);
 
     useEffect(() => {
-        if (sheetId) fetchRows();
+        if (sheetId) fetchData();
     }, [sheetId, currentPage]);
 
-    const fetchColumns = async () => {
+    const fetchData = async () => {
         try {
-            const data = await getColumns(sheetId!);
-            setColumns(data);
+            const data = await getColumnsBySheetId(sheetId!);
+            setColumns(data.columns);
+            setRows(data.rows)
         } catch (e) {
             toast.error("Sütunlar gətirilərkən xəta baş verdi");
-        }
-    };
-
-    const fetchRows = async () => {
-        try {
-            setLoading(true)
-            const data = await getRows(sheetId!, currentPage, rowsPerPage);
-            setRows(data);
-            // Total sətir sayısını estimasyon ilə hesabla
-            // Əgər API tam sayı qaytarırsa, bunu update edin
-            if (data.length > 0 && data.length < rowsPerPage) {
-                setTotalRows((currentPage - 1) * rowsPerPage + data.length);
-            } else if (data.length === rowsPerPage) {
-                setTotalRows((currentPage * rowsPerPage) + 1); // More than this page
-            }
-        } catch (e) {
-            toast.error("Sətirlər gətirilərkən xəta baş verdi");
-        } finally {
-            setLoading(false)
         }
     };
 
@@ -82,8 +64,7 @@ const UserColumns: React.FC = () => {
     };
 
     const handleRefresh = () => {
-        fetchColumns();
-        fetchRows();
+        fetchData();
         toast.success("Vərilənlər yeniləndi");
     };
 
