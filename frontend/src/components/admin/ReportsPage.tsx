@@ -771,12 +771,6 @@ const ReportsPage: React.FC = () => {
                           {stats.count}
                         </div>
                       </div>
-                      <div>
-                        <div className="text-xs text-slate-500 font-medium">Cəm</div>
-                        <div className="text-base font-semibold text-slate-900">
-                          {typeof stats.total === 'number' ? stats.total.toLocaleString('az-AZ') : '0'}
-                        </div>
-                      </div>
                     </div>
                   </div>
                 );

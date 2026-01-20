@@ -739,7 +739,7 @@ const SupervisorReportsPage: React.FC = () => {
         {/* Statistics Cards */}
         {statsCards.length > 0 && (
           <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-slate-50 border-b border-slate-200">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3">
               {statsCards.map(columnId => {
                 const stats = calculateStatistics(columnId);
                 const column = columns.find(c => c.id === columnId);
@@ -754,12 +754,6 @@ const SupervisorReportsPage: React.FC = () => {
                         <div className="text-xs text-slate-500 font-medium">Sayı</div>
                         <div className="text-xl font-bold text-blue-600">
                           {stats.count}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-slate-500 font-medium">Cəm</div>
-                        <div className="text-base font-semibold text-slate-900">
-                          {typeof stats.total === 'number' ? stats.total.toLocaleString('az-AZ') : '0'}
                         </div>
                       </div>
                     </div>

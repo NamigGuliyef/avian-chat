@@ -1,37 +1,31 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import {
-    Card,
-    CardContent,
-} from "../ui/card";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Badge } from "../ui/badge";
-import {
-    getColumns, getRows, addRow, updateCell, deleteRow, importFromExcel
+    getColumns, getRows,
+    updateCell
 } from "@/api/supervisors";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { SheetColumnForm, SheetRowForm } from "@/types/types";
+import { ArrowLeft, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { EditableCell } from "../Table/EditableCell";
-import { Upload, ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 
 
 const UserColumns: React.FC = () => {
-    const { excelId, sheetId, sheetName } = useParams();
+    const { sheetId, sheetName } = useParams();
     const navigate = useNavigate();
 
     // States
     const [columns, setColumns] = useState<SheetColumnForm[]>([]);
     const [rows, setRows] = useState<SheetRowForm[]>([]);
-    const [file, setFile] = useState<File | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalRows, setTotalRows] = useState(0);
-    const [showImport, setShowImport] = useState(false);
     const [loading, setLoading] = useState(false)
     const rowsPerPage = 100;
 
-    // ---------------- Fetch Columns & Rows ----------------
     useEffect(() => {
         if (sheetId) {
             fetchColumns();
@@ -71,19 +65,6 @@ const UserColumns: React.FC = () => {
         }
     };
 
-    // ---------------- Row Actions ----------------
-    const handleAddRow = async () => {
-        // if (!sheetId) return;
-        // const emptyRow: Record<string, any> = {};
-        // columns.forEach(col => emptyRow[col.dataKey] = "");
-        // try {
-        //     const row = await addRow(sheetId, emptyRow);
-        //     setRows(prev => [...prev, row]);
-        // } catch (e) {
-        //     toast.error("Sətir əlavə edilərkən xəta baş verdi");
-        // }
-    };
-
     const handleUpdateCell = async (rowIndex: number, key: string, value: any) => {
         if (!sheetId) return;
         try {
@@ -97,29 +78,6 @@ const UserColumns: React.FC = () => {
             toast.success(`"${key}" sütununa "${_d.data[key]}" əlavə edildi.`)
         } catch (e) {
             toast.error("Cell yenilənərkən xəta baş verdi");
-        }
-    };
-
-    const handleDeleteRow = async (rowIndex: number) => {
-        if (!sheetId) return;
-        try {
-            await deleteRow(sheetId, rowIndex);
-            setRows(prev => prev.filter((_, i) => i !== rowIndex));
-        } catch (e) {
-            toast.error("Sətir silinərkən xəta baş verdi");
-        }
-    };
-
-    // ---------------- Import Excel ----------------
-    const handleImportExcel = async () => {
-        if (!sheetId || !file) return;
-        try {
-            await importFromExcel(sheetId, file);
-            toast.success("Excel uğurla import olundu");
-            fetchRows();
-            setFile(null);
-        } catch (e) {
-            toast.error("Excel import zamanı xəta baş verdi");
         }
     };
 
@@ -167,181 +125,141 @@ const UserColumns: React.FC = () => {
                 <p className="text-slate-600">Cəmi {rows.length} sətir | {columns.length} sütun</p>
             </div>
 
-            <div className="mb-6">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowImport(!showImport)}
-                    className="bg-white hover:bg-slate-50 border-slate-300"
-                >
-                    <ChevronDown className={`w-4 h-4 mr-2 transition-transform ${showImport ? 'rotate-180' : ''}`} />
-                    Excel import Et
-                </Button>
-            </div>
-
-            {/* Import Card - Collapsible */}
-            {showImport && (
-                <Card className="mb-6 border-slate-200 shadow-sm">
-                    <CardContent className="pt-6">
-                        <div className="flex gap-3 items-end">
-                            <div className="flex-1">
-                                <label className="text-sm font-medium text-slate-700 mb-2 block">
-                                    Excel Faylı Seç
-                                </label>
-                                <Input
-                                    type="file"
-                                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                                    accept=".xlsx,.xls,.csv"
-                                    className="border-slate-300 focus:border-blue-500"
-                                />
-                            </div>
-                            <Button
-                                onClick={handleImportExcel}
-                                disabled={!file}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
-                            >
-                                <Upload className="w-4 h-4 mr-2" /> Import Et
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Table Section with Full Scrolling */}
-            <Card className="border-slate-200 shadow-lg overflow-hidden">
-                <CardContent className="p-0">
-                    <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-300px)] bg-white">
-                        <table className="w-full border-collapse">
-                            <thead className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 z-10">
-                                <tr>
-                                    <th className="px-4 py-3 text-left text-white font-semibold text-sm border-b-2 border-slate-700 min-w-[60px]">
-                                        #
-                                    </th>
-                                    {columns.sort((a, b) => a.order - b.order).map((c) => c.columnId).map((col) => (
-                                        <th
-                                            key={col?._id}
-                                            className="px-4 py-3 text-left text-white font-semibold text-sm border-b-2 border-slate-700 whitespace-nowrap min-w-[150px]"
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <span>{col?.name}</span>
-                                                <Badge variant="secondary" className="text-xs bg-slate-700 text-slate-200">
-                                                    {col?.type || "Text"}
-                                                </Badge>
-                                            </div>
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rows.map((row, rowIndex) => (
-                                    <tr
-                                        key={rowIndex}
-                                        className="border-b border-slate-200 hover:bg-blue-50 transition-colors duration-150 group"
+            <div className="flex-1 px-6 pb-6 pt-4 overflow-auto">
+                <div className="border border-slate-200 rounded-xl overflow-hidden shadow-lg bg-white">
+                    <Table>
+                        <TableHeader className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 z-10">
+                            <TableRow>
+                                <TableHead className="cursor-pointer hover:bg-slate-700 transition-colors whitespace-nowrap text-white font-bold">
+                                    #
+                                </TableHead>
+                                {columns.sort((a, b) => a.order - b.order).map((c) => c.columnId).map((col) => (
+                                    <TableHead
+                                        key={col?._id}
+                                        className="px-4 py-3 text-left text-white font-semibold text-sm border-b-2 border-slate-700 whitespace-nowrap min-w-[150px]"
                                     >
-                                        <td className="px-4 py-3 text-slate-600 font-medium text-sm bg-slate-50 group-hover:bg-blue-100 min-w-[60px]">
-                                            {row.rowNumber}
-                                        </td>
-                                        {columns
-                                            .sort((a, b) => a.order - b.order)
-                                            .map((col) => {
-                                                const colDef = col.columnId;
-                                                if (!colDef) return null;
-
-                                                return (
-                                                    <td
-                                                        key={colDef._id}
-                                                        className="px-4 py-3 text-slate-700 text-sm border-r border-slate-100 hover:bg-blue-100 transition-colors min-w-[150px]"
-                                                    >
-                                                        <div className="max-h-20 overflow-auto">
-                                                            <EditableCell
-                                                                colDef={colDef}
-                                                                value={row.data[colDef.dataKey]}
-                                                                editable={col.editable}
-                                                                onSave={(val) =>
-                                                                    handleUpdateCell(row.rowNumber, colDef.dataKey, val)
-                                                                }
-                                                            />
-                                                        </div>
-                                                    </td>
-                                                );
-                                            })}
-                                    </tr>
+                                        <div className="flex items-center gap-2">
+                                            <span>{col?.name}</span>
+                                            <Badge variant="secondary" className="text-xs bg-slate-700 text-slate-200">
+                                                {col?.type || "Text"}
+                                            </Badge>
+                                        </div>
+                                    </TableHead>
                                 ))}
-                                {rows.length === 0 && (
-                                    <tr>
-                                        <td
-                                            colSpan={columns.length + 1}
-                                            className="px-4 py-8 text-center text-slate-500"
-                                        >
-                                            <p className="font-medium">Heç bir sətir tapılmadı</p>
-                                            <p className="text-sm">Excel faylı importlaymaqla başlayın</p>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </CardContent>
-            </Card>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {rows.map((row, rowIndex) => (
+                                <TableRow
+                                    key={rowIndex}
+                                    className="hover:bg-blue-50 transition-colors border-b border-slate-100"
+                                >
+                                    <TableCell className="px-4 py-3 text-slate-600 font-medium text-sm bg-slate-50 group-hover:bg-blue-100 min-w-[60px]">
+                                        {row.rowNumber}
+                                    </TableCell>
+                                    {columns
+                                        .sort((a, b) => a.order - b.order)
+                                        .map((col) => {
+                                            const colDef = col.columnId;
+                                            if (!colDef) return null;
 
-            {/* Footer Stats */}
-            {rows.length > 0 && (
-                <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-                    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                        <p className="text-slate-600 text-sm font-medium">Cari Səhifə</p>
-                        <p className="text-2xl font-bold text-blue-600">{currentPage}</p>
-                    </div>
-                    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                        <p className="text-slate-600 text-sm font-medium">Bu Səhifədə</p>
-                        <p className="text-2xl font-bold text-green-600">{rows.length}</p>
-                    </div>
-                    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                        <p className="text-slate-600 text-sm font-medium">Sütunlar</p>
-                        <p className="text-2xl font-bold text-purple-600">{columns.length}</p>
-                    </div>
-                    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                        <p className="text-slate-600 text-sm font-medium">Son Yeniləmə</p>
-                        <p className="text-sm font-semibold text-slate-900">{new Date().toLocaleTimeString("az-AZ")}</p>
-                    </div>
+                                            return (
+                                                <TableCell
+                                                    key={colDef._id}
+                                                    className="px-4 py-3 text-slate-700 text-sm border-r border-slate-100 hover:bg-blue-100 transition-colors min-w-[150px]"
+                                                >
+                                                    <div className="max-h-20 overflow-auto">
+                                                        <EditableCell
+                                                            colDef={colDef}
+                                                            value={row.data[colDef.dataKey]}
+                                                            editable={col.editable}
+                                                            onSave={(val) =>
+                                                                handleUpdateCell(row.rowNumber, colDef.dataKey, val)
+                                                            }
+                                                        />
+                                                    </div>
+                                                </TableCell>
+                                            );
+                                        })}
+                                </TableRow>
+                            ))}
+                            {rows.length === 0 && (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={columns.length + 1}
+                                        className="px-4 py-8 text-center text-slate-500"
+                                    >
+                                        <p className="font-medium">Heç bir sətir tapılmadı</p>
+                                        <p className="text-sm">Excel faylı importlaymaqla başlayın</p>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
                 </div>
-            )}
+            </div>
+            {/* Footer Stats */}
+            {
+                rows.length > 0 && (
+                    <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                        <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
+                            <p className="text-slate-600 text-sm font-medium">Cari Səhifə</p>
+                            <p className="text-2xl font-bold text-blue-600">{currentPage}</p>
+                        </div>
+                        <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
+                            <p className="text-slate-600 text-sm font-medium">Bu Səhifədə</p>
+                            <p className="text-2xl font-bold text-green-600">{rows.length}</p>
+                        </div>
+                        <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
+                            <p className="text-slate-600 text-sm font-medium">Sütunlar</p>
+                            <p className="text-2xl font-bold text-purple-600">{columns.length}</p>
+                        </div>
+                        <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
+                            <p className="text-slate-600 text-sm font-medium">Son Yeniləmə</p>
+                            <p className="text-sm font-semibold text-slate-900">{new Date().toLocaleTimeString("az-AZ")}</p>
+                        </div>
+                    </div>
+                )
+            }
 
             {/* Pagination Controls */}
-            {rows.length > 0 && (
-                <div className="mt-6 flex items-center justify-center gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handlePreviousPage}
-                        disabled={currentPage === 1}
-                        className="hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <ChevronLeft className="w-4 h-4 mr-1" /> Əvvəlki
-                    </Button>
+            {
+                rows.length > 0 && (
+                    <div className="mt-6 flex items-center justify-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handlePreviousPage}
+                            disabled={currentPage === 1}
+                            className="hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <ChevronLeft className="w-4 h-4 mr-1" /> Əvvəlki
+                        </Button>
 
-                    <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg">
-                        <span className="text-sm font-semibold text-slate-700">
-                            Səhifə <span className="text-blue-600">{currentPage}</span>
-                        </span>
-                        {rows.length === rowsPerPage && (
-                            <span className="text-xs text-slate-500">
-                                ({(currentPage - 1) * rowsPerPage + 1}-{currentPage * rowsPerPage})
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg">
+                            <span className="text-sm font-semibold text-slate-700">
+                                Səhifə <span className="text-blue-600">{currentPage}</span>
                             </span>
-                        )}
-                    </div>
+                            {rows.length === rowsPerPage && (
+                                <span className="text-xs text-slate-500">
+                                    ({(currentPage - 1) * rowsPerPage + 1}-{currentPage * rowsPerPage})
+                                </span>
+                            )}
+                        </div>
 
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleNextPage}
-                        disabled={rows.length < rowsPerPage}
-                        className="hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Sonraki <ChevronRight className="w-4 h-4 ml-1" />
-                    </Button>
-                </div>
-            )}
-        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleNextPage}
+                            disabled={rows.length < rowsPerPage}
+                            className="hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Sonraki <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
