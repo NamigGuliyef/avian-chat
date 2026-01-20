@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
+import ExcelJS from 'exceljs';
 import {
   ArrowUpDown,
   BarChart3,
@@ -16,17 +17,18 @@ import {
   ChevronRight,
   ChevronUp,
   Download,
+  FileText,
+  Filter,
   Hash,
+  PanelLeftClose,
+  PanelLeftOpen,
+  RotateCcw,
   Search,
   Settings2,
   Type,
-  X,
-  FileText,
-  Filter,
-  RotateCcw
+  X
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
-import ExcelJS from 'exceljs';
 
 type ColumnType = 'text' | 'number' | 'date';
 
@@ -42,7 +44,6 @@ const ReportsPage: React.FC = () => {
   const [reportData, setReportData] = useState<any[]>([]);
   const [columns, setColumns] = useState<DynamicColumn[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Filter states
   const [filters, setFilters] = useState<Record<string, string[]>>({});
@@ -62,6 +63,9 @@ const ReportsPage: React.FC = () => {
 
   // Statistics card settings
   const [statsCards, setStatsCards] = useState<string[]>([]);
+
+  // Filter panel visibility
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
 
   const buildReportQuery = () => {
@@ -86,7 +90,6 @@ const ReportsPage: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      setError(null);
       const query = buildReportQuery();
       const data = await getReport(query);
 
@@ -109,7 +112,7 @@ const ReportsPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Hesabat yüklənərkən xəta:', err);
-      setError('Hesabat məlumatları yüklənə bilmədi');
+      toast({ title: 'Hesabat məlumatları yüklənə bilmədi' });
       setReportData([]);
       setColumns([]);
     } finally {
@@ -475,7 +478,7 @@ const ReportsPage: React.FC = () => {
   return (
     <div className="flex-1 flex bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
       {/* Filter Panel */}
-      <div className="w-80 border-r border-slate-200 bg-white shadow-lg flex flex-col">
+      <div className={`${isFilterPanelOpen ? 'w-80' : 'w-0'} border-r border-slate-200 bg-white shadow-lg flex flex-col transition-all duration-300 overflow-hidden`}>
         <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-slate-900 to-slate-800">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -619,6 +622,18 @@ const ReportsPage: React.FC = () => {
         {/* Header */}
         <div className="h-20 border-b border-slate-200 flex items-center justify-between px-6 shrink-0 bg-white shadow-sm">
           <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
+              className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+            >
+              {isFilterPanelOpen ? (
+                <PanelLeftClose className="h-5 w-5" />
+              ) : (
+                <PanelLeftOpen className="h-5 w-5" />
+              )}
+            </Button>
             <div className="p-2.5 bg-blue-100 rounded-xl">
               <FileText className="h-6 w-6 text-blue-600" />
             </div>
