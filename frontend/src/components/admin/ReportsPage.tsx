@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { toast } from '@/hooks/use-toast';
 import {
   ArrowUpDown,
   BarChart3,
@@ -25,6 +26,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import ExcelJS from 'exceljs';
 
 type ColumnType = 'text' | 'number' | 'date';
 
@@ -339,9 +341,96 @@ const ReportsPage: React.FC = () => {
   };
 
   // Handle export
-  const handleExport = () => {
-    console.log('Excel ixracı başlayır...');
-    alert('Excel faylı hazırlanır...');
+  const handleExport = async () => {
+    try {
+      if (filteredData.length === 0) {
+        toast({
+          title: "Xəbərdarlıq",
+          description: "Ixrac etmək üçün ən azı bir sətir olmalıdır",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create workbook and worksheet
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Hesabat');
+
+      // Add header row
+      worksheet.columns = visibleColumns.map(col => ({
+        header: col.name,
+        key: col.id,
+        width: Math.max(15, col.name.length + 5),
+      }));
+
+      // Style header row
+      worksheet.getRow(1).eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F2937' } };
+        cell.alignment = { horizontal: 'centerContinuous', vertical: 'middle', wrapText: true };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          right: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+        };
+      });
+
+      // Add data rows
+      filteredData.forEach((row) => {
+        const rowData: Record<string, any> = {};
+        visibleColumns.forEach(col => {
+          rowData[col.id] = row[col.id] || '';
+        });
+        worksheet.addRow(rowData);
+      });
+
+      // Style data rows
+      worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return; // Skip header
+        row.eachCell((cell) => {
+          cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+            right: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+          };
+        });
+        // Alternate row colors
+        if (rowNumber % 2 === 0) {
+          row.eachCell((cell) => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+          });
+        }
+      });
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toLocaleString('az-AZ').replace(/[/:]/g, '-');
+      const filename = `Hesabat_${timestamp}.xlsx`;
+
+      // Export to buffer
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Uğurlu",
+        description: `Excel faylı hazırlandı: ${filename}`,
+      });
+    } catch (error) {
+      console.error('Excel ixracı zamanı xəta:', error);
+      toast({
+        title: "Xəta",
+        description: "Excel ixracı zamanı xəta baş verdi",
+        variant: "destructive",
+      });
+    }
   };
 
   // Calculate statistics for selected columns
