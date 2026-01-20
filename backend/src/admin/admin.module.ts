@@ -12,7 +12,7 @@ import { Sheet, SheetSchema } from '../excel/model/sheet.schema';
 import { SheetRow, SheetRowSchema } from '../excel/model/row-schema';
 import { Excel, ExcelSchema } from '../excel/model/excel.schema';
 import { JwtService } from '@nestjs/jwt';
-import { AuditLog, AuditLogSchema } from 'src/logger/model/logger.schema';
+import { AuditLog, AuditLogSchema } from '../logger/model/logger.schema';
 
 @Module({
   imports: [MongooseModule.forFeature([

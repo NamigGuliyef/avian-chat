@@ -16,7 +16,7 @@ import { hashPassword } from '../helper/hashpass';
 import { CreateProjectDto } from '../project/dto/create-project.dto';
 import { Project } from '../project/model/project.schema';
 import { User } from '../user/model/user.schema';
-import { AuditLog } from 'src/logger/model/logger.schema';
+import { AuditLog } from '../logger/model/logger.schema';
 
 
 @Injectable()

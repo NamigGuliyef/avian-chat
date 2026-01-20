@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { userRequest } from 'src/auth/req-auth.type';
+import { userRequest } from '../auth/req-auth.type';
 import { Column } from '../excel/model/column.schema';
 import { Excel } from '../excel/model/excel.schema';
 import { SheetRow } from '../excel/model/row-schema';

@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Request, Response, NextFunction } from 'express';
 import { AuditLog } from '../logger/model/logger.schema';
-import { User } from 'src/user/model/user.schema';
+import { User } from '../user/model/user.schema';
 import { REQUEST } from '@nestjs/core';
 
 interface IUserBody {

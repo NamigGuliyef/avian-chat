@@ -9,7 +9,7 @@ import { SupervisorController } from './supervisor.controller';
 import { SupervisorService } from './supervisor.service';
 import { SheetRow, SheetRowSchema } from '../excel/model/row-schema';
 import { JwtService } from '@nestjs/jwt';
-import { Company, CompanySchema } from 'src/company/model/company.schema';
+import { Company, CompanySchema } from '../company/model/company.schema';
 
 @Module({
   imports: [MongooseModule.forFeature([
