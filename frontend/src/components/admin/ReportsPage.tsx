@@ -19,10 +19,12 @@ import {
   Search,
   Settings2,
   Type,
-  X
+  X,
+  FileText,
+  Filter,
+  RotateCcw
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
-import TableComponent from '../Table/TableComponent';
 
 type ColumnType = 'text' | 'number' | 'date';
 
@@ -51,7 +53,7 @@ const ReportsPage: React.FC = () => {
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(15);
 
   // Column visibility
   const [isColumnPickerOpen, setIsColumnPickerOpen] = useState(false);
@@ -371,37 +373,43 @@ const ReportsPage: React.FC = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-background min-h-screen">
+      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Hesabat yüklənir...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+          <p className="text-slate-600 font-medium">Hesabat yüklənir...</p>
+          <p className="text-slate-400 text-sm mt-1">Zəhmət olmasa gözləyin...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex bg-background min-h-screen">
+    <div className="flex-1 flex bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
       {/* Filter Panel */}
-      <div className="w-72 border-r border-border bg-muted/30 flex flex-col">
-        <div className="p-4 border-b border-border">
+      <div className="w-80 border-r border-slate-200 bg-white shadow-lg flex flex-col">
+        <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-slate-900 to-slate-800">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold">Filtrlər</h2>
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs">
-              <X className="h-3 w-3 mr-1" />
-              Təmizlə
-            </Button>
+            <div className="flex items-center gap-2">
+              <Filter className="h-5 w-5 text-white" />
+              <h2 className="text-lg font-bold text-white">Filtrlər</h2>
+            </div>
+            {Object.values(filters).flat().length > 0 && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-red-400 hover:text-red-300 text-xs">
+                <RotateCcw className="h-3 w-3 mr-1" />
+                Sıfırla
+              </Button>
+            )}
           </div>
 
           {/* Active filters count */}
           {Object.values(filters).flat().length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
+            <div className="flex flex-wrap gap-2 mt-3">
               {Object.entries(filters).map(([colId, values]) =>
                 values.map(val => (
-                  <Badge key={`${colId}-${val}`} variant="secondary" className="text-xs gap-1">
+                  <Badge key={`${colId}-${val}`} className="text-xs gap-1 bg-blue-500 hover:bg-blue-600 text-white">
                     {val}
                     <X
-                      className="h-3 w-3 cursor-pointer"
+                      className="h-3 w-3 cursor-pointer hover:opacity-70"
                       onClick={() => toggleFilterValue(colId, val)}
                     />
                   </Badge>
@@ -420,45 +428,46 @@ const ReportsPage: React.FC = () => {
             );
 
             return (
-              <div key={column.id} className="mb-4">
+              <div key={column.id} className="mb-5 pb-4 border-b border-slate-200 last:border-0">
                 <button
                   onClick={() => toggleFilterExpansion(column.id)}
-                  className="flex items-center justify-between w-full text-sm font-medium mb-2"
+                  className="flex items-center justify-between w-full text-sm font-semibold mb-3 text-slate-900 hover:text-blue-600 transition-colors"
                 >
                   <span className="flex items-center gap-2">
-                    <Type className="h-4 w-4 text-muted-foreground" />
+                    <Type className="h-4 w-4 text-blue-600" />
                     {column.name}
                     {(filters[column.id]?.length || 0) > 0 && (
-                      <Badge variant="secondary" className="text-xs ml-1">
+                      <Badge className="text-xs ml-1 bg-blue-100 text-blue-700">
                         {filters[column.id].length}
                       </Badge>
                     )}
                   </span>
                   {expandedFilters.includes(column.id) ? (
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="h-4 w-4 text-slate-400" />
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4 text-slate-400" />
                   )}
                 </button>
                 {expandedFilters.includes(column.id) && (
-                  <div className="ml-6">
+                  <div className="ml-2">
                     <Input
                       placeholder="Axtar..."
                       value={searchValue}
                       onChange={(e) => setFilterSearch(prev => ({ ...prev, [column.id]: e.target.value }))}
-                      className="h-7 text-xs mb-2"
+                      className="h-8 text-xs mb-2 border-slate-300 focus:border-blue-500 rounded-lg"
                     />
-                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
                       {filteredValues.map(value => (
                         <div key={value} className="flex items-center gap-2">
                           <Checkbox
                             id={`${column.id}-${value}`}
                             checked={(filters[column.id] || []).includes(value)}
                             onCheckedChange={() => toggleFilterValue(column.id, value)}
+                            className="rounded"
                           />
                           <label
                             htmlFor={`${column.id}-${value}`}
-                            className="text-xs cursor-pointer truncate"
+                            className="text-xs cursor-pointer truncate text-slate-700 hover:text-slate-900"
                           >
                             {value}
                           </label>
@@ -470,89 +479,90 @@ const ReportsPage: React.FC = () => {
               </div>
             );
           })}
-          <div className="mb-4">
+          <div className="mb-4 pb-4 border-b border-slate-200">
             <button
               onClick={() => toggleFilterExpansion('date')}
-              className="flex items-center justify-between w-full text-sm font-medium mb-2"
+              className="flex items-center justify-between w-full text-sm font-semibold mb-3 text-slate-900 hover:text-blue-600 transition-colors"
             >
               <span className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                Tarix
+                <CalendarDays className="h-4 w-4 text-blue-600" />
+                Tarix Aralığı
               </span>
               {expandedFilters.includes('date') ? (
-                <ChevronUp className="h-4 w-4" />
+                <ChevronUp className="h-4 w-4 text-slate-400" />
               ) : (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4 text-slate-400" />
               )}
             </button>
             {expandedFilters.includes('date') && (
-              <div className="space-y-2 ml-6">
+              <div className="space-y-2 ml-2">
                 <div>
-                  <label className="text-xs text-muted-foreground">Başlanğıc</label>
+                  <label className="text-xs font-semibold text-slate-700 mb-1 block">Başlanğıc</label>
                   <Input
                     type="date"
                     value={dateRange.start}
                     onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                    className="h-8 text-sm"
+                    className="h-8 text-sm border-slate-300 focus:border-blue-500 rounded-lg"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Son</label>
+                  <label className="text-xs font-semibold text-slate-700 mb-1 block">Son</label>
                   <Input
                     type="date"
                     value={dateRange.end}
                     onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                    className="h-8 text-sm"
+                    className="h-8 text-sm border-slate-300 focus:border-blue-500 rounded-lg"
                   />
                 </div>
               </div>
             )}
           </div>
-          <Button className="w-full mt-2" size="sm" onClick={() => {
+          <Button className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold" size="sm" onClick={() => {
             fetchData()
           }}>
-            Tarixlər üzrə filtrləri tətbiq et
+            ✓ Filtrlər Tətbiq Et
           </Button>
         </ScrollArea>
-
-        {/* <div className="p-4 border-t border-border">
-          <Button className="w-full" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Tətbiq et
-          </Button>
-        </div> */}
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="h-16 border-b border-border flex items-center justify-between px-6 shrink-0">
-          <h1 className="text-lg font-semibold">Hesabatlar</h1>
+        <div className="h-20 border-b border-slate-200 flex items-center justify-between px-6 shrink-0 bg-white shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-blue-100 rounded-xl">
+              <FileText className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Hesabatlar</h1>
+              <p className="text-sm text-slate-500">{filteredData.length} nəticə</p>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             {/* Column Picker */}
             <Popover open={isColumnPickerOpen} onOpenChange={setIsColumnPickerOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-slate-300 hover:border-blue-400 hover:bg-blue-50">
                   <Settings2 className="h-4 w-4 mr-2" />
                   Sütunlar
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-56" align="end">
+              <PopoverContent className="w-56 bg-white border-slate-200 max-h-96 overflow-y-auto" align="end">
                 <div className="space-y-2">
-                  <h4 className="font-medium text-sm mb-3">Sütun görünüşü</h4>
+                  <h4 className="font-bold text-sm mb-3 text-slate-900">Sütun Görünüşü</h4>
                   {columns.map(column => (
-                    <div key={column.id} className="flex items-center gap-2">
+                    <div key={column.id} className="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded">
                       <Checkbox
                         id={`col-${column.id}`}
                         checked={column.visible}
                         onCheckedChange={() => toggleColumnVisibility(column.id)}
                       />
-                      <label htmlFor={`col-${column.id}`} className="text-sm cursor-pointer flex-1">
+                      <label htmlFor={`col-${column.id}`} className="text-sm cursor-pointer flex-1 text-slate-700">
                         {column.name}
                       </label>
-                      {column.type === 'number' && <Hash className="h-3 w-3 text-muted-foreground" />}
-                      {column.type === 'date' && <CalendarDays className="h-3 w-3 text-muted-foreground" />}
-                      {column.type === 'text' && <Type className="h-3 w-3 text-muted-foreground" />}
+                      {column.type === 'number' && <Hash className="h-3 w-3 text-blue-600" />}
+                      {column.type === 'date' && <CalendarDays className="h-3 w-3 text-green-600" />}
+                      {column.type === 'text' && <Type className="h-3 w-3 text-slate-600" />}
                     </div>
                   ))}
                 </div>
@@ -562,17 +572,17 @@ const ReportsPage: React.FC = () => {
             {/* Statistics Column Selector */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-slate-300 hover:border-blue-400 hover:bg-blue-50">
                   <BarChart3 className="h-4 w-4 mr-2" />
                   Statistika
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-48" align="end">
+              <PopoverContent className="w-48 bg-white border-slate-200 max-h-96 overflow-y-auto" align="end">
                 <div className="space-y-2">
-                  <h4 className="font-medium text-sm mb-3">Statistika Sütunları</h4>
-                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                  <h4 className="font-bold text-sm mb-3 text-slate-900">Statistika Sütunları</h4>
+                  <div className="space-y-1">
                     {columns.filter(c => c.type === 'text' || c.type === 'number').map(column => (
-                      <div key={column.id} className="flex items-center gap-2">
+                      <div key={column.id} className="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded">
                         <Checkbox
                           id={`stat-${column.id}`}
                           checked={statsCards.includes(column.id)}
@@ -584,7 +594,7 @@ const ReportsPage: React.FC = () => {
                             )
                           }
                         />
-                        <label htmlFor={`stat-${column.id}`} className="text-sm cursor-pointer flex-1">
+                        <label htmlFor={`stat-${column.id}`} className="text-sm cursor-pointer flex-1 text-slate-700">
                           {column.name}
                         </label>
                       </div>
@@ -594,39 +604,39 @@ const ReportsPage: React.FC = () => {
               </PopoverContent>
             </Popover>
 
-            <Button variant="outline" size="sm" onClick={handleExport}>
+            <Button variant="outline" size="sm" onClick={handleExport} className="border-slate-300 hover:border-green-400 hover:bg-green-50">
               <Download className="h-4 w-4 mr-2" />
-              Excel-ə ixrac et
+              Excel
             </Button>
           </div>
         </div>
 
         {/* Search */}
-        <div className="px-6 pb-4 py-4">
+        <div className="px-6 py-4 bg-white border-b border-slate-200">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Axtarış..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-9 border-slate-300 focus:border-blue-500 rounded-lg"
             />
           </div>
         </div>
 
         {/* Statistics Cards Configuration */}
         {statsCards.length > 0 && (
-          <div className="px-6 py-2 border-b border-border">
+          <div className="px-6 py-3 border-b border-slate-200 bg-white">
             <div className="flex items-center gap-2 flex-wrap">
               {statsCards.map(columnId => {
                 const column = columns.find(c => c.id === columnId);
                 return (
-                  <Badge key={columnId} variant="secondary" className="text-xs gap-1.5">
+                  <Badge key={columnId} className="text-xs gap-1.5 bg-blue-100 text-blue-800">
                     <BarChart3 className="h-3 w-3" />
                     {column?.name}
                     <button
                       onClick={() => setStatsCards(prev => prev.filter(id => id !== columnId))}
-                      className="ml-1 hover:text-foreground"
+                      className="ml-1 hover:opacity-70"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -639,27 +649,27 @@ const ReportsPage: React.FC = () => {
 
         {/* Statistics Cards */}
         {statsCards.length > 0 && (
-          <div className="px-6 py-2">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+          <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-slate-50 border-b border-slate-200">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {statsCards.map(columnId => {
                 const stats = calculateStatistics(columnId);
                 const column = columns.find(c => c.id === columnId);
                 return (
                   <div
                     key={columnId}
-                    className="bg-card border border-border rounded p-2 hover:shadow-sm transition-shadow"
+                    className="bg-white border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
-                    <div className="text-xs text-muted-foreground truncate mb-1">{column?.name}</div>
-                    <div className="space-y-0.5">
+                    <div className="text-xs font-semibold text-slate-600 truncate mb-2">{column?.name}</div>
+                    <div className="space-y-2">
                       <div>
-                        <div className="text-xs text-muted-foreground">Sayı</div>
-                        <div className="text-lg font-bold text-foreground">
+                        <div className="text-xs text-slate-500 font-medium">Sayı</div>
+                        <div className="text-xl font-bold text-blue-600">
                           {stats.count}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-muted-foreground">Cəm</div>
-                        <div className="text-base font-semibold text-foreground">
+                        <div className="text-xs text-slate-500 font-medium">Cəm</div>
+                        <div className="text-base font-semibold text-slate-900">
                           {typeof stats.total === 'number' ? stats.total.toLocaleString('az-AZ') : '0'}
                         </div>
                       </div>
@@ -671,16 +681,90 @@ const ReportsPage: React.FC = () => {
           </div>
         )}
 
-        <TableComponent
-          columns={columns}
-          data={paginatedData}
-          sortColumn={sortColumn}
-          sortDirection={sortDirection}
-          handleSort={handleSort}
-          visibleColumns={visibleColumns}
-          pageSize={pageSize}
-          currentPage={currentPage}
-        />
+        {/* Table */}
+        <div className="flex-1 px-6 pb-6 pt-4 overflow-auto">
+          <div className="border border-slate-200 rounded-xl overflow-hidden shadow-lg bg-white">
+            <Table>
+              <TableHeader className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 z-10">
+                <TableRow>
+                  {visibleColumns.map(column => (
+                    <TableHead
+                      key={column.id}
+                      className="cursor-pointer hover:bg-slate-700 transition-colors whitespace-nowrap text-white font-bold"
+                      onClick={() => handleSort(column.id)}
+                    >
+                      <div className="flex items-center gap-2">
+                        {column.name}
+                        <ArrowUpDown className="h-3 w-3 text-slate-300" />
+                        {sortColumn === column.id && (
+                          <span className="text-xs text-blue-300">
+                            {sortDirection === 'asc' ? '↑' : '↓'}
+                          </span>
+                        )}
+                      </div>
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedData.map((row, idx) => (
+                  <TableRow key={idx} className="hover:bg-blue-50 transition-colors border-b border-slate-100">
+                    {visibleColumns.map(column => {
+                      const cellValue = row[column.id];
+                      return (
+                        <TableCell key={column.id} className="whitespace-nowrap px-4 py-3 text-sm text-slate-700">
+                          {column.type === 'number' && cellValue !== undefined && cellValue !== null
+                            ? (Number(cellValue) as number).toLocaleString()
+                            : cellValue ?? '-'}
+                          {column.id === 'salesAmount' && cellValue ? ' ₼' : ''}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+                {paginatedData.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumns.length} className="text-center py-12 text-slate-500">
+                      <FileText className="h-12 w-12 text-slate-300 mx-auto mb-2" />
+                      <p className="font-medium">Heç bir nəticə tapılmadı</p>
+                      <p className="text-xs mt-1">Filtrlərə uyğun məlumat yoxdur</p>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between mt-6">
+            <div className="text-sm font-medium text-slate-700">
+              Cəmi <span className="text-blue-600">{filteredData.length}</span> nəticədən <span className="text-blue-600">{(currentPage - 1) * pageSize + 1}</span>-<span className="text-blue-600">{Math.min(currentPage * pageSize, filteredData.length)}</span> göstərilir
+            </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="border-slate-300 hover:border-blue-400 hover:bg-blue-50 disabled:opacity-50"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm font-semibold text-slate-700 min-w-max">
+                Səhifə <span className="text-blue-600">{currentPage}</span> / <span className="text-blue-600">{totalPages || 1}</span>
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="border-slate-300 hover:border-blue-400 hover:bg-blue-50 disabled:opacity-50"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
