@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Types } from 'mongoose';
-import { Company } from '../company/model/company.schema';
+import { Company } from '../../company/model/company.schema';
 import { ProjectDirection, ProjectName, ProjectType } from 'src/enum/enum';
 
 export class CreateProjectDto {
