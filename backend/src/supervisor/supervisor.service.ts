@@ -95,10 +95,6 @@ export class SupervisorService {
     return await this.columnModel.find({ projectId }).sort({ createdAt: -1 });
   }
 
-  async getColumnById(columnId: string) {
-    return await this.columnModel.findById(columnId);
-  }
-
   async updateColumn(columnId: string, data: UpdateAdminColumnDto) {
     return await this.columnModel.findByIdAndUpdate(
       columnId,

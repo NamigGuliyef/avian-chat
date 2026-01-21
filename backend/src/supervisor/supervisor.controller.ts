@@ -225,13 +225,6 @@ export class SupervisorController {
     return this.supervisorService.getColumns(projectId);
   }
 
-  @ApiOperation({ summary: 'Get column by id' })
-  @Get('column/:id')
-  @HttpCode(HttpStatus.OK)
-  findOne(@Param('id') id: string) {
-    return this.supervisorService.getColumnById(id);
-  }
-
   @ApiOperation({ summary: 'Update column' })
   @ApiBody({ type: UpdateAdminColumnDto })
   @Patch('column/:id')
