@@ -445,7 +445,7 @@ export class AdminService {
   }
 
   async getColumns() {
-    return await this.columnModel.find().sort({ createdAt: -1 });
+    return await this.columnModel.find({ projectId: { $exists: false } }).sort({ createdAt: -1 });
   }
 
   async getColumnById(columnId: string) {
@@ -529,7 +529,7 @@ export class AdminService {
     return result;
   }
 
-  
+
   // logging
   async getLogs(): Promise<any[]> {
     const res = await this.auditLogModel.find()

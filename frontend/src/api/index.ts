@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 const axios = _axios.create({
     // url: import.meta.env.REACT_BACKEND_URL
-    baseURL: "http://94.20.88.192"
+    baseURL: "http://localhost:8004"
 });
 
 axios.interceptors.request.use((config) => {

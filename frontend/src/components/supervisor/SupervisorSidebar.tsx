@@ -5,6 +5,7 @@ import {
     BarChart3,
     ChevronLeft,
     ChevronRight,
+    Columns,
     FileSpreadsheet,
     LogOut,
     UserIcon
@@ -15,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 const menuItems = [
     { id: 'dashboard', icon: UserIcon, label: 'Dashboard' },
     { id: 'projects', icon: FileSpreadsheet, label: 'Layihələrim' },
+    { id: 'columns', icon: Columns, label: 'Layihə sütunları' },
     { id: 'reports', icon: BarChart3, label: 'Hesabatlar' },
 ];
 

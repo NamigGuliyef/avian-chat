@@ -10,6 +10,10 @@ export class Column {
   @Prop({ required: true })
   name: string;
 
+
+  @Prop({ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'Project' })
+  projectId?: Types.ObjectId;
+
   @Prop({ required: true })
   dataKey: string;
 

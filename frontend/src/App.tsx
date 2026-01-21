@@ -32,6 +32,7 @@ import AdminSingleCompany from "./pages/AdminSingleCompany";
 import { AdminUsers } from "./pages/AdminUsers";
 import { Roles } from "./types/types";
 import SupervisorReportsPage from "./components/admin/SupervisorReportsPage";
+import SupervisorProjectColumns from "./components/admin/SupervisorProjectColumns";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const App = () => (
                 <Route path="dashboard" element={<SupervisorDashboard />} />
                 <Route path="projects" element={<SupervisorProjects />} />
                 <Route path="reports" element={<SupervisorReportsPage />} />
+                <Route path="columns" element={<SupervisorProjectColumns />} />
                 <Route path="projects/:projectId/:projectName" element={<SupervisorSingleProject />} />
                 <Route path="excels/:projectId/:excelId/:excelName" element={<SupervisorSingleExcel />} />
                 <Route path="sheets/:projectId/:excelId/:sheetId/:sheetName" element={<SupervisorSingleSheet />} />

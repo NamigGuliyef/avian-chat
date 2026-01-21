@@ -17,6 +17,8 @@ import { Excel } from "../excel/model/excel.schema";
 import { SheetRow } from "../excel/model/row-schema";
 import { Sheet, SheetColumn } from "../excel/model/sheet.schema";
 import { Project } from "../project/model/project.schema";
+import { CreateAdminColumnDto } from "src/excel/dto/create-column.dto";
+import { UpdateAdminColumnDto } from "src/excel/dto/update-column.dto";
 
 
 @Injectable()
@@ -80,6 +82,33 @@ export class SupervisorService {
   async getExcels(projectId: Types.ObjectId) {
     const data = await this.excelModel.find({ projectId }).populate([{ path: 'sheetIds' }, { path: 'agentIds', select: '-password' }]);
     return data;
+  }
+
+  // Column
+  // ---------------- Column ---------------- //
+
+  async createColumn(data: CreateAdminColumnDto) {
+    return await this.columnModel.create(data);
+  }
+
+  async getColumns(projectId: Types.ObjectId) {
+    return await this.columnModel.find({ projectId }).sort({ createdAt: -1 });
+  }
+
+  async getColumnById(columnId: string) {
+    return await this.columnModel.findById(columnId);
+  }
+
+  async updateColumn(columnId: string, data: UpdateAdminColumnDto) {
+    return await this.columnModel.findByIdAndUpdate(
+      columnId,
+      data,
+      { new: true }
+    );
+  }
+
+  async deleteColumn(columnId: string) {
+    return await this.columnModel.findByIdAndDelete(columnId);
   }
 
 

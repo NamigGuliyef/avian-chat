@@ -5,6 +5,7 @@ import {
     createExcelSheet,
     getExcelSheets,
     getProjectAgents,
+    getSupervisorColumns,
     updateExcelSheet,
 } from "@/api/supervisors";
 import { IAgentRowPermission, ISheet, SheetColumnForm } from "@/types/types";
@@ -59,7 +60,11 @@ const SupervisorSingleExcel: React.FC = () => {
     useEffect(() => {
         if (!excelId) return;
         getExcelSheets(excelId).then(setSheets);
-        getAdminColumns().then(setColumns);
+        getAdminColumns().then((d) => {
+            getSupervisorColumns(projectId).then((d2) => {
+                setColumns(() => [...d, ...d2])
+            })
+        });
     }, [excelId]);
 
     useEffect(() => {

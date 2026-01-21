@@ -254,6 +254,7 @@ export enum ColumnType {
 export interface ISheetColumn {
     _id: string;
     name: string;
+    projectId?: string;
     dataKey: string;
     type: ColumnType;
     options?: IAdminColumnOption[];

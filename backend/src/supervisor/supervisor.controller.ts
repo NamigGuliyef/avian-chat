@@ -24,6 +24,8 @@ import { UpdateExcelDto } from "../excel/dto/update-excel.dto";
 import { UpdateSheetColumnDto, UpdateSheetDto } from "../excel/dto/update-sheet.dto";
 import { SupervisorService } from './supervisor.service';
 import { MulterOptionsExcel } from '../multer';
+import { CreateAdminColumnDto } from 'src/excel/dto/create-column.dto';
+import { UpdateAdminColumnDto } from 'src/excel/dto/update-column.dto';
 
 
 @UseGuards(AuthGuard)
@@ -206,6 +208,49 @@ export class SupervisorController {
       Number(limit),
     );
   }
+
+  // columns
+  @ApiOperation({ summary: 'Create column' })
+  @ApiBody({ type: CreateAdminColumnDto })
+  @Post('column')
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() dto: CreateAdminColumnDto) {
+    return this.supervisorService.createColumn(dto);
+  }
+
+  @ApiOperation({ summary: 'Get all columns' })
+  @Get('column/:projectId')
+  @HttpCode(HttpStatus.OK)
+  findAll(@Param("projectId") projectId: Types.ObjectId) {
+    return this.supervisorService.getColumns(projectId);
+  }
+
+  @ApiOperation({ summary: 'Get column by id' })
+  @Get('column/:id')
+  @HttpCode(HttpStatus.OK)
+  findOne(@Param('id') id: string) {
+    return this.supervisorService.getColumnById(id);
+  }
+
+  @ApiOperation({ summary: 'Update column' })
+  @ApiBody({ type: UpdateAdminColumnDto })
+  @Patch('column/:id')
+  @HttpCode(HttpStatus.OK)
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateAdminColumnDto
+  ) {
+    return this.supervisorService.updateColumn(id, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete column' })
+  @Delete('column/:id')
+  @HttpCode(HttpStatus.OK)
+  remove(@Param('id') id: string) {
+    return this.supervisorService.deleteColumn(id);
+  }
+
+
 
   // -----------------------------------------------------
 

@@ -1,3 +1,4 @@
+import { ISheetColumn } from "@/types/types";
 import axios from "."; // your preconfigured axios instance
 
 // ----------------- Projects & Excels -----------------
@@ -56,6 +57,7 @@ export const addColumn = async (sheetId: string, columnData: any) => {
     return data;
 };
 
+
 export const updateColumn = async (sheetId: string, columnId: string, columnData: any) => {
     const { data } = await axios.patch(`/supervisor/sheet/${sheetId}/column/${columnId}`, columnData);
     return data;
@@ -108,3 +110,30 @@ export const importFromExcel = async (sheetId: string, file: File) => {
     return data;
 };
 
+
+
+export const getSupervisorColumns = async (projectId): Promise<ISheetColumn[]> => {
+    const { data } = await axios.get(`/supervisor/column/${projectId}`);
+    return data;
+};
+
+
+export const createSupervisorColumn = async (payload: Partial<ISheetColumn>) => {
+    const { data } = await axios.post('/supervisor/column', payload);
+    return data;
+};
+
+
+export const updateSupervisorColumn = async (id: string, payload: Partial<ISheetColumn>) => {
+    delete payload._id;
+    delete (payload as any).createdAt;
+    delete (payload as any).updatedAt;
+    const { data } = await axios.patch(`/supervisor/column/${id}`, payload);
+    return data;
+};
+
+
+export const deleteSupervisorColumn = async (id: string) => {
+    const { data } = await axios.delete(`/supervisor/column/${id}`);
+    return data;
+};
