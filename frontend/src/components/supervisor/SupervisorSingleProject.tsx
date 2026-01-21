@@ -4,37 +4,21 @@ import {
     CardTitle
 } from "../ui/card";
 
+import { createExcel, getProjectAgents, getProjectExcels, updateExcel } from "@/api/supervisors";
 import { IExcel } from "@/types/types";
-import { Check, Edit, Plus, Table2, Trash2 } from "lucide-react";
+import { Check, Edit, Plus, Table2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
-import { createExcel, getProjectAgents, getProjectExcels, updateExcel } from "@/api/supervisors";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
-import { ColumnType, ISheetColumn } from "@/types/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-
-
-
-const initialProjectColumn: Partial<ISheetColumn> = {
-    name: "",
-    dataKey: "",
-    type: ColumnType.Text,
-    options: [],
-};
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 
 const SupervisorSingleProject: React.FC = () => {
-    const [isProjectColumnOpen, setIsProjectColumnOpen] = useState(false);
-    const [projectColumn, setProjectColumn] =
-        useState<Partial<ISheetColumn>>(initialProjectColumn);
-
-    const [optionValue, setOptionValue] = useState({ label: "", value: "" });
     const [excels, setExcels] = useState<IExcel[]>([])
     const [isExcelDialogId, setIsExcelDialogId] = useState("")
     const [excelForm, setExcelForm] = useState<{
@@ -108,154 +92,11 @@ const SupervisorSingleProject: React.FC = () => {
         setIsExcelDialogId('')
     }
 
-    const handleCreateProjectColumn = async () => {
-        if (!projectColumn.name || !projectColumn.dataKey) return;
-
-        // await createProjectColumn({
-        //     ...projectColumn,
-        //     projectId
-        // });
-
-        setIsProjectColumnOpen(false);
-        setProjectColumn(initialProjectColumn);
-    };
-
-
     return (
         <div>
             <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">← Geri</Button>
             <div className="mb-6  flex items-center justify-between">
                 <h2 className="text-2xl font-bold">{projectName}</h2>
-                <Dialog open={isProjectColumnOpen} onOpenChange={setIsProjectColumnOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Project üçün xüsusi sütun</DialogTitle>
-                        </DialogHeader>
-
-                        <div className="space-y-4">
-                            {/* Name */}
-                            <div>
-                                <Label>Column adı</Label>
-                                <Input
-                                    value={projectColumn.name}
-                                    onChange={(e) =>
-                                        setProjectColumn({ ...projectColumn, name: e.target.value })
-                                    }
-                                />
-                            </div>
-
-                            {/* dataKey */}
-                            <div>
-                                <Label>dataKey</Label>
-                                <Input
-                                    placeholder="məs: customerPhone"
-                                    value={projectColumn.dataKey}
-                                    onChange={(e) =>
-                                        setProjectColumn({ ...projectColumn, dataKey: e.target.value })
-                                    }
-                                />
-                            </div>
-
-                            {/* Type */}
-                            <div>
-                                <Label>Type</Label>
-                                <Select
-                                    value={projectColumn.type}
-                                    onValueChange={(v) =>
-                                        setProjectColumn({ ...projectColumn, type: v as ColumnType })
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Object.values(ColumnType).map((t) => (
-                                            <SelectItem key={t} value={t}>
-                                                {t}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Select Options */}
-                            {projectColumn.type === ColumnType.Select && (
-                                <div>
-                                    <Label className="mb-2 block">Options</Label>
-
-                                    {(projectColumn.options || []).map((opt, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="flex items-center justify-between mb-2"
-                                        >
-                                            <div className="text-sm">
-                                                <b>{opt.label}</b> — {opt.value}
-                                            </div>
-
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                onClick={() =>
-                                                    setProjectColumn({
-                                                        ...projectColumn,
-                                                        options: (projectColumn.options || []).filter(
-                                                            (_, i) => i !== idx
-                                                        ),
-                                                    })
-                                                }
-                                            >
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                        </div>
-                                    ))}
-
-                                    <div className="flex gap-2">
-                                        <Input
-                                            placeholder="Label"
-                                            value={optionValue.label}
-                                            onChange={(e) =>
-                                                setOptionValue({ ...optionValue, label: e.target.value })
-                                            }
-                                        />
-                                        <Input
-                                            placeholder="Value"
-                                            value={optionValue.value}
-                                            onChange={(e) =>
-                                                setOptionValue({ ...optionValue, value: e.target.value })
-                                            }
-                                        />
-                                    </div>
-
-                                    <Button
-                                        size="sm"
-                                        className="mt-2"
-                                        onClick={() => {
-                                            if (!optionValue.label || !optionValue.value) return;
-
-                                            setProjectColumn({
-                                                ...projectColumn,
-                                                options: [
-                                                    ...(projectColumn.options || []),
-                                                    optionValue,
-                                                ],
-                                            });
-
-                                            setOptionValue({ label: "", value: "" });
-                                        }}
-                                    >
-                                        Option əlavə et
-                                    </Button>
-                                </div>
-                            )}
-
-                            {/* Save */}
-                            <Button className="w-full" onClick={handleCreateProjectColumn}>
-                                Yarat
-                            </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
-
                 <Dialog
                     open={Boolean(isExcelDialogId)}
                     onOpenChange={(open) => {
@@ -268,16 +109,6 @@ const SupervisorSingleProject: React.FC = () => {
                     }}
                 >
                     <div className="flex gap-4">
-                        <Button
-                            variant="outline"
-                            onClick={() => {
-                                setProjectColumn(initialProjectColumn);
-                                setIsProjectColumnOpen(true);
-                            }}
-                        >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Xüsusi sütun
-                        </Button>
                         <DialogTrigger asChild>
                             <Button
                                 onClick={() => {
