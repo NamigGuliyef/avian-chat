@@ -124,8 +124,8 @@ const UserColumns: React.FC = () => {
                 </div>
             </div>
 
-            <Card className="border-slate-200 shadow-lg overflow-hidden flex-1 flex flex-col mb-3">
-                <CardContent className="p-0">
+            <Card className="border-slate-200 shadow-lg overflow-hidden flex-1 flex flex-col mb-3 min-h-0">
+                <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
                     <div className="overflow-x-auto overflow-y-auto flex-1 w-full bg-white">
                         <table className="w-full border-collapse">
                             <thead className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 z-10">
@@ -201,7 +201,7 @@ const UserColumns: React.FC = () => {
             </Card>
 
             {/* Footer Stats & Pagination */}
-            <div className="flex-shrink-0 max-h-[23%] overflow-y-auto">
+            <div className="flex-shrink-0 max-h-fit overflow-visible">
                 {rows.length > 0 && (
                     <div className="flex items-center justify-center gap-2">
                         <Button
