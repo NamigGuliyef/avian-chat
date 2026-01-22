@@ -9,7 +9,7 @@ import {
     updateExcelSheet,
 } from "@/api/supervisors";
 import { IAgentRowPermission, ISheet, SheetColumnForm } from "@/types/types";
-import { Edit, Plus, Table2 } from "lucide-react";
+import { Edit, Plus, Table2, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "../ui/badge";
@@ -126,8 +126,7 @@ const SupervisorSingleExcel: React.FC = () => {
                         agentId: agent.agentId,
                         name: agent.name,
                         surname: agent.surname,
-                        startRow: "",
-                        endRow: "",
+                        ranges: [{ startRow: '', endRow: '' }],
                     },
                 ],
             };
@@ -146,6 +145,59 @@ const SupervisorSingleExcel: React.FC = () => {
             ...prev,
             agentIds: prev.agentIds.map((a) =>
                 a.agentId === agentId ? { ...a, [field]: value } : a
+            ),
+        }));
+    };
+
+    const addAgentRange = (agentId: string) => {
+        setSheetForm((prev) => ({
+            ...prev,
+            agentIds: prev.agentIds.map((a) =>
+                a.agentId === agentId 
+                    ? { 
+                        ...a, 
+                        ranges: [...a.ranges, { startRow: '', endRow: '' }]
+                      }
+                    : a
+            ),
+        }));
+    };
+
+    const removeAgentRange = (agentId: string, rangeIndex: number) => {
+        setSheetForm((prev) => ({
+            ...prev,
+            agentIds: prev.agentIds.map((a) =>
+                a.agentId === agentId 
+                    ? { 
+                        ...a, 
+                        ranges: a.ranges?.filter((_, i) => i !== rangeIndex) || []
+                      }
+                    : a
+            ),
+        }));
+    };
+
+    const updateAgentRangeField = (
+        agentId: string,
+        rangeIndex: number,
+        field: "startRow" | "endRow",
+        value: string
+    ) => {
+        if (+(value) <= 0 && value.length > 0) {
+            toast("Dəyər 1dən yuxarı olmalıdır!")
+            return
+        }
+        setSheetForm((prev) => ({
+            ...prev,
+            agentIds: prev.agentIds.map((a) =>
+                a.agentId === agentId 
+                    ? {
+                        ...a,
+                        ranges: a.ranges?.map((r, i) => 
+                            i === rangeIndex ? { ...r, [field]: value } : r
+                        ) || []
+                      }
+                    : a
             ),
         }));
     };
@@ -198,167 +250,309 @@ const SupervisorSingleExcel: React.FC = () => {
     // Render
     // -----------------------------
     return (
-        <div>
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">← Geri</Button>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+            {/* Header Section */}
+            <div className="mb-8">
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => navigate(-1)} 
+                    className="mb-4 hover:bg-slate-200 transition-colors"
+                >
+                    ← Geri
+                </Button>
 
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">{excelName}</h2>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-4xl font-bold text-slate-900 mb-2">{excelName}</h1>
+                        <p className="text-slate-500">Sheet-lərinizi idarə edin və redaktə edin</p>
+                    </div>
 
-                <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger asChild>
-                        <Button onClick={() => { setOpen(true); setEditingSheet(null); setSheetForm(emptyForm); }}>
-                            <Plus className="h-4 w-4 mr-2" /> Yeni Sheet
-                        </Button>
-                    </DialogTrigger>
+                    <Dialog open={open} onOpenChange={setOpen}>
+                        <DialogTrigger asChild>
+                            <Button 
+                                onClick={() => { setOpen(true); setEditingSheet(null); setSheetForm(emptyForm); }}
+                                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+                            >
+                                <Plus className="h-5 w-5 mr-2" /> Yeni Sheet
+                            </Button>
+                        </DialogTrigger>
 
-                    <DialogContent className="max-w-xl">
-                        <ScrollArea className="max-h-[75vh] pr-4">
-                            <div className="space-y-4">
-                                <DialogHeader>
-                                    <DialogTitle>{editingSheet ? 'Sheet-i Redaktə Et' : 'Yeni Sheet'}</DialogTitle>
-                                </DialogHeader>
+                        <DialogContent className="max-w-2xl">
+                            <ScrollArea className="max-h-[80vh] pr-4">
+                                <div className="space-y-6">
+                                    <DialogHeader>
+                                        <DialogTitle className="text-2xl">
+                                            {editingSheet ? ' Sheet-i Redaktə Et' : ' Yeni Sheet Yaradın'}
+                                        </DialogTitle>
+                                    </DialogHeader>
 
-                                <div className="space-y-4">
-                                    <div>
-                                        <Label>Ad</Label>
-                                        <Input value={sheetForm.name} onChange={(e) => setSheetForm({ ...sheetForm, name: e.target.value })} />
-                                    </div>
+                                    <div className="space-y-5">
+                                        {/* Name Input */}
+                                        <div className="space-y-2">
+                                            <Label className="text-base font-semibold">Sheet Adı</Label>
+                                            <Input 
+                                                placeholder="Məsələn: Müşteri Sifariş Formu" 
+                                                value={sheetForm.name} 
+                                                onChange={(e) => setSheetForm({ ...sheetForm, name: e.target.value })}
+                                                className="text-base h-10"
+                                            />
+                                        </div>
 
-                                    <div>
-                                        <Label>Təsvir</Label>
-                                        <Input value={sheetForm.description} onChange={(e) => setSheetForm({ ...sheetForm, description: e.target.value })} />
-                                    </div>
+                                        {/* Description Input */}
+                                        <div className="space-y-2">
+                                            <Label className="text-base font-semibold">Təsvir</Label>
+                                            <Input 
+                                                placeholder="Bu sheet haqqında məlumat..." 
+                                                value={sheetForm.description} 
+                                                onChange={(e) => setSheetForm({ ...sheetForm, description: e.target.value })}
+                                                className="text-base h-10"
+                                            />
+                                        </div>
 
-                                    <div>
-                                        <Label className="mb-2 block">Sütunlar</Label>
-                                        <ScrollArea className="h-64 border rounded-lg p-2">
-                                            {columns.map((col) => {
-                                                const selected = sheetForm.columnIds.find((c) => c.columnId === col._id);
+                                        {/* Columns Section */}
+                                        <div className="space-y-3">
+                                            <Label className="text-base font-semibold flex items-center gap-2">
+                                                 Sütunları Seçin
+                                                <Badge variant="secondary">{sheetForm.columnIds.length}</Badge>
+                                            </Label>
+                                            <ScrollArea className="h-72 border-2 border-slate-200 rounded-lg bg-white p-3">
+                                                <div className="space-y-1">
+                                                    {columns.map((col) => {
+                                                        const selected = sheetForm.columnIds.find((c) => c.columnId === col._id);
 
-                                                return (
-                                                    <div key={col._id} className="border-b last:border-0 py-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <Checkbox checked={!!selected} onCheckedChange={() => toggleColumn(col._id)} />
-                                                            <span className="font-medium text-sm">{col.name}</span>
-                                                        </div>
-
-                                                        {selected && (
-                                                            <div className="ml-6 mt-2 flex items-center gap-4 text-sm">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Checkbox checked={selected.editable} onCheckedChange={(v) => updateColumnField(col._id, 'editable', Boolean(v))} />
-                                                                    <span>Edit</span>
-                                                                </div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <Checkbox checked={selected.required} onCheckedChange={(v) => updateColumnField(col._id, 'required', Boolean(v))} />
-                                                                    <span>Required</span>
-                                                                </div>
-                                                                <div className="flex items-center gap-2 max-w-20">
-                                                                    <Input
-                                                                        type="text"
-                                                                        value={selected.order}
-                                                                        onChange={(e) =>
-                                                                            updateColumnField(
-                                                                                col._id,
-                                                                                "order",
-                                                                                Number(e.target.value)
-                                                                            )
-                                                                        }
+                                                        return (
+                                                            <div key={col._id} className="border-b border-slate-100 last:border-0 py-3 hover:bg-slate-50 rounded px-2 transition-colors">
+                                                                <div className="flex items-center gap-3">
+                                                                    <Checkbox 
+                                                                        checked={!!selected} 
+                                                                        onCheckedChange={() => toggleColumn(col._id)}
+                                                                        className="h-5 w-5"
                                                                     />
-                                                                    <span>Sıra</span>
+                                                                    <span className="font-medium text-sm text-slate-700">{col.name}</span>
+                                                                    <Badge variant="outline" className="ml-auto text-xs">{col.type}</Badge>
                                                                 </div>
+
+                                                                {selected && (
+                                                                    <div className="ml-8 mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                                                        <div className="grid grid-cols-3 gap-3 text-sm">
+                                                                            <div className="flex items-center gap-2">
+                                                                                <Checkbox 
+                                                                                    checked={selected.editable} 
+                                                                                    onCheckedChange={(v) => updateColumnField(col._id, 'editable', Boolean(v))}
+                                                                                    className="h-4 w-4"
+                                                                                />
+                                                                                <span className="font-medium">Redaktə edilə bilər</span>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <Checkbox 
+                                                                                    checked={selected.required} 
+                                                                                    onCheckedChange={(v) => updateColumnField(col._id, 'required', Boolean(v))}
+                                                                                    className="h-4 w-4"
+                                                                                />
+                                                                                <span className="font-medium">Tələb olunur</span>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <Input
+                                                                                    type="number"
+                                                                                    min="1"
+                                                                                    value={selected.order}
+                                                                                    onChange={(e) =>
+                                                                                        updateColumnField(
+                                                                                            col._id,
+                                                                                            "order",
+                                                                                            Number(e.target.value)
+                                                                                        )
+                                                                                    }
+                                                                                    className="h-8 text-xs"
+                                                                                />
+                                                                                <span className="font-medium text-xs whitespace-nowrap">Sıra</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </ScrollArea>
-                                    </div>
-                                    <div>
-                                        <Label className="mb-2 block">Agentlər</Label>
-                                        <ScrollArea className="h-64 border rounded-lg p-2">
-                                            {agentIds.map((agent) => {
-                                                const selected = sheetForm.agentIds.find(
-                                                    (a) => a.agentId === agent.agentId
-                                                );
+                                                        );
+                                                    })}
+                                                </div>
+                                            </ScrollArea>
+                                        </div>
 
-                                                return (
-                                                    <div key={agent.agentId} className="border-b last:border-0 py-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <Checkbox
-                                                                checked={!!selected}
-                                                                onCheckedChange={() => toggleAgent(agent)}
-                                                            />
-                                                            <span className="font-medium text-sm">
-                                                                {agent.name} {agent.surname}
-                                                            </span>
-                                                        </div>
+                                        {/* Agents Section */}
+                                        <div className="space-y-3">
+                                            <Label className="text-base font-semibold flex items-center gap-2">
+                                                 Agentləri Təyin Edin
+                                                <Badge variant="secondary">{sheetForm.agentIds.length}</Badge>
+                                            </Label>
+                                            <ScrollArea className="h-72 border-2 border-slate-200 rounded-lg bg-white p-3">
+                                                <div className="space-y-1">
+                                                    {agentIds.map((agent) => {
+                                                        const selected = sheetForm.agentIds.find(
+                                                            (a) => a.agentId === agent.agentId
+                                                        );
 
-                                                        {selected && (
-                                                            <div className="ml-6 mt-3 grid grid-cols-2 gap-3">
-                                                                <div>
-                                                                    <Label className="text-xs">Start row</Label>
-                                                                    <Input
-                                                                        type="text"
-                                                                        value={selected.startRow}
-                                                                        onChange={(e) =>
-                                                                            updateAgentRow(
-                                                                                agent.agentId,
-                                                                                "startRow",
-                                                                                e.target.value
-                                                                            )
-                                                                        }
+                                                        return (
+                                                            <div key={agent.agentId} className="border-b border-slate-100 last:border-0 py-3 hover:bg-slate-50 rounded px-2 transition-colors">
+                                                                <div className="flex items-center gap-3">
+                                                                    <Checkbox
+                                                                        checked={!!selected}
+                                                                        onCheckedChange={() => toggleAgent(agent)}
+                                                                        className="h-5 w-5"
                                                                     />
+                                                                    <span className="font-medium text-sm text-slate-700">
+                                                                        {agent.name} {agent.surname}
+                                                                    </span>
                                                                 </div>
 
-                                                                <div>
-                                                                    <Label className="text-xs">End row</Label>
-                                                                    <Input
-                                                                        type="text"
-                                                                        value={selected.endRow}
-                                                                        onChange={(e) =>
-                                                                            updateAgentRow(
-                                                                                agent.agentId,
-                                                                                "endRow",
-                                                                                e.target.value
-                                                                            )
-                                                                        }
-                                                                    />
-                                                                </div>
+                                                                {selected && (
+                                                                    <div className="ml-8 mt-3 space-y-3">
+                                                                        {/* Ranges */}
+                                                                        {(selected.ranges || []).map((range, rangeIndex) => (
+                                                                            <div key={rangeIndex} className="p-3 bg-green-50 rounded-lg border border-green-200">
+                                                                                <div className="flex items-center justify-between mb-3">
+                                                                                    <span className="text-xs font-bold text-slate-700">Aralıq {rangeIndex + 1}</span>
+                                                                                    {selected.ranges.length > 1 && (
+                                                                                        <Button
+                                                                                            type="button"
+                                                                                            size="icon"
+                                                                                            variant="ghost"
+                                                                                            className="h-6 w-6 hover:bg-red-100 hover:text-red-600"
+                                                                                            onClick={() => removeAgentRange(agent.agentId, rangeIndex)}
+                                                                                        >
+                                                                                            <X className="h-4 w-4" />
+                                                                                        </Button>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className="grid grid-cols-2 gap-3">
+                                                                                    <div>
+                                                                                        <Label className="text-xs font-semibold text-slate-700">Başlama Sətri</Label>
+                                                                                        <Input
+                                                                                            type="number"
+                                                                                            min="1"
+                                                                                            placeholder="1"
+                                                                                            value={range.startRow}
+                                                                                            onChange={(e) =>
+                                                                                                updateAgentRangeField(
+                                                                                                    agent.agentId,
+                                                                                                    rangeIndex,
+                                                                                                    "startRow",
+                                                                                                    e.target.value
+                                                                                                )
+                                                                                            }
+                                                                                            className="h-9 text-sm mt-1"
+                                                                                        />
+                                                                                    </div>
+
+                                                                                    <div>
+                                                                                        <Label className="text-xs font-semibold text-slate-700">Bitirmə Sətri</Label>
+                                                                                        <Input
+                                                                                            type="number"
+                                                                                            min="1"
+                                                                                            placeholder="50"
+                                                                                            value={range.endRow}
+                                                                                            onChange={(e) =>
+                                                                                                updateAgentRangeField(
+                                                                                                    agent.agentId,
+                                                                                                    rangeIndex,
+                                                                                                    "endRow",
+                                                                                                    e.target.value
+                                                                                                )
+                                                                                            }
+                                                                                            className="h-9 text-sm mt-1"
+                                                                                        />
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                        <Button
+                                                                            type="button"
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            className="w-full bg-white hover:bg-slate-100"
+                                                                            onClick={() => addAgentRange(agent.agentId)}
+                                                                        >
+                                                                            <Plus className="h-4 w-4 mr-1" /> Yeni Aralıq Əlavə Et
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </ScrollArea>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </ScrollArea>
+                                        </div>
+
+                                        {/* Save Button */}
+                                        <Button 
+                                            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base" 
+                                            onClick={handleSave}
+                                        >
+                                             Yadda saxla
+                                        </Button>
                                     </div>
-                                    <Button className="w-full" onClick={handleSave}>Yadda saxla</Button>
                                 </div>
-                            </div>
-                        </ScrollArea>
-                    </DialogContent>
-                </Dialog>
+                            </ScrollArea>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {sheets.map((item) => (
-                    <Card key={item._id} className="cursor-pointer hover:border-primary" onClick={() => navigate(`/supervisor/sheets/${projectId}/${excelId}/${item._id}/${item.name}`)}>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-lg flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Table2 className="h-5 w-5 text-primary" />
-                                    {item.name}
+            {/* Sheets Grid */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {sheets.length === 0 ? (
+                    <div className="col-span-full text-center py-12">
+                        <Table2 className="h-16 w-16 mx-auto text-slate-300 mb-4" />
+                        <p className="text-slate-500 text-lg">Sheet yoxdur. Başlamaq üçün "Yeni Sheet" düyməsini klikləyin</p>
+                    </div>
+                ) : (
+                    sheets.map((item) => (
+                        <Card 
+                            key={item._id} 
+                            className="cursor-pointer hover:shadow-xl hover:border-blue-400 transition-all duration-300 bg-white hover:bg-slate-50"
+                            onClick={() => navigate(`/supervisor/sheets/${projectId}/${excelId}/${item._id}/${item.name}`)}
+                        >
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-lg flex items-center justify-between">
+                                    <div className="flex items-center gap-3 flex-1">
+                                        <div className="p-2 bg-blue-100 rounded-lg">
+                                            <Table2 className="h-5 w-5 text-blue-600" />
+                                        </div>
+                                        <span className="font-semibold text-slate-900">{item.name}</span>
+                                    </div>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={(e) => { 
+                                            e.stopPropagation(); 
+                                            setEditingSheet(item); 
+                                            setSheetForm({ 
+                                                name: item.name, 
+                                                description: item.description || '', 
+                                                columnIds: item.columnIds, 
+                                                agentIds: item.agentIds
+                                            }); 
+                                            setOpen(true); 
+                                        }}
+                                        className="hover:bg-slate-200"
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                <p className="text-sm text-slate-600 line-clamp-2">{item.description || "Təsvir yoxdur"}</p>
+                                <div className="flex gap-2 flex-wrap">
+                                    <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                                        📋 {item.columnIds.length} sütun
+                                    </Badge>
+                                    <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                                        👥 {item.agentIds.length} agent
+                                    </Badge>
                                 </div>
-                                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setEditingSheet(item); setSheetForm({ name: item.name, description: item.description || '', columnIds: item.columnIds, agentIds: item.agentIds }); setOpen(true); }}>
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground">{item.description}</p>
-                            <Badge variant="outline">{item.columnIds.length} sütun</Badge>
-                        </CardContent>
-                    </Card>
-                ))}
+                            </CardContent>
+                        </Card>
+                    ))
+                )}
             </div>
         </div>
     );

@@ -3,13 +3,25 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Types } from 'mongoose';
 
 @Schema({ _id: false })
+export class RowRange {
+  @Prop({ type: String })
+  startRow: string;
+
+  @Prop({ type: String })
+  endRow: string;
+}
+
+@Schema({ _id: false })
 export class AgentRowPermission {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   agentId: Types.ObjectId;
 
-  @Prop({ default: 1 })
-  startRow: number;
+  @Prop({ type: String })
+  name?: string;
 
-  @Prop({ default: 100 })
-  endRow: number;
+  @Prop({ type: String })
+  surname?: string;
+
+  @Prop({ type: [RowRange], default: [] })
+  ranges?: RowRange[];
 }

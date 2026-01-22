@@ -201,25 +201,100 @@ export class SupervisorService {
 
 
   // Excel-də mövcud olan Sheeti yeniləmək üçün
-  async updateSheetInExcel(_id: Types.ObjectId, updateSheetData: UpdateSheetDto) {
-    {
-      /* 1. Sheet yoxlanışı */
-      const sheet = await this.sheetModel.findById(_id);
-      if (!sheet) {
-        throw new NotFoundException('Sheet tapılmadı');
+  // Agent sıra aralıqlarının düzgünlüyünü yoxla
+  private validateAgentRowRanges(agentIds: any[]): void {
+    const ranges: Array<{ agentId: string; startRow: number; endRow: number; rangeIndex?: number }> = [];
+
+    // Bütün agent-lərin bütün aralıqlarını toplayırıq
+    agentIds.forEach((agent) => {
+      // Köhnə format: startRow və endRow
+      if (agent.startRow && agent.endRow) {
+        const start = Number(agent.startRow);
+        const end = Number(agent.endRow);
+
+        if (start > end) {
+          throw new BadRequestException(
+            `Agent ${agent.name} ${agent.surname}: Başlama sətri bitirmə sətrinə qədər olmalıdır`
+          );
+        }
+
+        ranges.push({
+          agentId: agent.agentId.toString(),
+          startRow: start,
+          endRow: end,
+        });
       }
 
+      // Yeni format: ranges massiви
+      if (agent.ranges && Array.isArray(agent.ranges)) {
+        agent.ranges.forEach((range, rangeIndex) => {
+          const start = Number(range.startRow);
+          const end = Number(range.endRow);
 
-      sheet.set({
-        name: updateSheetData.name ?? sheet.name,
-        description: updateSheetData.description ?? sheet.description,
-        agentIds: updateSheetData.agentIds ?? sheet.agentIds,
-        columnIds: updateSheetData.columnIds ?? sheet.columnIds
-      });
+          if (start > end) {
+            throw new BadRequestException(
+              `Agent ${agent.name} ${agent.surname} (Aralıq ${rangeIndex + 1}): Başlama sətri bitirmə sətrinə qədər olmalıdır`
+            );
+          }
 
-      await sheet.save();
-      return sheet;
+          ranges.push({
+            agentId: agent.agentId.toString(),
+            startRow: start,
+            endRow: end,
+            rangeIndex,
+          });
+        });
+      }
+    });
+
+    // Aralıqlar arasında üst-üstə düşmə yoxlanışı
+    for (let i = 0; i < ranges.length; i++) {
+      for (let j = i + 1; j < ranges.length; j++) {
+        const range1 = ranges[i];
+        const range2 = ranges[j];
+
+        // Eyni agent ise, keçdik
+        if (range1.agentId === range2.agentId) continue;
+
+        // Üst-üstə düşmə yoxlanışı
+        if (
+          (range1.startRow <= range2.endRow && range1.endRow >= range2.startRow) ||
+          (range2.startRow <= range1.endRow && range2.endRow >= range1.startRow)
+        ) {
+          const agent1 = agentIds.find(a => a.agentId.toString() === range1.agentId);
+          const agent2 = agentIds.find(a => a.agentId.toString() === range2.agentId);
+
+          throw new BadRequestException(
+            `Agent ${agent1.name} ${agent1.surname} (${range1.startRow}-${range1.endRow}) və Agent ${agent2.name} ${agent2.surname} (${range2.startRow}-${range2.endRow}) arasında sətir aralığında üst-üstə düşmə var`
+          );
+        }
+      }
     }
+  }
+
+  
+  async updateSheetInExcel(_id: Types.ObjectId, updateSheetData: UpdateSheetDto) {
+    /* 1. Sheet yoxlanışı */
+    const sheet = await this.sheetModel.findById(_id);
+    if (!sheet) {
+      throw new NotFoundException('Sheet tapılmadı');
+    }
+
+    /* 2. Agent sıra aralıqlarının yoxlanışı */
+    if (updateSheetData.agentIds && updateSheetData.agentIds.length > 0) {
+      this.validateAgentRowRanges(updateSheetData.agentIds);
+    }
+
+    /* 3. Sheet məlumatlarının update edilməsi */
+    sheet.set({
+      name: updateSheetData.name ?? sheet.name,
+      description: updateSheetData.description ?? sheet.description,
+      agentIds: updateSheetData.agentIds ?? sheet.agentIds,
+      columnIds: updateSheetData.columnIds ?? sheet.columnIds
+    });
+
+    await sheet.save();
+    return sheet;
   }
 
 

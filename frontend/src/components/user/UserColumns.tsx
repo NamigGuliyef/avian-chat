@@ -4,7 +4,7 @@ import {
 } from "@/api/supervisors";
 import { getColumnsBySheetId } from "@/api/users";
 import { SheetColumnForm, SheetRowForm } from "@/types/types";
-import { ArrowLeft, ChevronLeft, ChevronRight, RefreshCw, FileText } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, RefreshCw, FileText, Search, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -23,7 +23,8 @@ const UserColumns: React.FC = () => {
     const [rows, setRows] = useState<SheetRowForm[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalRows, setTotalRows] = useState(0);
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
     const rowsPerPage = 50;
 
     useEffect(() => {
@@ -34,16 +35,26 @@ const UserColumns: React.FC = () => {
     }, [sheetId]);
 
     useEffect(() => {
+        if (sheetId) {
+            setCurrentPage(1);
+            fetchData();
+        }
+    }, [searchTerm]);
+
+    useEffect(() => {
         if (sheetId) fetchData();
     }, [sheetId, currentPage]);
 
     const fetchData = async () => {
         try {
-            const data = await getColumnsBySheetId(sheetId!, currentPage, rowsPerPage);
+            setLoading(true);
+            const data = await getColumnsBySheetId(sheetId!, currentPage, rowsPerPage, searchTerm);
             setColumns(data.columns);
             setRows(data.rows)
         } catch (e) {
             toast.error("Sütunlar gətirilərkən xəta baş verdi");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -78,6 +89,10 @@ const UserColumns: React.FC = () => {
         if (currentPage > 1) {
             setCurrentPage(prev => prev - 1);
         }
+    };
+
+    const handleClearSearch = () => {
+        setSearchTerm("");
     };
 
     return (
@@ -121,11 +136,38 @@ const UserColumns: React.FC = () => {
                             <span className="font-semibold">{columns.length}</span> Sütun
                         </span>
                     </div>
+                    
+                    {/* Search Input */}
+                    <div className="mt-3 flex items-center gap-2">
+                        <div className="flex-1 relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="Cədvəldə axtarış edin..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            />
+                            {searchTerm && (
+                                <button
+                                    onClick={handleClearSearch}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <Card className="border-slate-200 shadow-lg overflow-hidden flex-1 flex flex-col mb-3 min-h-0">
                 <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
+                    {loading && (
+                        <div className="absolute inset-0 bg-white/50 z-20 flex items-center justify-center rounded-lg">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        </div>
+                    )}
                     <div className="overflow-x-auto overflow-y-auto flex-1 w-full bg-white">
                         <table className="w-full border-collapse">
                             <thead className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 z-10">

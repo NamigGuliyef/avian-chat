@@ -226,9 +226,12 @@ export interface IAgentRowPermission {
     agentId: string;
     name: string;
     surname: string;
-    startRow: string;
-    endRow: string;
+    ranges: Array<{
+        startRow: string;
+        endRow: string;
+    }>;
 }
+
 export interface ISheet {
     _id: string;
     projectId: string;
