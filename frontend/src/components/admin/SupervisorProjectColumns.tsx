@@ -1,12 +1,10 @@
 'use client';
 
-import { getProjects } from '@/api/admin';
 import {
-    getSupervisorColumns,
     createSupervisorColumn,
-    updateSupervisorColumn,
-    deleteSupervisorColumn,
+    getSupervisorColumns,
     getSupervisorProjects,
+    updateSupervisorColumn,
 } from '@/api/supervisors';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ColumnType, ISheetColumn } from '@/types/types';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const initialColumn: Partial<ISheetColumn> = {

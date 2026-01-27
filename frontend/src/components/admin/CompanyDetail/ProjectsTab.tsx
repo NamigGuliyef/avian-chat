@@ -9,6 +9,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getEnumKeyByValue } from '@/lib/utils';
 import { IProject, IUser, ProjectDirection, ProjectName, ProjectType } from '@/types/types';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
     Plus,
     Trash2
 } from 'lucide-react';
@@ -35,6 +45,7 @@ const ProjectsTab = () => {
     const [userModal, setUserModal] = useState(false);
     const [projectForm, setProjectForm] = useState(initial);
     const [projects, setProjects] = useState<IProject[]>([])
+    const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -221,17 +232,17 @@ const ProjectsTab = () => {
                                 <p className="gap-2 text-sm text-muted-foreground">
                                     {project.agents?.length} Agents
                                 </p>
-                                {/* <Button
+                                <Button
                                     variant="ghost"
                                     size="icon"
                                     onClick={(e) => {
                                         e.stopPropagation()
-                                        handleDeleteProject(project._id)
+                                        setProjectToDelete(project._id)
                                     }}
                                     className="text-destructive hover:text-destructive"
                                 >
                                     <Trash2 className="h-4 w-4" />
-                                </Button> */}
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
@@ -240,6 +251,30 @@ const ProjectsTab = () => {
                     <p className="text-center text-muted-foreground py-8">Bu şirkətdə heç bir layihə yoxdur</p>
                 )}
             </div>
+            <AlertDialog open={!!projectToDelete} onOpenChange={(open) => !open && setProjectToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Əminsiniz?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bu layihəni silmək istədiyinizə əminsiniz? Bu əməliyyat geri qaytarıla bilməz.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Ləğv et</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (projectToDelete) {
+                                    handleDeleteProject(projectToDelete);
+                                    setProjectToDelete(null);
+                                }
+                            }}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            Sil
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     )
 }

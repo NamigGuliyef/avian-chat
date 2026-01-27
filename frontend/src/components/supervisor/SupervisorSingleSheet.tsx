@@ -1,4 +1,14 @@
 "use client";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -15,7 +25,7 @@ import {
 } from "@/api/supervisors";
 import { SheetColumnForm, SheetRowForm } from "@/types/types";
 import { EditableCell } from "../Table/EditableCell";
-import { Upload, ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Upload, ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, ChevronDown, Trash2 } from "lucide-react";
 
 
 const SupervisorSingleSheet: React.FC = () => {
@@ -30,6 +40,7 @@ const SupervisorSingleSheet: React.FC = () => {
     const [totalRows, setTotalRows] = useState(0);
     const [showImport, setShowImport] = useState(false);
     const [loading, setLoading] = useState(false)
+    const [rowToDelete, setRowToDelete] = useState<number | null>(null);
     const rowsPerPage = 100;
 
     // ---------------- Fetch Columns & Rows ----------------
@@ -100,6 +111,7 @@ const SupervisorSingleSheet: React.FC = () => {
             toast.error("Cell yenilənərkən xəta baş verdi");
         }
     };
+
 
     const handleDeleteRow = async (rowIndex: number) => {
         if (!sheetId) return;
@@ -231,6 +243,9 @@ const SupervisorSingleSheet: React.FC = () => {
                                             </div>
                                         </th>
                                     ))}
+                                    <th className="px-4 py-3 text-right text-white font-semibold text-sm border-b-2 border-slate-700 min-w-[80px]">
+                                        Əməliyyatlar
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -266,12 +281,22 @@ const SupervisorSingleSheet: React.FC = () => {
                                                     </td>
                                                 );
                                             })}
+                                        <td className="px-4 py-3 text-right group-hover:bg-blue-100">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => setRowToDelete(row.rowNumber)}
+                                                className="text-destructive hover:text-destructive hover:bg-red-50"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </td>
                                     </tr>
                                 ))}
                                 {rows.length === 0 && (
                                     <tr>
                                         <td
-                                            colSpan={columns.length + 1}
+                                            colSpan={columns.length + 2}
                                             className="px-4 py-8 text-center text-slate-500"
                                         >
                                             <p className="font-medium">Heç bir sətir tapılmadı</p>
@@ -285,7 +310,7 @@ const SupervisorSingleSheet: React.FC = () => {
                 </CardContent>
             </Card>
 
-        
+
             {/* Pagination Controls */}
             {rows.length > 0 && (
                 <div className="mt-6 flex items-center justify-center gap-2">
@@ -321,6 +346,31 @@ const SupervisorSingleSheet: React.FC = () => {
                     </Button>
                 </div>
             )}
+
+            <AlertDialog open={rowToDelete !== null} onOpenChange={(open) => !open && setRowToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Əminsiniz?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bu sətiri silmək istədiyinizə əminsiniz? Bu əməliyyat geri qaytarıla bilməz.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Ləğv et</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (rowToDelete !== null) {
+                                    handleDeleteRow(rowToDelete);
+                                    setRowToDelete(null);
+                                }
+                            }}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            Sil
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
