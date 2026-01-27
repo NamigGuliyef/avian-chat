@@ -3,6 +3,16 @@ import { getSupervisorAgents, searchUsers, signUp } from '@/api/users';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
     Dialog,
     DialogContent,
     DialogHeader,
@@ -37,9 +47,19 @@ import {
     Users,
     RotateCcw,
     ShieldAlert,
-    Mail
+    Mail,
+    Wand2
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+
+const generateRandomPassword = () => {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let password = "";
+    for (let i = 0; i < 8; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+};
 
 
 
@@ -51,6 +71,7 @@ export function AdminUsers() {
     const [roleFilter, setRoleFilter] = useState<Roles | null>(null)
     const [editingUser, setEditingUser] = useState<IUser | null>(null);
     const [showPassword, setShowPassword] = useState(false)
+    const [userToDelete, setUserToDelete] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<IUser>>({
         name: '',
         surname: '',
@@ -155,8 +176,10 @@ export function AdminUsers() {
         })
     };
 
-    const handleDeleteUser = (userId: string, isDeleted) => {
-        updateUser(userId, { isDeleted }).then(() => {
+    const handleDeleteUser = (userId: string) => {
+        const user = users.find(u => u._id === userId);
+        if (!user) return;
+        updateUser(userId, { isDeleted: !user.isDeleted }).then(() => {
             setUsers(users.filter((u) => u._id !== userId));
             toast({
                 title: "User silindi",
@@ -254,15 +277,27 @@ export function AdminUsers() {
                                                         setFormData({ ...formData, password: e.target.value })
                                                     }
                                                     placeholder="Şifrə"
-                                                    className="pr-10 border-slate-300 focus:border-blue-500 rounded-lg"
+                                                    className="pr-20 border-slate-300 focus:border-blue-500 rounded-lg"
                                                 />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
-                                                >
-                                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                </button>
+                                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-slate-500 hover:text-slate-700"
+                                                        onClick={() => setFormData({ ...formData, password: generateRandomPassword() })}
+                                                        title="Təsadüfi şifrə yarat"
+                                                    >
+                                                        <Wand2 className="w-4 h-4" />
+                                                    </Button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPassword(!showPassword)}
+                                                        className="text-slate-500 hover:text-slate-700 p-1"
+                                                    >
+                                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </>
@@ -477,7 +512,7 @@ export function AdminUsers() {
                                                 <Button
                                                     size="icon"
                                                     variant="outline"
-                                                    onClick={() => handleDeleteUser(user._id, !user.isDeleted)}
+                                                    onClick={() => setUserToDelete(user._id)}
                                                     className="h-9 w-9 border-red-300 hover:bg-red-50 text-red-600 hover:text-red-700 transition-colors"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -498,6 +533,31 @@ export function AdminUsers() {
                     </div>
                 )}
             </motion.div>
-        </motion.div>
+
+            <AlertDialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Əminsiniz?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bu istifadəçini silmək istədiyinizə əminsiniz? Bu əməliyyat geri qaytarıla bilməz.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Ləğv et</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (userToDelete) {
+                                    handleDeleteUser(userToDelete);
+                                    setUserToDelete(null);
+                                }
+                            }}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            Sil
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </motion.div >
     );
 }

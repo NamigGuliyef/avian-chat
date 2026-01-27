@@ -12,6 +12,16 @@ import {
     CommandList
 } from "@/components/ui/command";
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
     Dialog,
     DialogContent,
     DialogHeader,
@@ -41,6 +51,7 @@ const SingleProject = () => {
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<IUser[]>([]);
+    const [memberToRemove, setMemberToRemove] = useState<{ id: string, type: "S" | "A" } | null>(null);
     // const [channels, setChannels] = useState<IChannel[]>([]);
     const debouncedSearch = useDebounce(search, 400);
     const { projectId } = useParams();
@@ -98,16 +109,19 @@ const SingleProject = () => {
         })
         setIsMemberDialogOpen(null);
     };
-    // const removeUserFromProject = (projectId, id: string, type: "S" | "A") => {
-    //     removeProjectMember(projectId, id, type).then(() => {
-    //         if (type === "S") {
-    //             setProject((pre) => ({ ...pre, supervisors: pre.supervisors.filter((sp) => sp._id !== id) }))
-    //         } else if (type === "A") {
-    //             setProject((pre) => ({ ...pre, agents: pre.agents.filter((ag) => ag._id !== id) }))
-    //         }
-    //     })
-    //     setIsMemberDialogOpen(null);
-    // }
+    const removeUserFromProject = (projectId: string, id: string, type: "S" | "A") => {
+        removeProjectMember(projectId, id, type).then(() => {
+            if (type === "S") {
+                setProject((pre) => ({ ...pre, supervisors: pre.supervisors.filter((sp) => sp._id !== id) }))
+            } else if (type === "A") {
+                setProject((pre) => ({ ...pre, agents: pre.agents.filter((ag) => ag._id !== id) }))
+            }
+            toast({
+                title: "Uğurlu",
+                description: "Üzv layihədən çıxarıldı",
+            });
+        })
+    }
 
     useEffect(() => {
         if (!isMemberDialogOpen) {
@@ -223,13 +237,13 @@ const SingleProject = () => {
                                                     <p className="text-sm text-muted-foreground">{s.email}</p>
                                                 </div>
                                             </div>
-                                            {/* <Button
+                                            <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                onClick={() => removeUserFromProject(projectId, s._id, "S")}
+                                                onClick={() => setMemberToRemove({ id: s._id, type: "S" })}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button> */}
+                                            </Button>
                                         </CardContent>
                                     </Card>
                                 ))
@@ -261,13 +275,13 @@ const SingleProject = () => {
                                                     </div> */}
                                                 </div>
                                             </div>
-                                            {/* <Button
+                                            <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                onClick={() => removeUserFromProject(projectId, a._id, "A")}
+                                                onClick={() => setMemberToRemove({ id: a._id, type: "A" })}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button> */}
+                                            </Button>
                                         </CardContent>
                                     </Card>
                                 ))
@@ -280,6 +294,30 @@ const SingleProject = () => {
             </Card >
 
 
+            <AlertDialog open={!!memberToRemove} onOpenChange={(open) => !open && setMemberToRemove(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Əminsiniz?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bu üzvü layihədən çıxarmaq istədiyinizə əminsiniz?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Ləğv et</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (memberToRemove && projectId) {
+                                    removeUserFromProject(projectId, memberToRemove.id, memberToRemove.type);
+                                    setMemberToRemove(null);
+                                }
+                            }}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            Çıxar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div >
     );
 };

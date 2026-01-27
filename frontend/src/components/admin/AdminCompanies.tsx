@@ -1,3 +1,13 @@
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { addCompany, deleteCompany, getCompanies, updateCompany } from '@/api/admin';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,6 +33,7 @@ const AdminCompanies = () => {
     const [companies, setCompanies] = useState<ICompany[]>([])
     const [isCompanyDialogOpen, setIsCompanyDialogOpen] = useState(false);
     const [editingCompany, setEditingCompany] = useState<Partial<ICompany>>(initialCompany);
+    const [companyToDelete, setCompanyToDelete] = useState<string | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -62,12 +73,14 @@ const AdminCompanies = () => {
         setIsCompanyDialogOpen(false);
     };
 
-    // const handleDeleteCompany = (companyId) => {
-    //     deleteCompany(companyId).then(() => {
-    //         setCompanies((pre) => pre.filter((cm) => cm._id !== companyId))
-    //     });
-    //     toast.success('Şirkət silindi');
-    // };
+    const handleDeleteCompany = (companyId: string) => {
+        deleteCompany(companyId).then(() => {
+            setCompanies((pre) => pre.filter((cm) => cm._id !== companyId))
+            toast.success('Şirkət silindi');
+        }).catch(() => {
+            toast.error('Şirkət silinərkən xəta baş verdi');
+        });
+    };
 
 
     const startEditCompany = (company: ICompany) => {
@@ -110,7 +123,7 @@ const AdminCompanies = () => {
                                     </Popover> */}
                                     <div className="flex gap-1">
                                         <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); startEditCompany(_company); }}><Edit className="h-4 w-4" /></Button>
-                                        {/* <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleDeleteCompany(_company._id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button> */}
+                                        <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setCompanyToDelete(_company._id); }}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                     </div>
                                 </div>
                             </CardContent>
@@ -118,6 +131,30 @@ const AdminCompanies = () => {
                     );
                 })}
             </div>
+            <AlertDialog open={!!companyToDelete} onOpenChange={(open) => !open && setCompanyToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Əminsiniz?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bu şirkəti silmək istədiyinizə əminsiniz? Bu şirkətə bağlı olan bütün layihələr və datalar itirilə bilər.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Ləğv et</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (companyToDelete) {
+                                    handleDeleteCompany(companyToDelete);
+                                    setCompanyToDelete(null);
+                                }
+                            }}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            Sil
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div >
     )
 }
