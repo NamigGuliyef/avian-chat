@@ -10,7 +10,7 @@ import { AuthService } from './auth.service';
   JwtModule.registerAsync({
     useFactory: () => ({
       secret: process.env.JWT_SECRET, // Change this to a strong secret key
-      signOptions: { expiresIn: '9h' }, // Token expiration time
+      signOptions: { expiresIn: '7d' }, // Token expiration time
     })
   })],
   controllers: [AuthController],
