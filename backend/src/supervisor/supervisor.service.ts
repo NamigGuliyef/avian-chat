@@ -92,7 +92,7 @@ export class SupervisorService {
   }
 
   async getColumns(projectId: Types.ObjectId) {
-    return await this.columnModel.find({ projectId }).sort({ createdAt: -1 });
+    return await this.columnModel.find({ projectId }).sort({ order: 1, createdAt: -1 });
   }
 
   async updateColumn(columnId: string, data: UpdateAdminColumnDto) {
@@ -272,7 +272,7 @@ export class SupervisorService {
     }
   }
 
-  
+
   async updateSheetInExcel(_id: Types.ObjectId, updateSheetData: UpdateSheetDto) {
     /* 1. Sheet yoxlanışı */
     const sheet = await this.sheetModel.findById(_id);
@@ -566,9 +566,36 @@ export class SupervisorService {
     rowNumber: number,
     sheetCellData: SheetCellDto
   ) {
+    const updateQuery: any = { [`data.${sheetCellData.key}`]: sheetCellData.value };
+
+    // Automatic date update logic
+    if (sheetCellData.key.toLowerCase().includes('status')) {
+      const sheet = await this.sheetModel.findById(sheetId).populate('columnIds.columnId');
+      if (sheet) {
+        const dateColumn: any = sheet.columnIds.find((c: any) =>
+          c.columnId.dataKey.toLowerCase().includes('date') ||
+          c.columnId.name.toLowerCase().includes('tarix') ||
+          c.columnId.name.toLowerCase().includes('date')
+        );
+
+        if (dateColumn) {
+          const now = new Date();
+          const dateStr = now.toLocaleString('az-AZ', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          });
+          updateQuery[`data.${dateColumn.columnId.dataKey}`] = dateStr;
+        }
+      }
+    }
+
     const row = await this.sheetRowModel.findOneAndUpdate(
       { sheetId, rowNumber }, // mövcud row axtarır
-      { $set: { [`data.${sheetCellData.key}`]: sheetCellData.value } },
+      { $set: updateQuery },
       { new: true }
     );
 
