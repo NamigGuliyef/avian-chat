@@ -7,7 +7,16 @@ export const SESSION_KEY = "auth_session";
 export const SESSION_TOKEN_KEY = "auth_session_token_234rtgfd";
 
 
-const defaultSession: AuthSession = JSON.parse(localStorage.getItem(SESSION_KEY))
+const getStoredSession = (): AuthSession => {
+    try {
+        const stored = localStorage.getItem(SESSION_KEY);
+        return stored ? JSON.parse(stored) : { token: null };
+    } catch {
+        return { token: null };
+    }
+};
+
+const defaultSession: AuthSession = getStoredSession();
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
