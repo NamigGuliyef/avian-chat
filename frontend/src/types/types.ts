@@ -261,6 +261,7 @@ export interface ISheetColumn {
     dataKey: string;
     type: ColumnType;
     options?: IAdminColumnOption[];
+    order: number;
 }
 
 export interface SheetRowForm {

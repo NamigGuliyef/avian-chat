@@ -23,6 +23,9 @@ export class Column {
   // yalnız select üçün
   @Prop({ type: [ColumnOption] })
   options?: ColumnOption[];
+
+  @Prop({ default: 0 })
+  order: number;
 }
 
 export const ColumnSchema = SchemaFactory.createForClass(Column);

@@ -445,7 +445,7 @@ export class AdminService {
   }
 
   async getColumns() {
-    return await this.columnModel.find({ projectId: { $exists: false } }).sort({ createdAt: -1 });
+    return await this.columnModel.find({ projectId: { $exists: false } }).sort({ order: 1, createdAt: -1 });
   }
 
   async getColumnById(columnId: string) {

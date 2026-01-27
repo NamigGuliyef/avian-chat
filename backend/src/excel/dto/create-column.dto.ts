@@ -21,8 +21,11 @@ export class CreateAdminColumnDto {
   @IsOptional()
   projectId: Types.ObjectId;
 
-  // only for select
   @IsOptional()
   @ApiProperty({ required: false, type: [ColumnOption] })
   options?: ColumnOption[];
+
+  @IsOptional()
+  @ApiProperty({ required: false, default: 0 })
+  order?: number;
 }
