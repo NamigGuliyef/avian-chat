@@ -201,11 +201,13 @@ export class SupervisorController {
     @Param('sheetId') sheetId: Types.ObjectId,
     @Query('page') page = '1',
     @Query('limit') limit = '50',
+    @Query('skip') skip = '0',
   ) {
     return this.supervisorService.getRows(
       sheetId,
       Number(page),
       Number(limit),
+      Number(skip),
     );
   }
 

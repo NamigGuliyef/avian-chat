@@ -523,14 +523,14 @@ export class SupervisorService {
   }
 
   // ---------------- GET ROWS ----------------
-  async getRows(sheetId: Types.ObjectId, page = 1, limit = 50) {
-    const skip = (page - 1) * limit;
+  async getRows(sheetId: Types.ObjectId, page = 1, limit = 50, skipRows = 0) {
+    const skipOffset = (page - 1) * limit + skipRows;
 
     const [rows, total] = await Promise.all([
       this.sheetRowModel
         .find({ sheetId })
         .sort({ rowNumber: 1 })
-        .skip(skip)
+        .skip(skipOffset)
         .limit(limit)
         .lean(), // IMPORTANT: plain objects
       this.sheetRowModel.countDocuments({ sheetId }),

@@ -11,7 +11,7 @@ interface EditableCellProps {
     onSave: (value: any) => void;
 }
 
-export const EditableCell: React.FC<EditableCellProps> = ({
+export const EditableCell: React.FC<EditableCellProps> = React.memo(({
     value,
     colDef,
     editable = true,
@@ -167,4 +167,4 @@ export const EditableCell: React.FC<EditableCellProps> = ({
             />
         </div>
     );
-};
+});
