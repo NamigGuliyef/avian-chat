@@ -57,6 +57,9 @@ const SupervisorProjectColumns = () => {
             setColumns((prev) => prev.map((c) => (c._id === updated._id ? updated : c)));
             toast.success('Column yeniləndi');
         } else {
+            if (editing.type !== ColumnType.Select) {
+                delete editing.options;
+            }
             const created = await createSupervisorColumn(editing);
             setColumns((prev) => [...prev, created]);
             toast.success('Column yaradıldı');
