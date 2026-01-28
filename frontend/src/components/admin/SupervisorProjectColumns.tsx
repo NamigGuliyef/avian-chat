@@ -44,7 +44,7 @@ const SupervisorProjectColumns = () => {
         }
     }, [projectId]);
 
-    const resetForm = () => setEditing(initialColumn);
+    const resetForm = () => setEditing({ ...initialColumn, projectId });
 
     const handleSave = async () => {
         if (!editing.name || !editing.dataKey) {
