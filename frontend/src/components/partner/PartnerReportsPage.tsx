@@ -30,6 +30,41 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
+// Format a numeric string or number. The user requested NO thousands separators for numbers like IDs/phones.
+const formatNumber = (val: any): string => {
+  if (val === null || val === undefined || val === '') return '';
+  const str = String(val).trim();
+  return str;
+};
+
+// Normalize various date string formats and return YYYY-MM-DD
+const formatDateString = (val: any): string => {
+  if (val === null || val === undefined || val === '') return '';
+  const str = String(val).trim();
+  // If it's like yyyy-mm-dd or yyyy-mm-ddT...
+  const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    const [_, y, m, d] = isoMatch;
+    return `${y}-${m}-${d}`;
+  }
+  // If it's like dd.mm.yyyy or dd.mm.yyyyT...
+  const dotMatch = str.match(/^(\d{2})\.(\d{2})\.(\d{4})/);
+  if (dotMatch) {
+    const [_, d, m, y] = dotMatch;
+    return `${y}-${m}-${d}`; // Convert to YYYY-MM-DD
+  }
+  // Try parsing as Date
+  const parsed = Date.parse(str);
+  if (!isNaN(parsed)) {
+    const dt = new Date(parsed);
+    const dd = String(dt.getUTCDate()).padStart(2, '0');
+    const mm = String(dt.getUTCMonth() + 1).padStart(2, '0');
+    const yy = dt.getUTCFullYear();
+    return `${yy}-${mm}-${dd}`;
+  }
+  return str;
+};
+
 type ColumnType = 'text' | 'number' | 'date';
 
 interface DynamicColumn {
@@ -797,8 +832,11 @@ const PartnerReportsPage: React.FC = () => {
                       return (
                         <TableCell key={column.id} className="whitespace-nowrap px-4 py-3 text-sm text-slate-700">
                           {column.type === 'number' && cellValue !== undefined && cellValue !== null
-                            ? (Number(cellValue) as number).toLocaleString()
-                            : cellValue ?? '-'}
+                            ? formatNumber(cellValue)
+                            : column.type === 'date' && cellValue
+                              ? formatDateString(cellValue)
+                              : String(cellValue || '')
+                          }
                           {column.id === 'salesAmount' && cellValue ? ' ₼' : ''}
                         </TableCell>
                       );
