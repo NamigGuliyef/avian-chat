@@ -519,7 +519,7 @@ export class AdminService {
 
         return {
           company: company?.name,
-          project: projects,
+          project: project,
           excel: excel?.name,
           sheets: sheetData,
         };

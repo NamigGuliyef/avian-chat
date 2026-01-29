@@ -161,7 +161,7 @@ export function OperationLogs() {
               <SelectTrigger className="h-10 border-slate-200 rounded-lg hover:border-blue-400">
                 <SelectValue placeholder="User seç" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-60 overflow-y-auto">
                 <SelectItem value="all">📊 Bütün user-lər</SelectItem>
                 {users.map((user) => (
                   <SelectItem key={user.id} value={user.id}>

@@ -128,58 +128,69 @@ const ReportsPage: React.FC = () => {
     const rows: any[] = [];
 
     data.forEach((companyItem: any) => {
-      if (!companyItem) return;
+      if (!companyItem || !companyItem.project) return;
 
+      const project = companyItem.project;
       const companyName = companyItem.company || '';
-      const projects = companyItem.project || [];
+      const excelName = companyItem.excel || '';
       const sheets = companyItem.sheets || [];
 
-      // Process sheets with their rows
-      sheets.forEach((sheet: any) => {
-        const sheetName = sheet.sheetName || '';
-        const sheetRows = sheet.sheetRows || [];
+      // Get supervisor list - if multiple, we'll create rows for each
+      const supervisors = project.supervisors && Array.isArray(project.supervisors) && project.supervisors.length > 0
+        ? project.supervisors
+        : [null];
 
-        // Get excel name if available
-        const excelName = companyItem.excel || '';
+      supervisors.forEach((sup: any) => {
+        const supervisorName = sup ? `${sup.name} ${sup.surname}` : '';
 
-        // Get first project name (can be enhanced if needed)
-        const projectName = projects.length > 0 ? projects[0].name || '' : '';
-        const supervisors = projects.length > 0 && projects[0].supervisors
-          ? projects[0].supervisors.map((s: any) => `${s.name} ${s.surname}`).join(', ')
-          : '';
+        // Process sheets with their rows
+        sheets.forEach((sheet: any) => {
+          const sheetName = sheet.sheetName || '';
+          const sheetRows = sheet.sheetRows || [];
 
-        // Create a row for each sheet row
-        sheetRows.forEach((rowData: any) => {
-          const flatRow: any = {
-            company: companyName,
-            project: projectName,
-            supervisor: supervisors,
-            excel: excelName,
-            sheetName: sheetName,
-          };
+          if (sheetRows.length > 0) {
+            sheetRows.forEach((rowData: any) => {
+              const flatRow: any = {
+                company: companyName,
+                project: project.name || '',
+                supervisor: supervisorName,
+                excel: excelName,
+                sheetName: sheetName,
+              };
 
-          // Add all dynamic fields from sheet row
-          if (typeof rowData === 'object' && rowData !== null) {
-            Object.keys(rowData).forEach(key => {
-              const value = rowData[key];
-              flatRow[key] = value !== null && value !== undefined ? String(value) : '';
+              // Add all dynamic fields from sheet row
+              if (typeof rowData === 'object' && rowData !== null) {
+                Object.keys(rowData).forEach(key => {
+                  const value = rowData[key];
+                  flatRow[key] = value !== null && value !== undefined ? String(value) : '';
+                });
+              }
+
+              rows.push(flatRow);
+            });
+          } else {
+            // Sheet has no rows, but we still show its meta-info
+            rows.push({
+              company: companyName,
+              project: project.name || '',
+              supervisor: supervisorName,
+              excel: excelName,
+              sheetName: sheetName,
             });
           }
-
-          rows.push(flatRow);
         });
+
+        // If no sheets, still add project info
+        if (sheets.length === 0) {
+          rows.push({
+            company: companyName,
+            project: project.name || '',
+            supervisor: supervisorName,
+            excel: excelName,
+            sheetName: '',
+          });
+        }
       });
-
-      // If no sheets, still add company info
-      if (sheets.length === 0 && projects.length > 0) {
-        rows.push({
-          company: companyName,
-          project: projects[0].name || '',
-          supervisor: projects[0].supervisors ? projects[0].supervisors.map((s: any) => `${s.name} ${s.surname}`).join(', ') : '',
-          excel: companyItem.excel || '',
-          sheetName: '',
-        });
-      }
     });
 
     return rows;
