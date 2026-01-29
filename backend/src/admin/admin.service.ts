@@ -236,6 +236,12 @@ export class AdminService {
         await this.userModel.findByIdAndUpdate(userId, { $push: { projectIds: projectId } });
       }
     }
+    else if (type === "P") {
+      if (!project.partners.includes(userId)) {
+        project.partners.push(userId);
+        await this.userModel.findByIdAndUpdate(userId, { $push: { projectIds: projectId } });
+      }
+    }
     await project.save();
 
     return {
@@ -267,6 +273,10 @@ export class AdminService {
       );
     } else if (type === 'S') {
       project.supervisors = project.supervisors.filter(
+        id => id.toString() !== userId,
+      );
+    } else if (type === 'P') {
+      project.partners = project.partners.filter(
         id => id.toString() !== userId,
       );
     }
@@ -320,6 +330,7 @@ export class AdminService {
       ...project,
       agentsCount: project.agents.length || 0,
       supervisorsCount: project.supervisors.length || 0,
+      partnersCount: project.partners?.length || 0,
       excelsCount: project.excelIds.length || 0,
       sheetsCount: project.sheetIds.length || 0,
       columnsCount: project.columnIds.length || 0,
@@ -350,6 +361,8 @@ export class AdminService {
           path: 'agents', select: 'name surname email channelIds', populate: { path: 'channelIds', select: 'name' }
         }, {
           path: 'supervisors', select: 'name surname email channelIds', populate: { path: 'channelIds', select: 'name' }
+        }, {
+          path: 'partners', select: 'name surname email'
         }])
   }
 

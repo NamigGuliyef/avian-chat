@@ -41,6 +41,9 @@ export default function UserLogin() {
       if (resp.user.role === "Supervisor") {
         navigate('/supervisor/dashboard');
       }
+      if (resp.user.role === "Partner") {
+        navigate('/partner/dashboard');
+      }
     } else {
       toast({
         title: "Xəta",

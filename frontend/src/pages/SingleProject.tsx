@@ -43,15 +43,16 @@ import { useNavigate, useParams } from "react-router-dom";
 const SingleProject = () => {
     const [project, setProject] = useState<IProject>({
         supervisors: [] as Partial<IUser>[],
-        agents: [] as Partial<IUser>[]
+        agents: [] as Partial<IUser>[],
+        partners: [] as Partial<IUser>[]
     } as IProject);
     // const [isUserChannelDialog, setIsUserChannelDialog] = useState(['', ''])
     // const [selectedChannels, setSelectedChannels] = useState([])
-    const [isMemberDialogOpen, setIsMemberDialogOpen] = useState<"A" | "S" | null>(null);
+    const [isMemberDialogOpen, setIsMemberDialogOpen] = useState<"A" | "S" | "P" | null>(null);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<IUser[]>([]);
-    const [memberToRemove, setMemberToRemove] = useState<{ id: string, type: "S" | "A" } | null>(null);
+    const [memberToRemove, setMemberToRemove] = useState<{ id: string, type: "S" | "A" | "P" } | null>(null);
     // const [channels, setChannels] = useState<IChannel[]>([]);
     const debouncedSearch = useDebounce(search, 400);
     const { projectId } = useParams();
@@ -68,7 +69,7 @@ const SingleProject = () => {
 
         searchUsers({
             query: debouncedSearch.toLowerCase(),
-            role: (isMemberDialogOpen === "S" ? Roles.Supervisor : Roles.Agent)
+            role: (isMemberDialogOpen === "S" ? Roles.Supervisor : isMemberDialogOpen === "A" ? Roles.Agent : Roles.Partner)
         })
             .then(setResults)
             .finally(() => setLoading(false));
@@ -85,12 +86,14 @@ const SingleProject = () => {
         });
     }, [projectId]);
 
-    const handleAddMember = (member: Partial<IUser>, type: "S" | "A") => {
+    const handleAddMember = (member: Partial<IUser>, type: "S" | "A" | "P") => {
         let isExist = null;
         if (type === "S") {
             isExist = project.supervisors.find((s) => s._id === member._id)
         } else if (type === "A") {
             isExist = project.agents.find((a) => a._id === member._id)
+        } else if (type === "P") {
+            isExist = project.partners.find((p) => p._id === member._id)
         }
         if (isExist) {
             toast({
@@ -109,12 +112,14 @@ const SingleProject = () => {
         })
         setIsMemberDialogOpen(null);
     };
-    const removeUserFromProject = (projectId: string, id: string, type: "S" | "A") => {
+    const removeUserFromProject = (projectId: string, id: string, type: "S" | "A" | "P") => {
         removeProjectMember(projectId, id, type).then(() => {
             if (type === "S") {
                 setProject((pre) => ({ ...pre, supervisors: pre.supervisors.filter((sp) => sp._id !== id) }))
             } else if (type === "A") {
                 setProject((pre) => ({ ...pre, agents: pre.agents.filter((ag) => ag._id !== id) }))
+            } else if (type === "P") {
+                setProject((pre) => ({ ...pre, partners: pre.partners.filter((p) => p._id !== id) }))
             }
             toast({
                 title: "Uğurlu",
@@ -130,7 +135,7 @@ const SingleProject = () => {
         }
     }, [isMemberDialogOpen]);
 
-    const memberName = isMemberDialogOpen === "S" ? "Supervisor" : "Agent"
+    const memberName = isMemberDialogOpen === "S" ? "Supervisor" : isMemberDialogOpen === "A" ? "Agent" : "Partner"
 
 
     return (
@@ -172,6 +177,10 @@ const SingleProject = () => {
                                 <Button size="sm" onClick={() => setIsMemberDialogOpen("A")}>
                                     <UserPlus className="h-4 w-4 mr-2" />
                                     Add Agent
+                                </Button>
+                                <Button size="sm" onClick={() => setIsMemberDialogOpen("P")}>
+                                    <UserPlus className="h-4 w-4 ml-2 mr-2" />
+                                    Add Partner
                                 </Button>
                             </div>
                             <DialogContent>
@@ -287,6 +296,43 @@ const SingleProject = () => {
                                 ))
                             ) : (
                                 <span className="text-muted-foreground">No agents</span>
+                            )}
+                        </div>
+                    </div>
+                    <div className="md:col-span-2">
+                        <strong className="text-base">Partners:</strong>
+                        <div className="flex gap-2 flex-wrap mt-1">
+                            {project.partners?.length ? (
+                                project.partners.map((p) => (
+                                    <Card key={p._id} style={{ minWidth: 300 }}>
+                                        <CardContent className="flex items-center justify-between p-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                                                    {p.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium">{p.name}</p>
+                                                    <p className="text-sm text-muted-foreground">{p.email}</p>
+                                                    {/* <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                        {(a.channelIds).map((ch) => <Badge key={ch._id} variant="outline" className="text-xs">
+                                                            {ch.name}
+                                                        </Badge>
+                                                        )}
+                                                    </div> */}
+                                                </div>
+                                            </div>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={() => setMemberToRemove({ id: p._id, type: "P" })}
+                                            >
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                ))
+                            ) : (
+                                <span className="text-muted-foreground">No partners</span>
                             )}
                         </div>
                     </div>

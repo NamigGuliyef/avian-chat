@@ -16,6 +16,7 @@ import { SupervisorModule } from './supervisor/supervisor.module';
 import { VisitorModule } from './visitor/visitor.module';
 import { UserModule } from './user/user.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
+import { PartnerModule } from './partner/partner.module';
 
 
 @Module({
@@ -35,7 +36,8 @@ import { ChatbotModule } from './chatbot/chatbot.module';
     MessageModule,
     ProjectModule,
     UserModule,
-    ChatbotModule
+    ChatbotModule,
+    PartnerModule
   ],
   controllers: [AppController],
   providers: [AppService],

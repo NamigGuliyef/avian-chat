@@ -292,6 +292,7 @@ export interface IProject {
     columnIds: any[];
     excelIds: any[];
     sheetIds: any[];
+    partners: IUser[];
 }
 
 export interface ISelectOption {

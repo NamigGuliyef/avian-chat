@@ -24,6 +24,12 @@ import SupervisorProjects from "./components/supervisor/SupervisorProjects";
 import SupervisorSingleExcel from "./components/supervisor/SupervisorSingleExcel";
 import SupervisorSingleProject from "./components/supervisor/SupervisorSingleProject";
 import SupervisorSingleSheet from "./components/supervisor/SupervisorSingleSheet";
+import PartnerDashboard from "./components/partner/PartnerDashboard";
+import PartnerOutlet from "./components/partner/PartnerOutlet";
+// import PartnerProjects from "./components/partner/PartnerProjects";
+// import PartnerSingleExcel from "./components/partner/PartnerSingleExcel";
+// import PartnerSingleProject from "./components/partner/PartnerSingleProject";
+// import PartnerSingleSheet from "./components/partner/PartnerSingleSheet";
 import UserColumns from "./components/user/UserColumns";
 import UserExcels from "./components/user/UserExcels";
 import UserSheets from "./components/user/UserSheets";
@@ -33,6 +39,7 @@ import { AdminUsers } from "./pages/AdminUsers";
 import { Roles } from "./types/types";
 import SupervisorReportsPage from "./components/admin/SupervisorReportsPage";
 import SupervisorProjectColumns from "./components/admin/SupervisorProjectColumns";
+import PartnerReportsPage from "./components/partner/PartnerReportsPage";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +79,18 @@ const App = () => (
                 <Route path="projects/:projectId/:projectName" element={<SupervisorSingleProject />} />
                 <Route path="excels/:projectId/:excelId/:excelName" element={<SupervisorSingleExcel />} />
                 <Route path="sheets/:projectId/:excelId/:sheetId/:sheetName" element={<SupervisorSingleSheet />} />
+              </Route>
+            </Route>
+
+            {/* Partner */}
+            <Route element={<ProtectedRoute allowedRoles={[Roles.Partner]} />}>
+              <Route path="/partner" element={<PartnerOutlet />}>
+                <Route path="dashboard" element={<PartnerDashboard />} />
+                {/* <Route path="projects" element={<PartnerProjects />} /> */}
+                <Route path="reports" element={<PartnerReportsPage />} />
+                {/* <Route path="projects/:projectId/:projectName" element={<PartnerSingleProject />} />
+                <Route path="excels/:projectId/:excelId/:excelName" element={<PartnerSingleExcel />} />
+                <Route path="sheets/:projectId/:excelId/:sheetId/:sheetName" element={<PartnerSingleSheet />} /> */}
               </Route>
             </Route>
 

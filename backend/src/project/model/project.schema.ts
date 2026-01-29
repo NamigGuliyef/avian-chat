@@ -28,6 +28,9 @@ export class Project {
     supervisors: Types.ObjectId[]
 
     @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] })
+    partners: Types.ObjectId[]
+
+    @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: 'User', default: [] })
     agents: Types.ObjectId[]
 
     @Prop({ default: false })
