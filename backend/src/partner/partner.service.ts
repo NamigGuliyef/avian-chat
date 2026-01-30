@@ -86,7 +86,18 @@ export class PartnerService {
         return { data: rows, total, page, limit };
     }
 
-    async getPartnerTableView(): Promise<any[]> {
+    async getPartnerTableView(
+        startDate?: string,
+        endDate?: string
+    ): Promise<any[]> {
+        const start = startDate
+            ? new Date(startDate)
+            : new Date(new Date().setHours(0, 0, 0, 0));
+
+        const end = endDate
+            ? new Date(endDate)
+            : new Date(new Date().setHours(23, 59, 59, 999));
+        console.log(start, end);
         const projects = await this.projectModel
             .find({
                 isDeleted: false,
@@ -105,7 +116,13 @@ export class PartnerService {
 
                         const sheetData = await Promise.all(
                             sheets.map(async (sheet) => {
-                                const sheetRows = await this.sheetRowModel.find({ sheetId: sheet._id });
+                                const sheetRows = await this.sheetRowModel.find({
+                                    sheetId: sheet._id,
+                                    'data.date': {
+                                        $gte: start,
+                                        $lte: end,
+                                    },
+                                });
                                 const columnIds = sheet.columnIds.map(c => c.columnId);
                                 const columns = await this.columnModel.find({ _id: { $in: columnIds } });
 

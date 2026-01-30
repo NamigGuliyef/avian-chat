@@ -67,7 +67,10 @@ export class PartnerController {
     @ApiOperation({ summary: "Partnerin table view məlumatlarını gətir" })
     @Get('/table-view')
     @HttpCode(HttpStatus.OK)
-    getPartnerTableView() {
-        return this.partnerService.getPartnerTableView()
+    getPartnerTableView(
+        @Query('startDate') startDate?: string,
+        @Query('endDate') endDate?: string
+    ) {
+        return this.partnerService.getPartnerTableView(startDate, endDate)
     }
 }

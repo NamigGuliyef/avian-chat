@@ -126,7 +126,7 @@ const PartnerReportsPage: React.FC = () => {
     try {
       setLoading(true);
       const query = buildReportQuery();
-      const data = await getPartnerReports();
+      const data = await getPartnerReports(dateRange.start, dateRange.end);
 
       if (!data || data.length === 0) {
         setReportData([]);

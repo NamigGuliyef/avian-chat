@@ -30,7 +30,7 @@ export const getPartnerRows = async (sheetId: string, page = 1, limit = 50, skip
     return data; // Note: simplified return for partner
 };
 
-export const getPartnerReports = async (query?: string) => {
-    const { data } = await axios.get(`/partner/table-view${query ? `?query=${encodeURIComponent(query)}` : ""}`);
+export const getPartnerReports = async (startDate?: string, endDate?: string) => {
+    const { data } = await axios.get(`/partner/table-view${startDate ? `?startDate=${startDate}` : ""}${endDate ? `&endDate=${endDate}` : ""}`);
     return data;
 };
