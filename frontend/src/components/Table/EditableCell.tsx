@@ -4,6 +4,16 @@ import { cn, formatDateForEditableCell, fromDateInputValue, toDateInputValue } f
 import { ISheetColumn } from "@/types/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
+// Helper to generate consistent pastel color from string
+const stringToColor = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const h = Math.abs(hash) % 360;
+    return `hsl(${h}, 70%, 85%)`;
+};
+
 interface EditableCellProps {
     value: any;
     editable?: boolean;
@@ -18,7 +28,7 @@ export const EditableCell: React.FC<EditableCellProps> = React.memo(({
     onSave,
 }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [localValue, setLocalValue] = useState(value ?? "");
+    const [localValue, setLocalValue] = useState(value);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -29,6 +39,7 @@ export const EditableCell: React.FC<EditableCellProps> = React.memo(({
     }, [isEditing]);
 
     const handleSave = () => {
+        console.log(localValue, value);
         setIsEditing(false);
         if (localValue !== value) {
             onSave(localValue);
@@ -57,7 +68,9 @@ export const EditableCell: React.FC<EditableCellProps> = React.memo(({
                 <Select
                     value={localValue}
                     onValueChange={(val) => {
-                        setLocalValue(val);
+                        if (val) {
+                            setLocalValue(val);
+                        }
                     }}
                     onOpenChange={(open) => {
                         if (!open) {
@@ -66,12 +79,24 @@ export const EditableCell: React.FC<EditableCellProps> = React.memo(({
                     }}
                 >
                     <SelectTrigger className="w-full h-8 px-1 py-0 text-sm border-none bg-background">
-                        <SelectValue placeholder="Seçin" />
+                        <SelectValue>
+                            {localValue ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stringToColor(localValue) }} />
+                                    <span>{localValue}</span>
+                                </div>
+                            ) : (
+                                <span className="text-muted-foreground opacity-50">Seçin</span>
+                            )}
+                        </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                         {colDef.options?.map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
-                                {opt.label}
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stringToColor(opt.value) }} />
+                                    {opt.label}
+                                </div>
                             </SelectItem>
                         ))}
                     </SelectContent>
