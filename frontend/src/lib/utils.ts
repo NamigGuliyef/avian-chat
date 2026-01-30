@@ -78,7 +78,12 @@ export const toDateInputValue = (value: any) => {
   if (!value) return "";
   const d = value instanceof Date ? value : new Date(value);
   if (isNaN(d.getTime())) return "";
-  return d.toISOString().slice(0, 10); // yyyy-MM-dd
+
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 };
 
 export const fromDateInputValue = (value: string) => {
