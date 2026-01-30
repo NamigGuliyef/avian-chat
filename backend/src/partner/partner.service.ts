@@ -112,7 +112,7 @@ export class PartnerService {
                                 return {
                                     sheetName: sheet.name,
                                     columns: columns.map(c => c.dataKey),
-                                    sheetRows: sheetRows.map(r => r.data),
+                                    sheetRows: sheetRows.map(r => ({ ...r.data, projectName: project.name })),
                                 };
                             })
                         );

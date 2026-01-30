@@ -166,7 +166,6 @@ const PartnerReportsPage: React.FC = () => {
 
     data.forEach(companyItem => {
       const companyName = companyItem.company;
-      const projectName = companyItem.supervisorProjects;
 
       (companyItem.excels || []).forEach((excel: any) => {
         const excelName = excel.excelName;
@@ -179,7 +178,7 @@ const PartnerReportsPage: React.FC = () => {
             sheet.sheetRows.forEach((row: any) => {
               rows.push({
                 company: companyName,
-                project: projectName,
+                project: row.projectName,
                 excel: excelName,
                 sheetName,
 
@@ -188,11 +187,11 @@ const PartnerReportsPage: React.FC = () => {
               });
             });
           }
-          // sheet boşdursa belə meta-data göstərilsin
+
           else {
             rows.push({
               company: companyName,
-              project: projectName,
+              project: '',
               excel: excelName,
               sheetName,
             });
