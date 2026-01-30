@@ -26,6 +26,7 @@ import {
 import { SheetColumnForm, SheetRowForm } from "@/types/types";
 import { EditableCell } from "../Table/EditableCell";
 import { Upload, ArrowLeft, RefreshCw, ChevronLeft, ChevronRight, ChevronDown, Trash2 } from "lucide-react";
+import { formatDate } from '@/lib/utils';
 
 
 
@@ -164,7 +165,11 @@ const SupervisorSingleSheet: React.FC = () => {
                     return r;
                 })
             });
-            toast.success(`"${key}" sütununa "${_d.data[key]}" əlavə edildi.`)
+            if (key === 'date') {
+                toast.success(`"${key}" sütununa "${formatDate(_d.data[key])}" əlavə edildi.`)
+            } else {
+                toast.success(`"${key}" sütununa "${_d.data[key]}" əlavə edildi.`)
+            }
         } catch (e) {
             toast.error("Cell yenilənərkən xəta baş verdi");
         }
