@@ -627,7 +627,18 @@ export class SupervisorService {
   }
 
 
-  async getSupervisorTableView(): Promise<any[]> {
+  async getSupervisorTableView(
+    startDate?: string,
+    endDate?: string
+  ): Promise<any[]> {
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(new Date().setHours(0, 0, 0, 0));
+
+    const end = endDate
+      ? new Date(endDate)
+      : new Date(new Date().setHours(23, 59, 59, 999));
+
     // 1. Supervisorun aid olduğu layihələri çəkirik
     const projects = await this.projectModel
       .find({
@@ -659,7 +670,14 @@ export class SupervisorService {
                 const agentIds = sheet.agentIds.map(a => a.agentId);
                 const agents = await this.userModel.find({ _id: { $in: agentIds } });
 
-                const sheetRows = await this.sheetRowModel.find({ sheetId: sheet._id });
+                // Filter rows by date
+                const sheetRows = await this.sheetRowModel.find({
+                  sheetId: sheet._id,
+                  'data.date': {
+                    $gte: start,
+                    $lte: end,
+                  },
+                });
 
                 return {
                   sheetName: sheet.name,

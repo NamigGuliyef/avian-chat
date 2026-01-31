@@ -484,7 +484,18 @@ export class AdminService {
   // ümumi hesabat məlumatlarını gətirən funksiyası
   // Proyektde olan sütunların sayı və sütunlara yazılan məlumatlar
 
-  async getProjectTableView(): Promise<any[]> {
+  async getProjectTableView(
+    startDate?: string,
+    endDate?: string
+  ): Promise<any[]> {
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(new Date().setHours(0, 0, 0, 0));
+
+    const end = endDate
+      ? new Date(endDate)
+      : new Date(new Date().setHours(23, 59, 59, 999));
+
     // bütün project-ləri çəkirik
     const projects = await this.projectModel.find({ isDeleted: false }).select('-agents -sheetIds -columnIds')
       .populate({ path: 'supervisors', select: 'name surname email' });
@@ -514,7 +525,13 @@ export class AdminService {
             const agents = await this.userModel.find({ _id: { $in: agentIds } });
 
             // sheet row-ları çəkirik 
-            const sheetRows = await this.sheetRowModel.find({ sheetId: sheet._id });
+            const sheetRows = await this.sheetRowModel.find({
+              sheetId: sheet._id,
+              'data.date': {
+                $gte: start,
+                $lte: end,
+              },
+            });
 
             return {
               sheetName: sheet.name,

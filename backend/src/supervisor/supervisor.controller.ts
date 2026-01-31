@@ -287,8 +287,11 @@ export class SupervisorController {
   @ApiOperation({ summary: "Supervayzerin table view məlumatlarını gətir" })
   @Get('/table-view')
   @HttpCode(HttpStatus.OK)
-  getSupervisorTableView() {
-    return this.supervisorService.getSupervisorTableView()
+  async getSupervisorTableView(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string
+  ) {
+    return this.supervisorService.getSupervisorTableView(startDate, endDate)
   }
 
 

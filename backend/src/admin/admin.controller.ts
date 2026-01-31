@@ -337,8 +337,11 @@ export class AdminController {
   @ApiOperation({ summary: "Bütün məlumatları cədvələ gətir" })
   @Get('all-report')
   @HttpCode(HttpStatus.OK)
-  async getProjectTableView() {
-    return await this.adminService.getProjectTableView();
+  async getProjectTableView(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string
+  ) {
+    return await this.adminService.getProjectTableView(startDate, endDate);
   }
 
   // logging
