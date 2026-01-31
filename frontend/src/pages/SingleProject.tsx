@@ -169,8 +169,8 @@ const SingleProject = () => {
                     <CardTitle className="flex items-center justify-between">
                         Project Details
                         <Dialog open={Boolean(isMemberDialogOpen)} onOpenChange={() => setIsMemberDialogOpen(null)}>
-                            <div>
-                                <Button size="sm" className="mr-2" onClick={() => setIsMemberDialogOpen("S")}>
+                            <div className="flex gap-2">
+                                <Button size="sm" onClick={() => setIsMemberDialogOpen("S")}>
                                     <UserPlus className="h-4 w-4 mr-2" />
                                     Add Supervisor
                                 </Button>
@@ -179,7 +179,7 @@ const SingleProject = () => {
                                     Add Agent
                                 </Button>
                                 <Button size="sm" onClick={() => setIsMemberDialogOpen("P")}>
-                                    <UserPlus className="h-4 w-4 ml-2 mr-2" />
+                                    <UserPlus className="h-4 w-4 mr-2" />
                                     Add Partner
                                 </Button>
                             </div>

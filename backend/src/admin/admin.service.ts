@@ -417,8 +417,7 @@ export class AdminService {
     }
 
     const [data, total] = await Promise.all([
-      this.userModel.find(filter).select('-password').skip(skip).limit(limit).sort({ createdAt: -1 })
-        .populate({ path: 'projectIds', select: 'name createdAt' }).exec(),
+      this.userModel.find(filter).select('-password').skip(skip).limit(limit).sort({ createdAt: -1 }),
       this.userModel.countDocuments(filter),
     ]);
 

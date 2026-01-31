@@ -25,15 +25,25 @@ export const deleteCompany = async (companyId) => {
 }
 
 // users
-export const getSupervisors = async (): Promise<IUser[]> => {
-    const res = await axios.get(`/user?role=${Roles.Supervisor}`)
+export const getSupervisors = async (page: number = 1) => {
+    const params = new URLSearchParams();
+    params.append('role', Roles.Supervisor);
+    params.append('page', page.toString());
+    
+    const res = await axios.get(`/admin/users?${params.toString()}`)
     return res.data;
 }
 
-export const getUsers = async (filter): Promise<IUser[]> => {
-    const res = await axios.get(`/user${filter}`)
+export const getUsers = async (query?: string, role?: string, page: number = 1) => {
+    const params = new URLSearchParams();
+    if (query) params.append('query', query);
+    if (role) params.append('role', role);
+    params.append('page', page.toString());
+    
+    const res = await axios.get(`/admin/users?${params.toString()}`)
     return res.data;
 }
+
 export const addUser = async (data: any): Promise<IUser> => {
     // const res = await axios.post("/user", data)
     // return res.data;

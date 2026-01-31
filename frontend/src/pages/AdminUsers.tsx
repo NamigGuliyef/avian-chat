@@ -1,5 +1,5 @@
 import { updateUser } from '@/api/admin';
-import { getSupervisorAgents, searchUsers, signUp } from '@/api/users';
+import { getSupervisorAgents, searchUsers, signUp, PaginatedResponse } from '@/api/users';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -69,6 +69,10 @@ export function AdminUsers() {
     const [agentPopOver, setAgentPopOver] = useState(false)
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [roleFilter, setRoleFilter] = useState<Roles | null>(null)
+    const [searchQuery, setSearchQuery] = useState('')
+    const [currentPage, setCurrentPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [totalUsers, setTotalUsers] = useState(0)
     const [editingUser, setEditingUser] = useState<IUser | null>(null);
     const [showPassword, setShowPassword] = useState(false)
     const [userToDelete, setUserToDelete] = useState<string | null>(null);
@@ -80,10 +84,13 @@ export function AdminUsers() {
     });
 
     useEffect(() => {
-        searchUsers().then((d) => {
-            setUsers(d)
+        const role = roleFilter ? roleFilter : undefined
+        searchUsers({ query: searchQuery, role, page: currentPage }).then((d) => {
+            setUsers(d.data)
+            setTotalPages(d.totalPages || 1)
+            setTotalUsers(d.total || 0)
         })
-    }, [])
+    }, [roleFilter, searchQuery, currentPage])
 
     const handleAddUser = () => {
         setEditingUser(null);
@@ -189,9 +196,7 @@ export function AdminUsers() {
     };
 
 
-    const filteredUsers = roleFilter ?
-        users.filter((us) => us && us.role === roleFilter)
-        : users
+    const filteredUsers = users
 
 
     return (
@@ -367,7 +372,7 @@ export function AdminUsers() {
                         )}
                     </div>
                     <div className="text-sm font-semibold text-slate-700 bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
-                        📊 {filteredUsers.length} user
+                        📊 {totalUsers} user ({currentPage}/{totalPages} səhifə)
                     </div>
                 </div>
             </motion.div>
@@ -530,6 +535,45 @@ export function AdminUsers() {
                         <ShieldAlert className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                         <p className="text-slate-600 font-medium">Heç bir user tapılmadı</p>
                         <p className="text-slate-400 text-sm mt-1">Yeni user əlavə etmə düyməsinə klikləyin</p>
+                    </div>
+                )}
+                {/* PAGINATION */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between p-6 border-t border-slate-200 bg-slate-50">
+                        <div className="text-sm text-slate-600">
+                            {currentPage} - {totalPages} səhifəsindən
+                        </div>
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                className="border-slate-300 hover:bg-slate-100"
+                            >
+                                Əvvəl
+                            </Button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <Button
+                                    key={page}
+                                    variant={currentPage === page ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => setCurrentPage(page)}
+                                    className={currentPage === page ? "bg-blue-600" : "border-slate-300 hover:bg-slate-100"}
+                                >
+                                    {page}
+                                </Button>
+                            ))}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={currentPage === totalPages}
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                className="border-slate-300 hover:bg-slate-100"
+                            >
+                                Sonra
+                            </Button>
+                        </div>
                     </div>
                 )}
             </motion.div>

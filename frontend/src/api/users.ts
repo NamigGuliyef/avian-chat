@@ -1,14 +1,22 @@
 import axios from "."
 import { IUser, Roles, SheetColumnForm, SheetRowForm } from "@/types/types";
 
+export interface PaginatedResponse {
+    data: IUser[];
+    total: number;
+    totalPages: number;
+    currentPage: number;
+}
+
 export const searchUsers = async (params?: {
-    query: string;
-    role: string;
-}): Promise<IUser[]> => {
+    query?: string;
+    role?: string;
+    page?: number;
+}): Promise<PaginatedResponse> => {
     const { data } = await axios.get("/admin/users", {
         params
     });
-    return data.data;
+    return data;
 };
 
 export interface ILoginUser {

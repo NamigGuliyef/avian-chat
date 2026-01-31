@@ -256,8 +256,8 @@ export class SupervisorController {
   @Patch('sheet/:sheetId/rows/:rowNumber')
   @HttpCode(HttpStatus.OK)
   updateCell(
-    @Param('sheetId') sheetId: Types.ObjectId,
-    @Param('rowNumber') rowNumber: string,
+    @Param('sheetId') sheetId: string,
+    @Param('rowNumber') rowNumber: number,
     @Body() sheetCellData: SheetCellDto
   ) {
     console.log('testttt')

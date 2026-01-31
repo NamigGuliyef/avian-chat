@@ -263,8 +263,9 @@ export class AdminController {
   @HttpCode(HttpStatus.OK)
   @ApiQuery({ name: 'query', required: false, type: String, description: 'Axtarış sorğusu' })
   @ApiQuery({ name: 'role', required: false, type: String, description: 'İstifadəçi rolu' })
-  async getAllUsers(@Query('query') query: string, @Query('role') role: string) {
-    return await this.adminService.getAllUsers(query, role)
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Səhifə nömrəsi', example: 1 })
+  async getAllUsers(@Query('query') query: string, @Query('role') role: string, @Query('page') page?: number) {
+    return await this.adminService.getAllUsers(query, role, page)
   }
 
 

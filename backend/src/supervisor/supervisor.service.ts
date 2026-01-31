@@ -562,45 +562,45 @@ export class SupervisorService {
 
   // ---------------- UPDATE CELL ----------------
   async updateCell(
-    sheetId: Types.ObjectId,
+    sheetId: string,
     rowNumber: number,
     sheetCellData: SheetCellDto
   ) {
     const updateQuery: any = { [`data.${sheetCellData.key}`]: sheetCellData.value };
 
-    // Automatic date update logic
-    if (sheetCellData.key.toLowerCase().includes('status')) {
-      const sheet = await this.sheetModel.findById(sheetId).populate('columnIds.columnId');
-      if (sheet) {
-        const dateColumn: any = sheet.columnIds.find((c: any) =>
-          c.columnId.dataKey.toLowerCase().includes('date') ||
-          c.columnId.name.toLowerCase().includes('tarix') ||
-          c.columnId.name.toLowerCase().includes('date')
-        );
+    // Status dəyişdirildikdə tarix avtomatik yenilənsin
+    if (sheetCellData.key?.toLowerCase().includes('status')) {
+      const sheet = await this.sheetModel
+        .findById(sheetId)
+        .populate({ path: 'columnIds', select: 'columnId' });
 
-        if (dateColumn) {
-          const now = new Date();
-          const dateStr = now.toLocaleString('az-AZ', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-          });
-          updateQuery[`data.${dateColumn.columnId.dataKey}`] = dateStr;
-        }
+      const dateColumn: any = sheet?.columnIds?.find((c: any) =>
+        c?.columnId?.dataKey?.toLowerCase().includes('date') ||
+        c?.columnId?.name?.toLowerCase().includes('tarix')
+      );
+
+      if (dateColumn?.columnId?.dataKey) {
+        const now = new Date();
+        const dateStr = now.toLocaleString('az-AZ', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        });
+        updateQuery[`data.${dateColumn.columnId.dataKey}`] = dateStr;
       }
     }
 
     const row = await this.sheetRowModel.findOneAndUpdate(
-      { sheetId, rowNumber }, // mövcud row axtarır
+      { sheetId, rowNumber },
       { $set: updateQuery },
       { new: true }
     );
 
     if (!row) {
-      throw new NotFoundException('Row tapılmadı'); // mövcud deyilsə xətanı qaytar
+      throw new NotFoundException('Row tapılmadı');
     }
 
     return row;

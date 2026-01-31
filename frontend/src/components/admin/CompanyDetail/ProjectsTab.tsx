@@ -85,13 +85,15 @@ const ProjectsTab = () => {
     };
 
 
-    const removeUserFromProject = (projectId, agent: IUser, type: "S" | "A") => {
+    const removeUserFromProject = (projectId, agent: IUser, type: "S" | "A" | "P") => {
         const newProjects = projects.map((pr) => {
             if (pr._id === projectId) {
                 if (type === "A") {
                     pr.agents = pr.agents.filter((ag) => ag._id !== agent._id)
                 } else if (type === "S") {
                     pr.supervisors = pr.supervisors.filter((ag) => ag._id !== agent._id)
+                } else if (type === "P") {
+                    pr.partners = pr.partners.filter((p) => p._id !== agent._id)
                 }
             }
             return pr;
@@ -100,13 +102,15 @@ const ProjectsTab = () => {
             setProjects(newProjects)
         })
     }
-    const addUserToProject = (projectId, agent, type: "A" | "S") => {
+    const addUserToProject = (projectId, agent, type: "A" | "S" | "P") => {
         const newProjects = projects.map((pr) => {
             if (pr._id === projectId) {
                 if (type === "A") {
                     pr.agents = [...pr.agents, agent]
                 } else if (type === "S") {
                     pr.supervisors = [...pr.supervisors, agent]
+                } else if (type === "P") {
+                    pr.partners = [...pr.partners, agent]
                 }
             }
             return pr;
@@ -231,6 +235,9 @@ const ProjectsTab = () => {
                                 </p>
                                 <p className="gap-2 text-sm text-muted-foreground">
                                     {project.agents?.length} Agents
+                                </p>
+                                <p className="gap-2 text-sm text-muted-foreground">
+                                    {project.partners?.length} Partners
                                 </p>
                                 <Button
                                     variant="ghost"
