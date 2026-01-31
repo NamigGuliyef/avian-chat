@@ -84,8 +84,12 @@ export const updateCell = async (sheetId: string, rowNumber: number, key: string
     return data;
 };
 
-export const getSupervisorReports = async (query?: string) => {
-    const { data } = await axios.get(`/supervisor/table-view${query ? `?query=${encodeURIComponent(query)}` : ""}`);
+export const getSupervisorReports = async (startDate?: string, endDate?: string) => {
+    let query = "";
+    if (startDate && endDate) {
+        query = `?startDate=${startDate}&endDate=${endDate}`;
+    }
+    const { data } = await axios.get(`/supervisor/table-view${query}`);
     return data;
 };
 

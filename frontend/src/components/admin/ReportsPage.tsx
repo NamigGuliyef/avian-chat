@@ -125,8 +125,9 @@ const ReportsPage: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const query = buildReportQuery();
-      const data = await getReport(query);
+      setLoading(true);
+      // const query = buildReportQuery();
+      const data = await getReport(dateRange.start, dateRange.end);
 
       if (!data || data.length === 0) {
         setReportData([]);

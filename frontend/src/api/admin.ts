@@ -124,9 +124,13 @@ export const deleteProject = async (projectId) => {
 
 // report
 
-export const getReport = async (query?: string) => {
-    const res = await axios.get(`/admin/all-report${query ? `?query=${encodeURIComponent(query)}` : ""}`)
-    return res.data;
+export const getReport = async (startDate?: string, endDate?: string) => {
+    let query = "";
+    if (startDate && endDate) {
+        query = `?startDate=${startDate}&endDate=${endDate}`;
+    }
+    const { data } = await axios.get(`/admin/all-report${query}`);
+    return data;
 }
 
 

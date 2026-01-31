@@ -125,8 +125,9 @@ const SupervisorReportsPage: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const query = buildReportQuery();
-      const data = await getSupervisorReports();
+      setLoading(true);
+      // const query = buildReportQuery();
+      const data = await getSupervisorReports(dateRange.start, dateRange.end);
 
       if (!data || data.length === 0) {
         setReportData([]);
