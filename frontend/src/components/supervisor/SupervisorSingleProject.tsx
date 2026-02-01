@@ -136,7 +136,7 @@ const SupervisorSingleProject: React.FC = () => {
                             </Button>
                         </DialogTrigger>
 
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                             <div className="space-y-6">
                                 <DialogHeader>
                                     <DialogTitle className="text-2xl">

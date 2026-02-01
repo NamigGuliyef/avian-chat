@@ -45,7 +45,7 @@ const PartnerSidebar: React.FC = () => {
             <div className="flex h-16 items-center justify-between px-6">
                 {!isCollapsed && (
                     <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                        Avian Partner
+                      {session.user?.name} {session.user?.surname}
                     </span>
                 )}
                 <button

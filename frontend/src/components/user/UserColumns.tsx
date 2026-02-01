@@ -5,13 +5,14 @@ import {
 import { getColumnsBySheetId } from "@/api/users";
 import { SheetColumnForm, SheetRowForm } from "@/types/types";
 import { ArrowLeft, ChevronLeft, ChevronRight, RefreshCw, FileText, Search, X } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { EditableCell } from "../Table/EditableCell";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
+import { formatDate } from "@/lib/utils";
 
 
 const UserColumns: React.FC = () => {
@@ -58,7 +59,7 @@ const UserColumns: React.FC = () => {
         }
     };
 
-    const handleUpdateCell = async (rowIndex: number, key: string, value: any) => {
+    const handleUpdateCell = useCallback(async (rowIndex: number, key: string, value: any) => {
         if (!sheetId) return;
         try {
             const _d = await updateCell(sheetId, rowIndex, key, value);
@@ -68,11 +69,15 @@ const UserColumns: React.FC = () => {
                     return r;
                 })
             });
-            toast.success(`"${key}" sütununa "${_d.data[key]}" əlavə edildi.`)
+            if (key === 'date') {
+                toast.success(`"${key}" sütununa "${formatDate(_d.data[key])}" əlavə edildi.`)
+            } else {
+                toast.success(`"${key}" sütununa "${_d.data[key]}" əlavə edildi.`)
+            }
         } catch (e) {
             toast.error("Cell yenilənərkən xəta baş verdi");
         }
-    };
+    }, [sheetId]);
 
     const handleRefresh = () => {
         fetchData();
