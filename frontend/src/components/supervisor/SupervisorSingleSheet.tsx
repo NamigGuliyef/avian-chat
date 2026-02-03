@@ -95,8 +95,14 @@ const SupervisorSingleSheet: React.FC = () => {
     const [totalRows, setTotalRows] = useState(0);
     const [showImport, setShowImport] = useState(false);
     const [loading, setLoading] = useState(false)
+    const [isImporting, setIsImporting] = useState(false);
     const [rowToDelete, setRowToDelete] = useState<number | null>(null);
     const rowsPerPage = 50;
+
+    const displayTotal = useMemo(() => {
+        if (totalRows && totalRows > 0) return totalRows;
+        return (currentPage - 1) * rowsPerPage + rows.length;
+    }, [totalRows, currentPage, rows.length]);
 
     // ---------------- Fetch Columns & Rows ----------------
     useEffect(() => {
@@ -126,14 +132,23 @@ const SupervisorSingleSheet: React.FC = () => {
     const fetchRows = async () => {
         try {
             setLoading(true)
-            const data = await getRows(sheetId!, currentPage, rowsPerPage, skipRows);
-            setRows(data);
-            // Total sətir sayısını estimasyon ilə hesabla
-            // Əgər API tam sayı qaytarırsa, bunu update edin
-            if (data.length > 0 && data.length < rowsPerPage) {
-                setTotalRows((currentPage - 1) * rowsPerPage + data.length);
-            } else if (data.length === rowsPerPage) {
-                setTotalRows((currentPage * rowsPerPage) + 1); // More than this page
+            const res = await getRows(sheetId!, currentPage, rowsPerPage, skipRows);
+            // support both legacy array response and new { data, total }
+            if (Array.isArray(res)) {
+                setRows(res);
+                if (res.length > 0 && res.length < rowsPerPage) {
+                    setTotalRows((currentPage - 1) * rowsPerPage + res.length);
+                } else if (res.length === rowsPerPage) {
+                    setTotalRows((currentPage * rowsPerPage) + 1); // estimate
+                }
+            } else {
+                const { data, total } = res as any;
+                setRows(data || []);
+                if (typeof total === 'number') {
+                    setTotalRows(total);
+                } else {
+                    setTotalRows((currentPage - 1) * rowsPerPage + (data?.length || 0));
+                }
             }
         } catch (e) {
             toast.error("Sətirlər gətirilərkən xəta baş verdi");
@@ -158,6 +173,72 @@ const SupervisorSingleSheet: React.FC = () => {
     const handleUpdateCell = useCallback(async (rowIndex: number, key: string, value: any) => {
         if (!sheetId) return;
         try {
+            // If Call status is being updated to "successful", auto-fill the date
+            if (key.toLowerCase().includes('status') && value === 'successful') {
+                const dateColumn = columns.find(col => 
+                    col.columnId?.dataKey?.toLowerCase().includes('date')
+                );
+                if (dateColumn?.columnId?.dataKey) {
+                    const now = new Date();
+                    const dateStr = now.toLocaleString('az-AZ', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                    });
+                    // Update both status and date
+                    const _d = await updateCell(sheetId, rowIndex, key, value);
+                    const _date = await updateCell(sheetId, rowIndex, dateColumn.columnId.dataKey, dateStr);
+                    
+                    setRows(prev => {
+                        return prev.map((r) => {
+                            if (r.rowNumber === rowIndex) {
+                                return { 
+                                    ...r, 
+                                    data: { 
+                                        ...r.data, 
+                                        [key]: value,
+                                        [dateColumn.columnId.dataKey]: dateStr
+                                    } 
+                                };
+                            }
+                            return r;
+                        })
+                    });
+                    toast.success(`"${key}" sütununa "${value}" əlavə edildi və tarix avtomatik dolduruldu.`);
+                    return;
+                }
+            }
+
+            // If other status values, clear the date
+            if (key.toLowerCase().includes('status') && value !== 'successful') {
+                const dateColumn = columns.find(col => 
+                    col.columnId?.dataKey?.toLowerCase().includes('date')
+                );
+                if (dateColumn?.columnId?.dataKey) {
+                    const _d = await updateCell(sheetId, rowIndex, key, value);
+                    const _date = await updateCell(sheetId, rowIndex, dateColumn.columnId.dataKey, '');
+                    
+                    setRows(prev => {
+                        return prev.map((r) => {
+                            if (r.rowNumber === rowIndex) {
+                                return { 
+                                    ...r, 
+                                    data: { 
+                                        ...r.data, 
+                                        [key]: value,
+                                        [dateColumn.columnId.dataKey]: ''
+                                    } 
+                                };
+                            }
+                            return r;
+                        })
+                    });
+                    toast.success(`"${key}" sütununa "${value}" əlavə edildi və tarix təmizləndi.`);
+                    return;
+                }
+            }
+
+            // Default behavior for other columns
             const _d = await updateCell(sheetId, rowIndex, key, value);
             setRows(prev => {
                 return prev.map((r) => {
@@ -173,7 +254,7 @@ const SupervisorSingleSheet: React.FC = () => {
         } catch (e) {
             toast.error("Cell yenilənərkən xəta baş verdi");
         }
-    }, [sheetId]);
+    }, [sheetId, columns]);
 
 
     const handleDeleteRow = useCallback(async (rowIndex: number) => {
@@ -190,12 +271,30 @@ const SupervisorSingleSheet: React.FC = () => {
     const handleImportExcel = async () => {
         if (!sheetId || !file) return;
         try {
-            await importFromExcel(sheetId, file);
+            setIsImporting(true);
+            console.log("Excel import başladı:", file.name);
+            const importResult = await importFromExcel(sheetId, file);
+            console.log("Excel import nəticəsi:", importResult);
+            
+            // Wait for rows to load
+            try {
+                await fetchRows();
+            } catch (fetchError) {
+                console.error("Sətirlər yükləmə xətası:", fetchError);
+                toast.error("Excel import olundu amma sətirlər yükləmə zamanı xəta baş verdi");
+                setIsImporting(false);
+                return;
+            }
+            
             toast.success("Excel uğurla import olundu");
-            fetchRows();
             setFile(null);
+            setShowImport(false);
         } catch (e) {
-            toast.error("Excel import zamanı xəta baş verdi");
+            console.error("Excel import xətası:", e);
+            const errorMsg = (e as any)?.response?.data?.message || (e as any)?.message || "Bilinməyən xəta";
+            toast.error(`Excel import zamanı xəta baş verdi: ${errorMsg}`);
+        } finally {
+            setIsImporting(false);
         }
     };
 
@@ -240,7 +339,7 @@ const SupervisorSingleSheet: React.FC = () => {
                     </Button>
                 </div>
                 <h1 className="text-4xl font-bold text-slate-900 mb-2">{sheetName}</h1>
-                <p className="text-slate-600">Cəmi {rows.length} sətir | {columns.length} sütun</p>
+                <p className="text-slate-600">Cəmi {displayTotal} sətir | {columns.length} sütun</p>
             </div>
 
             <div className="mb-6 flex gap-3">
@@ -248,7 +347,8 @@ const SupervisorSingleSheet: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsSkipModalOpen(true)}
-                    className="bg-white hover:bg-blue-50 border-slate-300"
+                    disabled={isImporting || loading}
+                    className="bg-white hover:bg-blue-50 border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <RefreshCw className="w-4 h-4 mr-2" /> Sətirləri Ötür (Skip: {skipRows})
                 </Button>
@@ -256,7 +356,8 @@ const SupervisorSingleSheet: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setShowImport(!showImport)}
-                    className="bg-white hover:bg-slate-50 border-slate-300"
+                    disabled={isImporting || loading}
+                    className="bg-white hover:bg-slate-50 border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <ChevronDown className={`w-4 h-4 mr-2 transition-transform ${showImport ? 'rotate-180' : ''}`} />
                     Excel import Et
@@ -281,10 +382,19 @@ const SupervisorSingleSheet: React.FC = () => {
                                 </div>
                                 <Button
                                     onClick={handleImportExcel}
-                                    disabled={!file}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    disabled={!file || isImporting}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <Upload className="w-4 h-4 mr-2" /> Import Et
+                                    {isImporting ? (
+                                        <>
+                                            <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            Yüklənir...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Upload className="w-4 h-4 mr-2" /> Import Et
+                                        </>
+                                    )}
                                 </Button>
                             </div>
                         </CardContent>
@@ -393,7 +503,7 @@ const SupervisorSingleSheet: React.FC = () => {
                     if (hasLoadedInitialData) setIsSkipModalOpen(open);
                 }}
             >
-                <AlertDialogContent>
+                <AlertDialogContent className="max-w-2xl w-[90vw]">
                     <AlertDialogHeader>
                         <AlertDialogTitle>{hasLoadedInitialData ? "Sətirləri Ötür" : "Məlumatları Yüklə"}</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -419,10 +529,11 @@ const SupervisorSingleSheet: React.FC = () => {
                             }}
                         />
                     </div>
-                    <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                    <AlertDialogFooter className="flex flex-col gap-2">
                         {hasLoadedInitialData && (
-                            <AlertDialogCancel onClick={() => setTempSkipValue(skipRows.toString())}>Ləğv et</AlertDialogCancel>
+                            <AlertDialogCancel onClick={() => setTempSkipValue(skipRows.toString())} className="w-full">Ləğv et</AlertDialogCancel>
                         )}
+                     
                         <Button
                             variant="outline"
                             onClick={() => {
@@ -432,10 +543,23 @@ const SupervisorSingleSheet: React.FC = () => {
                                 setCurrentPage(1);
                                 setIsSkipModalOpen(false);
                             }}
-                            className="w-full sm:w-auto"
+                            className="w-full"
                         >
                             Sıfırdan başla
                         </Button>
+                           {hasLoadedInitialData && displayTotal > 0 && (
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    const lastPage = Math.ceil(displayTotal / rowsPerPage);
+                                    setCurrentPage(lastPage);
+                                    setIsSkipModalOpen(false);
+                                }}
+                                className="w-full"
+                            >
+                                Sonuncu səhifəyə get
+                            </Button>
+                        )}
                         <AlertDialogAction
                             onClick={() => {
                                 const val = Number(tempSkipValue) || 0;
@@ -444,7 +568,7 @@ const SupervisorSingleSheet: React.FC = () => {
                                 setCurrentPage(1);
                                 setIsSkipModalOpen(false);
                             }}
-                            className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
+                            className="bg-blue-600 hover:bg-blue-700 w-full"
                         >
                             {hasLoadedInitialData ? "Tətbiq et" : "Yüklə"}
                         </AlertDialogAction>

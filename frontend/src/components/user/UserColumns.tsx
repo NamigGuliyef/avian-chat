@@ -62,6 +62,72 @@ const UserColumns: React.FC = () => {
     const handleUpdateCell = useCallback(async (rowIndex: number, key: string, value: any) => {
         if (!sheetId) return;
         try {
+            // If Call status is being updated to "successful", auto-fill the date
+            if (key.toLowerCase().includes('status') && value === 'successful') {
+                const dateColumn = columns.find(col => 
+                    col.columnId?.dataKey?.toLowerCase().includes('date')
+                );
+                if (dateColumn?.columnId?.dataKey) {
+                    const now = new Date();
+                    const dateStr = now.toLocaleString('az-AZ', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                    });
+                    // Update both status and date
+                    const _d = await updateCell(sheetId, rowIndex, key, value);
+                    const _date = await updateCell(sheetId, rowIndex, dateColumn.columnId.dataKey, dateStr);
+                    
+                    setRows(prev => {
+                        return prev.map((r) => {
+                            if (r.rowNumber === rowIndex) {
+                                return { 
+                                    ...r, 
+                                    data: { 
+                                        ...r.data, 
+                                        [key]: value,
+                                        [dateColumn.columnId.dataKey]: dateStr
+                                    } 
+                                };
+                            }
+                            return r;
+                        })
+                    });
+                    toast.success(`"${key}" sütununa "${value}" əlavə edildi və tarix avtomatik dolduruldu.`);
+                    return;
+                }
+            }
+
+            // If other status values, clear the date
+            if (key.toLowerCase().includes('status') && value !== 'successful') {
+                const dateColumn = columns.find(col => 
+                    col.columnId?.dataKey?.toLowerCase().includes('date')
+                );
+                if (dateColumn?.columnId?.dataKey) {
+                    const _d = await updateCell(sheetId, rowIndex, key, value);
+                    const _date = await updateCell(sheetId, rowIndex, dateColumn.columnId.dataKey, '');
+                    
+                    setRows(prev => {
+                        return prev.map((r) => {
+                            if (r.rowNumber === rowIndex) {
+                                return { 
+                                    ...r, 
+                                    data: { 
+                                        ...r.data, 
+                                        [key]: value,
+                                        [dateColumn.columnId.dataKey]: ''
+                                    } 
+                                };
+                            }
+                            return r;
+                        })
+                    });
+                    toast.success(`"${key}" sütununa "${value}" əlavə edildi və tarix təmizləndi.`);
+                    return;
+                }
+            }
+
+            // Default behavior for other columns
             const _d = await updateCell(sheetId, rowIndex, key, value);
             setRows(prev => {
                 return prev.map((r) => {
@@ -77,7 +143,7 @@ const UserColumns: React.FC = () => {
         } catch (e) {
             toast.error("Cell yenilənərkən xəta baş verdi");
         }
-    }, [sheetId]);
+    }, [sheetId, columns]);
 
     const handleRefresh = () => {
         fetchData();

@@ -66,7 +66,8 @@ export const updateColumn = async (sheetId: string, columnId: string, columnData
 // ----------------- Rows -----------------
 export const getRows = async (sheetId: string, page = 1, limit = 50, skip = 0) => {
     const { data } = await axios.get(`/supervisor/sheet/${sheetId}/rows?page=${page}&limit=${limit}&skip=${skip}`);
-    return data.data;
+    // backend returns { data: rows, total, page, limit }
+    return data;
 };
 
 export const addRow = async (sheetId: string, rowData: Record<string, any>) => {
