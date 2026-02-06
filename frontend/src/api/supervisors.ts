@@ -64,13 +64,21 @@ export const updateColumn = async (sheetId: string, columnId: string, columnData
 };
 
 // ----------------- Rows -----------------
-export const getRows = async (sheetId: string, page = 1, limit = 50, skip = 0, search?: string, filters?: any) => {
+export const getRows = async (
+    sheetId: string,
+    page = 1,
+    limit = 50,
+    skip = 0,
+    search?: string,
+    filters?: any,
+    signal?: AbortSignal,
+) => {
     let url = `/supervisor/sheet/${sheetId}/rows?page=${page}&limit=${limit}&skip=${skip}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
     if (filters && Object.keys(filters).length > 0) {
         url += `&filters=${encodeURIComponent(JSON.stringify(filters))}`;
     }
-    const { data } = await axios.get(url);
+    const { data } = await axios.get(url, { signal });
     return data;
 };
 

@@ -66,9 +66,9 @@ export const EditableCell: React.FC<EditableCellProps> = React.memo(({
                 onClick={() => !isEditing && setIsEditing(true)}
             >
                 <Select
-                    value={localValue}
+                    value={localValue !== null && localValue !== undefined ? (typeof localValue === 'object' ? JSON.stringify(localValue) : String(localValue)) : undefined}
                     onValueChange={(val) => {
-                        if (val) {
+                        if (val !== undefined && val !== null) {
                             setLocalValue(val);
                         }
                     }}
@@ -82,8 +82,8 @@ export const EditableCell: React.FC<EditableCellProps> = React.memo(({
                         <SelectValue>
                             {localValue ? (
                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stringToColor(localValue) }} />
-                                    <span>{localValue}</span>
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stringToColor(typeof localValue === 'object' ? JSON.stringify(localValue) : String(localValue)) }} />
+                                    <span>{typeof localValue === 'object' ? JSON.stringify(localValue) : String(localValue)}</span>
                                 </div>
                             ) : (
                                 <span className="text-muted-foreground opacity-50">Seçin</span>
@@ -91,14 +91,18 @@ export const EditableCell: React.FC<EditableCellProps> = React.memo(({
                         </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                        {colDef.options?.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stringToColor(opt.value) }} />
-                                    {opt.label}
-                                </div>
-                            </SelectItem>
-                        ))}
+                        {colDef.options?.map((opt) => {
+                            const optValue = opt?.value !== undefined && opt?.value !== null ? (typeof opt.value === 'object' ? JSON.stringify(opt.value) : String(opt.value)) : '';
+                            const optLabel = opt?.label !== undefined && opt?.label !== null ? (typeof opt.label === 'object' ? JSON.stringify(opt.label) : String(opt.label)) : optValue;
+                            return (
+                                <SelectItem key={optValue} value={optValue}>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stringToColor(optValue) }} />
+                                        {optLabel}
+                                    </div>
+                                </SelectItem>
+                            );
+                        })}
                     </SelectContent>
                 </Select>
             </div>

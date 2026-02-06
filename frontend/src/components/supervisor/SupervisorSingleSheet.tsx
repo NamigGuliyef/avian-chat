@@ -9,7 +9,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -37,32 +37,35 @@ interface MemoizedRowProps {
 }
 
 const MemoizedRow: React.FC<MemoizedRowProps> = React.memo(({ row, columns, onUpdateCell, onDeleteRow }) => {
+    const columnCells = useMemo(() => {
+        return columns.map((col) => {
+            const colDef = col.columnId;
+            if (!colDef) return null;
+
+            return (
+                <td
+                    key={colDef._id}
+                    className="px-4 py-3 text-slate-700 text-sm border-r border-slate-100 hover:bg-blue-100 min-w-[150px]"
+                >
+                    <div className="max-h-20 overflow-auto">
+                        <EditableCell
+                            colDef={colDef}
+                            value={row.data[colDef.dataKey]}
+                            editable={col.editable}
+                            onSave={(val) => onUpdateCell(row.rowNumber, colDef.dataKey, val)}
+                        />
+                    </div>
+                </td>
+            );
+        });
+    }, [row, columns, onUpdateCell]);
+
     return (
-        <tr className="border-b border-slate-200 hover:bg-blue-50 transition-colors duration-150 group">
+        <tr className="border-b border-slate-200 hover:bg-blue-50 group">
             <td className="px-4 py-3 text-slate-600 font-medium text-sm bg-slate-50 group-hover:bg-blue-100 min-w-[60px]">
                 {row.rowNumber}
             </td>
-            {columns
-                .map((col) => {
-                    const colDef = col.columnId;
-                    if (!colDef) return null;
-
-                    return (
-                        <td
-                            key={colDef._id}
-                            className="px-4 py-3 text-slate-700 text-sm border-r border-slate-100 hover:bg-blue-100 transition-colors min-w-[150px]"
-                        >
-                            <div className="max-h-20 overflow-auto">
-                                <EditableCell
-                                    colDef={colDef}
-                                    value={row.data[colDef.dataKey]}
-                                    editable={col.editable}
-                                    onSave={(val) => onUpdateCell(row.rowNumber, colDef.dataKey, val)}
-                                />
-                            </div>
-                        </td>
-                    );
-                })}
+            {columnCells}
             <td className="px-4 py-3 text-right group-hover:bg-blue-100">
                 <Button
                     variant="ghost"
@@ -75,8 +78,14 @@ const MemoizedRow: React.FC<MemoizedRowProps> = React.memo(({ row, columns, onUp
             </td>
         </tr>
     );
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.row === nextProps.row &&
+        prevProps.columns === nextProps.columns &&
+        prevProps.onUpdateCell === nextProps.onUpdateCell &&
+        prevProps.onDeleteRow === nextProps.onDeleteRow
+    );
 });
-
 const SupervisorSingleSheet: React.FC = () => {
     const { excelId, sheetId, sheetName } = useParams();
     const navigate = useNavigate();
@@ -103,11 +112,23 @@ const SupervisorSingleSheet: React.FC = () => {
     const [filterOptions, setFilterOptions] = useState<Record<string, string[]>>({});
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
     const [expandedFilters, setExpandedFilters] = useState<string[]>([]);
+
     const [filterSearch, setFilterSearch] = useState<Record<string, string>>({});
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const debouncedSearchQuery = useRef<string>('');
 
     const sortedColumns = useMemo(() => {
         return [...columns].sort((a, b) => (a.order || 0) - (b.order || 0));
     }, [columns]);
+
+    // cleanup pending search debounce on unmount
+    useEffect(() => {
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     const displayTotal = useMemo(() => {
         if (totalRows && totalRows > 0) return totalRows;
@@ -145,16 +166,16 @@ const SupervisorSingleSheet: React.FC = () => {
 
 
 
-    const fetchColumns = async () => {
+    const fetchColumns = useCallback(async () => {
         try {
             const data = await getColumns(sheetId!);
             setColumns(data);
         } catch (e) {
             toast.error("Sütunlar gətirilərkən xəta baş verdi");
         }
-    };
+    }, [sheetId]);
 
-    const fetchRows = async () => {
+    const fetchRows = useCallback(async () => {
         try {
             setLoading(true)
             const res = await getRows(sheetId!, currentPage, rowsPerPage, skipRows, searchQuery, filters);
@@ -180,7 +201,7 @@ const SupervisorSingleSheet: React.FC = () => {
         } finally {
             setLoading(false)
         }
-    };
+    }, [sheetId, currentPage, rowsPerPage, skipRows, searchQuery, filters]);
 
     // ---------------- Row Actions ----------------
     const handleAddRow = async () => {
@@ -499,10 +520,17 @@ const SupervisorSingleSheet: React.FC = () => {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                             <Input
                                 placeholder="Axtarış (Nömrə, Sətir və s.)..."
-                                value={searchQuery}
+                                value={debouncedSearchQuery.current}
                                 onChange={(e) => {
-                                    setSearchQuery(e.target.value);
-                                    setCurrentPage(1);
+                                    const value = e.target.value;
+                                    debouncedSearchQuery.current = value;
+                                    if (searchTimeoutRef.current) {
+                                        clearTimeout(searchTimeoutRef.current);
+                                    }
+                                    searchTimeoutRef.current = setTimeout(() => {
+                                        setSearchQuery(value);
+                                        setCurrentPage(1);
+                                    }, 500);
                                 }}
                                 className="pl-9"
                             />
@@ -684,6 +712,21 @@ const SupervisorSingleSheet: React.FC = () => {
                             />
                         </div>
                         <AlertDialogFooter className="flex flex-col gap-2">
+                            <AlertDialogCancel onClick={() => setIsSkipModalOpen(false)} className="w-full bg-red-50 hover:bg-red-600 hover:text-white text-red-600 border-red-200">
+                                Ləğv et
+                            </AlertDialogCancel>
+                            {hasLoadedInitialData && (
+                                <Button
+                                    onClick={() => {
+                                        const lastPage = Math.ceil(totalRows / rowsPerPage);
+                                        setCurrentPage(lastPage);
+                                        setIsSkipModalOpen(false);
+                                    }}
+                                    className="bg-slate-600 hover:bg-slate-700 w-full"
+                                >
+                                    Son sətirə Get
+                                </Button>
+                            )}
                             <AlertDialogAction
                                 onClick={() => {
                                     const val = Number(tempSkipValue) || 0;
