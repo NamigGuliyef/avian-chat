@@ -64,7 +64,7 @@ const UserColumns: React.FC = () => {
         try {
             // If Call status is being updated to "successful", auto-fill the date
             if (key.toLowerCase().includes('status') && value === 'successful') {
-                const dateColumn = columns.find(col => 
+                const dateColumn = columns.find(col =>
                     col.columnId?.dataKey?.toLowerCase().includes('date')
                 );
                 if (dateColumn?.columnId?.dataKey) {
@@ -77,17 +77,17 @@ const UserColumns: React.FC = () => {
                     // Update both status and date
                     const _d = await updateCell(sheetId, rowIndex, key, value);
                     const _date = await updateCell(sheetId, rowIndex, dateColumn.columnId.dataKey, dateStr);
-                    
+
                     setRows(prev => {
                         return prev.map((r) => {
                             if (r.rowNumber === rowIndex) {
-                                return { 
-                                    ...r, 
-                                    data: { 
-                                        ...r.data, 
+                                return {
+                                    ...r,
+                                    data: {
+                                        ...r.data,
                                         [key]: value,
                                         [dateColumn.columnId.dataKey]: dateStr
-                                    } 
+                                    }
                                 };
                             }
                             return r;
@@ -100,23 +100,23 @@ const UserColumns: React.FC = () => {
 
             // If other status values, clear the date
             if (key.toLowerCase().includes('status') && value !== 'successful') {
-                const dateColumn = columns.find(col => 
+                const dateColumn = columns.find(col =>
                     col.columnId?.dataKey?.toLowerCase().includes('date')
                 );
                 if (dateColumn?.columnId?.dataKey) {
                     const _d = await updateCell(sheetId, rowIndex, key, value);
                     const _date = await updateCell(sheetId, rowIndex, dateColumn.columnId.dataKey, '');
-                    
+
                     setRows(prev => {
                         return prev.map((r) => {
                             if (r.rowNumber === rowIndex) {
-                                return { 
-                                    ...r, 
-                                    data: { 
-                                        ...r.data, 
+                                return {
+                                    ...r,
+                                    data: {
+                                        ...r.data,
                                         [key]: value,
                                         [dateColumn.columnId.dataKey]: ''
-                                    } 
+                                    }
                                 };
                             }
                             return r;
@@ -131,13 +131,23 @@ const UserColumns: React.FC = () => {
             const _d = await updateCell(sheetId, rowIndex, key, value);
             setRows(prev => {
                 return prev.map((r) => {
-                    if (r.rowNumber === rowIndex) return { ...r, data: { ...r.data, [key]: value } };
+                    if (r.rowNumber === rowIndex) {
+                        if (key === 'remindMe') {
+                            return { ...r, remindMe: value };
+                        }
+                        return { ...r, data: { ...r.data, [key]: value } };
+                    }
                     return r;
                 })
             });
             if (key === 'date') {
                 toast.success(`"${key}" sütununa "${formatDate(_d.data[key])}" əlavə edildi.`)
-            } else {
+            }
+
+            else if (key === 'remindMe') {
+                toast.success(`Bildirişlər səhifəsinə əlavə edildi!`)
+            }
+            else {
                 toast.success(`"${key}" sütununa "${_d.data[key]}" əlavə edildi.`)
             }
         } catch (e) {
@@ -207,7 +217,7 @@ const UserColumns: React.FC = () => {
                             <span className="font-semibold">{columns.length}</span> Sütun
                         </span>
                     </div>
-                    
+
                     {/* Search Input */}
                     <div className="mt-3 flex items-center gap-2">
                         <div className="flex-1 relative">
@@ -246,6 +256,9 @@ const UserColumns: React.FC = () => {
                                     <th className="px-4 py-3 text-left text-white font-semibold text-sm border-b-2 border-slate-700 min-w-[60px]">
                                         #
                                     </th>
+                                    <th className="px-4 py-3 text-left text-white font-semibold text-sm border-b-2 border-slate-700 min-w-[60px]">
+                                        Zəng et
+                                    </th>
                                     {columns.sort((a, b) => a.order - b.order).map((c) => c.columnId).map((col) => (
                                         <th
                                             key={col?._id}
@@ -269,6 +282,14 @@ const UserColumns: React.FC = () => {
                                     >
                                         <td className="px-4 py-3 text-slate-600 font-medium text-sm bg-slate-50 group-hover:bg-blue-100 min-w-[60px]">
                                             {row.rowNumber}
+                                        </td>
+                                        <td className="px-4 py-3 text-center border-r border-slate-100 min-w-[60px]">
+                                            <input
+                                                type="checkbox"
+                                                checked={row.remindMe}
+                                                onChange={(e) => handleUpdateCell(row.rowNumber, 'remindMe', e.target.checked)}
+                                                className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer"
+                                            />
                                         </td>
                                         {columns
                                             .sort((a, b) => a.order - b.order)

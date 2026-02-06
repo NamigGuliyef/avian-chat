@@ -1,6 +1,6 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { ChevronDown, LogOut, MessageSquare } from "lucide-react";
+import { ChevronDown, LogOut, MessageSquare, Bell } from "lucide-react";
 import { Navigate, Outlet, useNavigate } from "react-router-dom";
 
 // const statusColors: Record<OnlineStatus, string> = {
@@ -47,6 +47,10 @@ export default function UserOutlet() {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => navigate("/user/reminders")} className="cursor-pointer">
+                <Bell className="h-4 w-4 mr-2 text-slate-600" />
+                <span>Bildirişlər</span>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/user/excels")} className="cursor-pointer">
                 <MessageSquare className="h-4 w-4 mr-2 text-slate-600" />
                 <span>Excel Faylları</span>

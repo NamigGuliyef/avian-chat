@@ -202,12 +202,16 @@ export class SupervisorController {
     @Query('page') page = '1',
     @Query('limit') limit = '50',
     @Query('skip') skip = '0',
+    @Query('search') search?: string,
+    @Query('filters') filters?: string,
   ) {
     return this.supervisorService.getRows(
       sheetId,
       Number(page),
       Number(limit),
       Number(skip),
+      search,
+      filters,
     );
   }
 
@@ -294,5 +298,10 @@ export class SupervisorController {
     return this.supervisorService.getSupervisorTableView(startDate, endDate)
   }
 
-
+  @ApiOperation({ summary: 'Sheet üçün filtr seçimlərini (unikal dəyərləri) gətir' })
+  @Get('sheet/:sheetId/filters')
+  @HttpCode(HttpStatus.OK)
+  getFilterOptions(@Param('sheetId') sheetId: Types.ObjectId) {
+    return this.supervisorService.getFilterOptions(sheetId);
+  }
 }

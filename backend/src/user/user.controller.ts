@@ -65,6 +65,13 @@ export class UserController {
     async getUserColumns() {
         return await this.userService.getUserColumns();
     }
+
+    @ApiOperation({ summary: 'Xatırlatmaları gətir' })
+    @Get('/reminders')
+    @HttpCode(HttpStatus.OK)
+    async getReminders() {
+        return await this.userService.getReminders();
+    }
 }
 
 

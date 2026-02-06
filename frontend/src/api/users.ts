@@ -64,8 +64,12 @@ export const getColumnsBySheetId = async (sheetId, page = 1, limit = 50, search 
     const { data } = await axios.get(url);
     return data.data;
 }
-
 export interface IUserSheetResponse {
     columns: SheetColumnForm[];
     rows: SheetRowForm[];
+}
+
+export const getReminders = async (): Promise<any[]> => {
+    const { data } = await axios.get(`/user/reminders`);
+    return data;
 }

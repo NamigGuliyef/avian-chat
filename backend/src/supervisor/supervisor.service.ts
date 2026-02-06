@@ -509,34 +509,161 @@ export class SupervisorService {
 
     let rowNumber = lastRow ? lastRow.rowNumber + 1 : 1;
 
-    const docs = rows.map((row) => ({
-      sheetId,
-      rowNumber: rowNumber++,
-      data: row,
-    }));
+    // Duplicate handling logic
+    const successfulStatuses = ['Successful', 'Müvəffəqiyyətli', 'Uğurlu'];
+    const wrongNumberStatuses = ['Wrong Number', 'Səhv nömrə', 'Yanlış nömrə'];
+    const skipStatuses = [...successfulStatuses, ...wrongNumberStatuses];
 
-    await this.sheetRowModel.insertMany(docs, { ordered: false });
+    // Get existing rows with phone and status from this sheet
+    const existingRows = await this.sheetRowModel.find({
+      sheetId,
+      $or: [
+        { 'data.status': { $in: skipStatuses } },
+        { 'data.Status': { $in: skipStatuses } },
+        { 'data.Zəng statusu': { $in: skipStatuses } }
+      ]
+    }).select('data.phone data.status data.Status data.Zəng statusu').lean();
+
+    const existingPhoneMap = new Map();
+    existingRows.forEach(row => {
+      const phone = String(row.data?.phone).trim();
+      if (phone) {
+        existingPhoneMap.set(phone, true);
+      }
+    });
+
+    const docs: any[] = [];
+    for (const rowData of rows) {
+      const phone = String(rowData.phone || '').trim();
+      const status = String(rowData.status || rowData.Status || rowData['Zəng statusu'] || '').trim();
+
+      // Skip if phone exists and status is one of the "skip" statuses
+      if (phone && existingPhoneMap.has(phone) && skipStatuses.some(s => status.includes(s) || s.includes(status))) {
+        continue;
+      }
+
+      // Ensure phone-like fields are stored as strings to avoid regex search issues
+      const cleanedRowData = { ...rowData };
+      Object.keys(cleanedRowData).forEach(key => {
+        if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('nömrə') || key.toLowerCase() === 'mobil') {
+          if (cleanedRowData[key] !== null && cleanedRowData[key] !== undefined) {
+            cleanedRowData[key] = String(cleanedRowData[key]).trim();
+          }
+        }
+      });
+
+      docs.push({
+        sheetId,
+        rowNumber: rowNumber++,
+        data: cleanedRowData,
+      });
+    }
+
+    if (docs.length > 0) {
+      await this.sheetRowModel.insertMany(docs, { ordered: false });
+    }
 
     return {
       inserted: docs.length,
+      skipped: rows.length - docs.length
     };
   }
 
   // ---------------- GET ROWS ----------------
-  async getRows(sheetId: Types.ObjectId, page = 1, limit = 50, skipRows = 0) {
+  async getRows(
+    sheetId: Types.ObjectId,
+    page = 1,
+    limit = 50,
+    skipRows = 0,
+    search?: string,
+    filters?: string,
+  ) {
     const skipOffset = (page - 1) * limit + skipRows;
+    const objSheetId = (typeof sheetId === 'string') ? new Types.ObjectId(sheetId) : sheetId;
+    console.log(`[getRows] ID: ${objSheetId}, Type: ${typeof sheetId}, Page: ${page}`);
+    const query: any = { sheetId: objSheetId };
+
+    // Fetch column keys AND all existing keys in data objects for this sheet
+    let dataKeys: string[] = [];
+    if (search) {
+      const [sheet, keysInData, sampleCount] = await Promise.all([
+        this.sheetModel.findById(objSheetId).populate('columnIds.columnId').lean(),
+        this.sheetRowModel.aggregate([
+          { $match: { sheetId: objSheetId } },
+          // { $limit: 100 }, // Search ALL keys in the sheet for reliability
+          { $project: { keys: { $objectToArray: "$data" } } },
+          { $unwind: "$keys" },
+          { $group: { _id: null, allKeys: { $addToSet: "$keys.k" } } }
+        ]),
+        this.sheetRowModel.countDocuments({ sheetId: objSheetId })
+      ]);
+
+      const columnKeys = sheet?.columnIds
+        ?.map((c: any) => c.columnId?.dataKey)
+        .filter((k: string) => k) || [];
+
+      const foundKeysInData = keysInData[0]?.allKeys || [];
+      const fallbacks = ['phone', 'Phone', 'Mobil', 'mobil', 'nömrə', 'Nömrə', 'number', 'Number', '№', 'status', 'Status', 'Zəng nömrəsi', 'Əlaqə nömrəsi'];
+      dataKeys = Array.from(new Set([...columnKeys, ...foundKeysInData, ...fallbacks]));
+
+      console.log(`[getRows] Search: "${search}" | Total rows in sheet: ${sampleCount} | Gathered Keys:`, dataKeys.length);
+    }
+
+    // Apply filters logic FIRST to use indexes efficiently
+    if (filters) {
+      try {
+        const parsedFilters = JSON.parse(filters);
+        Object.keys(parsedFilters).forEach((key) => {
+          const values = parsedFilters[key];
+          if (Array.isArray(values) && values.length > 0) {
+            // Use specific index for phone if key is phone
+            if (key === 'phone') {
+              query['data.phone'] = { $in: values };
+            } else {
+              query[`data.${key}`] = { $in: values };
+            }
+          }
+        });
+      } catch (e) {
+        console.error('Error parsing filters:', e);
+      }
+    }
+
+    // Apply search logic
+    if (search) {
+      // Create a flexible regex that allows for spaces, dashes, or dots between characters
+      // e.g. "551000009" will match "551 000 009" or "551-000-009"
+      const flexibleSearch = search.split('').join('[\\s\\-\\.\\(\\)]*');
+      const searchRegex = { $regex: flexibleSearch, $options: 'i' };
+      const searchNumber = Number(search);
+      const orConditions: any[] = [{ rowNumber: searchNumber || -1 }];
+
+      // Search across all identified data keys
+      dataKeys.forEach(key => {
+        orConditions.push({ [`data.${key}`]: searchRegex });
+
+        // If search is numeric, try searching for the number as well
+        if (!isNaN(searchNumber)) {
+          orConditions.push({ [`data.${key}`]: searchNumber });
+          // Also try matching the number within a string if possible
+          // (regex already handles this for strings)
+        }
+      });
+
+      query.$or = orConditions;
+    }
 
     const [rows, total] = await Promise.all([
       this.sheetRowModel
-        .find({ sheetId })
+        .find(query)
         .sort({ rowNumber: 1 })
         .skip(skipOffset)
         .limit(limit)
-        .lean(), // IMPORTANT: plain objects
-      this.sheetRowModel.countDocuments({ sheetId }),
+        .lean(),
+      this.sheetRowModel.countDocuments(query),
     ]);
 
-    const maskedRows = rows.map(row => ({
+    const maskedRows = rows.map((row) => ({
       ...row,
       data: {
         ...row.data,
@@ -544,6 +671,33 @@ export class SupervisorService {
       },
     }));
     return { data: maskedRows, total, page, limit };
+  }
+
+  async getFilterOptions(sheetId: Types.ObjectId) {
+    // Optimization: Consider using a more targeted aggregation or even caching
+    // For now, refining the pipeline to be slightly cleaner
+    const filterOptions = await this.sheetRowModel.aggregate([
+      { $match: { sheetId: new Types.ObjectId(sheetId) } },
+      { $limit: 10000 }, // Safety limit for aggregation on very large sheets
+      { $project: { data: 1 } },
+      { $project: { dataKeys: { $objectToArray: '$data' } } },
+      { $unwind: '$dataKeys' },
+      { $match: { 'dataKeys.k': { $nin: ['phone', 'number', '№', 'No'] } } }, // Exclude phone and number fields from filter choices
+      {
+        $group: {
+          _id: '$dataKeys.k',
+          values: { $addToSet: '$dataKeys.v' },
+        },
+      },
+    ]);
+
+    return filterOptions.reduce((acc, curr) => {
+      acc[curr._id] = curr.values
+        .filter((v) => v !== null && v !== undefined && v !== '')
+        .map((v) => String(v))
+        .sort();
+      return acc;
+    }, {});
   }
 
 
@@ -566,10 +720,13 @@ export class SupervisorService {
     rowNumber: number,
     sheetCellData: SheetCellDto
   ) {
-    const updateQuery: any = { [`data.${sheetCellData.key}`]: sheetCellData.value };
+    const isRemindMe = sheetCellData.key === 'remindMe';
+    const updateQuery: any = isRemindMe
+      ? { remindMe: !!sheetCellData.value }
+      : { [`data.${sheetCellData.key}`]: sheetCellData.value };
 
     // Status dəyişdirildikdə tarix avtomatik yenilənsin
-    if (sheetCellData.key?.toLowerCase().includes('status')) {
+    if (!isRemindMe && sheetCellData.key?.toLowerCase().includes('status')) {
       const sheet = await this.sheetModel
         .findById(sheetId)
         .populate({ path: 'columnIds', select: 'columnId' });

@@ -64,9 +64,18 @@ export const updateColumn = async (sheetId: string, columnId: string, columnData
 };
 
 // ----------------- Rows -----------------
-export const getRows = async (sheetId: string, page = 1, limit = 50, skip = 0) => {
-    const { data } = await axios.get(`/supervisor/sheet/${sheetId}/rows?page=${page}&limit=${limit}&skip=${skip}`);
-    // backend returns { data: rows, total, page, limit }
+export const getRows = async (sheetId: string, page = 1, limit = 50, skip = 0, search?: string, filters?: any) => {
+    let url = `/supervisor/sheet/${sheetId}/rows?page=${page}&limit=${limit}&skip=${skip}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (filters && Object.keys(filters).length > 0) {
+        url += `&filters=${encodeURIComponent(JSON.stringify(filters))}`;
+    }
+    const { data } = await axios.get(url);
+    return data;
+};
+
+export const getFilterOptions = async (sheetId: string) => {
+    const { data } = await axios.get(`/supervisor/sheet/${sheetId}/filters`);
     return data;
 };
 
@@ -84,7 +93,7 @@ export const updateCell = async (sheetId: string, rowNumber: number, key: string
     const { data } = await axios.patch(`/supervisor/sheet/${sheetId}/rows/${rowNumber}`, { key, value });
     return data;
 };
-    
+
 export const getSupervisorReports = async (startDate?: string, endDate?: string) => {
     let query = "";
     if (startDate && endDate) {

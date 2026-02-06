@@ -268,6 +268,7 @@ export interface SheetRowForm {
     sheetId: string;
     rowNumber: number;
     data: any;
+    remindMe: boolean;
 }
 export interface SheetColumnForm {
     columnId: ISheetColumn;

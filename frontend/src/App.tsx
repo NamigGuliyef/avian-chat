@@ -40,6 +40,7 @@ import { Roles } from "./types/types";
 import SupervisorReportsPage from "./components/admin/SupervisorReportsPage";
 import SupervisorProjectColumns from "./components/admin/SupervisorProjectColumns";
 import PartnerReportsPage from "./components/partner/PartnerReportsPage";
+import RemindersPage from "./components/user/RemindersPage";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +102,7 @@ const App = () => (
                 <Route path="excels" element={<UserExcels />} />
                 <Route path="sheets/:excelId/:excelName" element={<UserSheets />} />
                 <Route path="columns/:sheetId/:sheetName" element={<UserColumns />} />
+                <Route path="reminders" element={<RemindersPage />} />
               </Route>
             </Route>
 

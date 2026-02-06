@@ -13,7 +13,12 @@ export class SheetRow {
 
     @Prop({ type: Object, default: {} })
     data: Record<string, any>;
+
+    @Prop({ type: Boolean, default: false })
+    remindMe: boolean;
 }
 
 export const SheetRowSchema = SchemaFactory.createForClass(SheetRow);
 SheetRowSchema.index({ sheetId: 1, rowNumber: 1 }, { unique: true });
+SheetRowSchema.index({ sheetId: 1, 'data.phone': 1 }); // Specific index for phone filtering
+SheetRowSchema.index({ 'data.$**': 1 }); // Wildcard index for all other dynamic fields
