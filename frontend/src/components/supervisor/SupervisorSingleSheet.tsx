@@ -544,6 +544,19 @@ const SupervisorSingleSheet: React.FC = () => {
                             >
                                 <RefreshCcw className="w-4 h-4 mr-2" /> Skip: {skipRows}
                             </Button>
+                            {hasLoadedInitialData && (
+                                <Button
+                                    onClick={() => {
+                                        const totalAfterSkip = Math.max(0, totalRows - skipRows);
+                                        const lastPage = Math.max(1, Math.ceil(totalAfterSkip / rowsPerPage));
+                                        setCurrentPage(lastPage);
+                                        setIsSkipModalOpen(false);
+                                    }}
+                                    className="bg-slate-600 hover:bg-slate-700 w-full"
+                                >
+                                    Son sətirə Get
+                                </Button>
+                            )}
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -715,18 +728,6 @@ const SupervisorSingleSheet: React.FC = () => {
                             <AlertDialogCancel onClick={() => setIsSkipModalOpen(false)} className="w-full bg-red-50 hover:bg-red-600 hover:text-white text-red-600 border-red-200">
                                 Ləğv et
                             </AlertDialogCancel>
-                            {hasLoadedInitialData && (
-                                <Button
-                                    onClick={() => {
-                                        const lastPage = Math.ceil(totalRows / rowsPerPage);
-                                        setCurrentPage(lastPage);
-                                        setIsSkipModalOpen(false);
-                                    }}
-                                    className="bg-slate-600 hover:bg-slate-700 w-full"
-                                >
-                                    Son sətirə Get
-                                </Button>
-                            )}
                             <AlertDialogAction
                                 onClick={() => {
                                     const val = Number(tempSkipValue) || 0;
