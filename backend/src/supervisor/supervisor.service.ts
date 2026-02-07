@@ -509,38 +509,39 @@ export class SupervisorService {
 
     let rowNumber = lastRow ? lastRow.rowNumber + 1 : 1;
 
-    // Duplicate handling logic
-    const successfulStatuses = ['Successful', 'Müvəffəqiyyətli', 'Uğurlu'];
-    const wrongNumberStatuses = ['Wrong Number', 'Səhv nömrə', 'Yanlış nömrə'];
-    const skipStatuses = [...successfulStatuses, ...wrongNumberStatuses];
+    // Optimized Duplicate handling logic 
+    const skipStatuses = ['Successful', 'Wrong Number'];
 
-    // Get existing rows with phone and status from this sheet
-    const existingRows = await this.sheetRowModel.find({
+    // 1. Get phones that already have a result status in the DB
+    const phonesWithResultArray = await this.sheetRowModel.distinct('data.phone', {
       sheetId,
-      $or: [
-        { 'data.status': { $in: skipStatuses } },
-        { 'data.Status': { $in: skipStatuses } },
-        { 'data.Zəng statusu': { $in: skipStatuses } }
-      ]
-    }).select('data.phone data.status data.Status data.Zəng statusu').lean();
-
-    const existingPhoneMap = new Map();
-    existingRows.forEach(row => {
-      const phone = String(row.data?.phone).trim();
-      if (phone) {
-        existingPhoneMap.set(phone, true);
-      }
+      'data.callstatus': { $in: skipStatuses }
     });
+    const existingPhoneWithResultSet = new Set(phonesWithResultArray.filter(Boolean).map(p => String(p).trim()));
+
+    // 2. Get ALL phones currently in the DB for this sheet
+    const allExistingPhonesArray = await this.sheetRowModel.distinct('data.phone', { sheetId });
+    const allExistingPhoneSet = new Set(allExistingPhonesArray.filter(Boolean).map(p => String(p).trim()));
+
+    const processedPhonesInBatch = new Set<string>();
 
     const docs: any[] = [];
     for (const rowData of rows) {
       const phone = String(rowData.phone || '').trim();
-      const status = String(rowData.status || rowData.Status || rowData['Zəng statusu'] || '').trim();
+      const status = String(rowData.callstatus || '').trim();
 
-      // Skip if phone exists and status is one of the "skip" statuses
-      if (phone && existingPhoneMap.has(phone) && skipStatuses.some(s => status.includes(s) || s.includes(status))) {
-        continue;
-      }
+      if (!phone) continue;
+
+      // Condition 1: If phone already has a result in the DB, skip.
+      if (existingPhoneWithResultSet.has(phone)) continue;
+
+      // Condition 2: If phone exists in DB with ANY status AND incoming row IS a result, skip.
+      if (skipStatuses.includes(status) && allExistingPhoneSet.has(phone)) continue;
+
+      // Condition 3: Batch deduplication - skip if we've already seen this phone in this Excel file.
+      if (processedPhonesInBatch.has(phone)) continue;
+
+      processedPhonesInBatch.add(phone);
 
       // Ensure phone-like fields are stored as strings to avoid regex search issues
       const cleanedRowData = { ...rowData };
