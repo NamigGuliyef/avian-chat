@@ -95,9 +95,9 @@ export const EditableCell: React.FC<EditableCellProps> = React.memo(({
                             const optValue = opt?.value !== undefined && opt?.value !== null ? (typeof opt.value === 'object' ? JSON.stringify(opt.value) : String(opt.value)) : '';
                             const optLabel = opt?.label !== undefined && opt?.label !== null ? (typeof opt.label === 'object' ? JSON.stringify(opt.label) : String(opt.label)) : optValue;
                             return (
-                                <SelectItem key={optValue} value={optValue}>
+                                <SelectItem key={optLabel} value={optLabel}>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stringToColor(optValue) }} />
+                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stringToColor(optLabel) }} />
                                         {optLabel}
                                     </div>
                                 </SelectItem>

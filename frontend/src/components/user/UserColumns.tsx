@@ -63,7 +63,7 @@ const UserColumns: React.FC = () => {
         if (!sheetId) return;
         try {
             // If Call status is being updated to "successful", auto-fill the date
-            if (key.toLowerCase().includes('status') && value === 'successful') {
+            if (key.toLowerCase().includes('status') && value === 'Successful') {
                 const dateColumn = columns.find(col =>
                     col.columnId?.dataKey?.toLowerCase().includes('date')
                 );
@@ -99,7 +99,7 @@ const UserColumns: React.FC = () => {
             }
 
             // If other status values, clear the date
-            if (key.toLowerCase().includes('status') && value !== 'successful') {
+            if (key.toLowerCase().includes('status') && value !== 'Successful') {
                 const dateColumn = columns.find(col =>
                     col.columnId?.dataKey?.toLowerCase().includes('date')
                 );
