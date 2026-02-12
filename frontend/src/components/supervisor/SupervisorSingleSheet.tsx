@@ -112,16 +112,16 @@ const SupervisorSingleSheet: React.FC = () => {
     const [filterOptions, setFilterOptions] = useState<Record<string, string[]>>({});
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
     const [expandedFilters, setExpandedFilters] = useState<string[]>([]);
-
     const [filterSearch, setFilterSearch] = useState<Record<string, string>>({});
+
+    const [searchInput, setSearchInput] = useState('');
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const debouncedSearchQuery = useRef<string>('');
 
     const sortedColumns = useMemo(() => {
         return [...columns].sort((a, b) => (a.order || 0) - (b.order || 0));
     }, [columns]);
 
-    // cleanup pending search debounce on unmount
+    // cleanup pending transitions on unmount
     useEffect(() => {
         return () => {
             if (searchTimeoutRef.current) {
@@ -435,9 +435,21 @@ const SupervisorSingleSheet: React.FC = () => {
 
                             const uniqueValues = filterOptions[columnId] || [];
                             const searchValue = filterSearch[columnId] || '';
-                            const filteredValues = uniqueValues.filter(v =>
+                            const filteredValues = Array.from(new Set(uniqueValues.filter(v =>
                                 String(v).toLowerCase().includes(searchValue.toLowerCase())
-                            );
+                            ).map(v => {
+                                // If it's a date-like column, format it to DD/MM/YYYY
+                                if (columnId.toLowerCase().includes('date')) {
+                                    const d = new Date(v as string);
+                                    if (!isNaN(d.getTime())) {
+                                        const dd = String(d.getDate()).padStart(2, '0');
+                                        const mm = String(d.getMonth() + 1).padStart(2, '0');
+                                        const yyyy = d.getFullYear();
+                                        return `${dd}/${mm}/${yyyy}`;
+                                    }
+                                }
+                                return v;
+                            })));
 
                             return (
                                 <div key={columnId} className="mb-5 pb-4 border-b border-slate-200 last:border-0">
@@ -520,17 +532,13 @@ const SupervisorSingleSheet: React.FC = () => {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                             <Input
                                 placeholder="Axtarış (Nömrə, Sətir və s.)..."
-                                value={debouncedSearchQuery.current}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    debouncedSearchQuery.current = value;
-                                    if (searchTimeoutRef.current) {
-                                        clearTimeout(searchTimeoutRef.current);
-                                    }
-                                    searchTimeoutRef.current = setTimeout(() => {
-                                        setSearchQuery(value);
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        setSearchQuery(searchInput);
                                         setCurrentPage(1);
-                                    }, 500);
+                                    }
                                 }}
                                 className="pl-9"
                             />
