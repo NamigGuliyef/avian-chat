@@ -510,33 +510,47 @@ export class SupervisorService {
     let rowNumber = lastRow ? lastRow.rowNumber + 1 : 1;
 
     // Duplicate handling logic 
-    const skipStatuses = ['Successful', 'Wrong Number', 'Successful', 'wrong_number'];
+    // Get all existing phone numbers in the DB for this sheet (ignoring status)
+    // Check both 'phone' and 'number' keys as legacy data might use 'number'
+    const [existingPhones, existingNumbers] = await Promise.all([
+      this.sheetRowModel.distinct('data.phone', { sheetId }),
+      this.sheetRowModel.distinct('data.number', { sheetId })
+    ]);
 
-    // Get numbers that already have "Successful" or "Wrong Number" status in the DB
-    const numbersWithResultArray = await this.sheetRowModel.distinct('data.number', {
-      sheetId,
-      'data.callstatus': { $in: skipStatuses }
-    });
-    const existingNumberWithResultSet = new Set(numbersWithResultArray.filter(Boolean).map(p => String(p).trim()));
+    const existingPhoneSet = new Set([
+      ...existingPhones.filter(Boolean).map(p => String(p).trim()),
+      ...existingNumbers.filter(Boolean).map(p => String(p).trim())
+    ]);
 
-    const processedNumbersInBatch = new Set<string>();
+    const processedPhonesInBatch = new Set<string>();
 
     const docs: any[] = [];
     for (const rowData of rows) {
-      const number = String(rowData.number || '').trim();
+      // Prioritize 'phone', fallback to 'number' if needed, or strictly use 'phone' if that's the requirement.
+      // User said "field name phone".
+      let phone = rowData.phone;
+      if (!phone && rowData.number) {
+        phone = rowData.number;
+      }
 
-      if (!number) continue;
+      const phoneStr = String(phone || '').trim();
 
-      // Skip if number already has "Successful" or "Wrong Number" status in the DB
-      if (existingNumberWithResultSet.has(number)) continue;
+      if (!phoneStr) continue;
 
-      // Batch deduplication - skip if we've already seen this number in this Excel file
-      if (processedNumbersInBatch.has(number)) continue;
+      // Skip if phone already exists in DB
+      if (existingPhoneSet.has(phoneStr)) continue;
 
-      processedNumbersInBatch.add(number);
+      // Batch deduplication - skip if we've already seen this phone in this Excel file
+      if (processedPhonesInBatch.has(phoneStr)) continue;
+
+      processedPhonesInBatch.add(phoneStr);
 
       // Ensure number-like fields are stored as strings to avoid regex search issues
       const cleanedRowData = { ...rowData };
+
+      // Ensure the canonical 'phone' field is set if we found it under 'number'
+      // or just keep it as is. 
+      // The original code was cleaning keys.
       Object.keys(cleanedRowData).forEach(key => {
         if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('nömrə') || key.toLowerCase() === 'mobil' || key.toLowerCase() === 'number') {
           if (cleanedRowData[key] !== null && cleanedRowData[key] !== undefined) {
