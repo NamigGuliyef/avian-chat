@@ -1,5 +1,5 @@
 import { addProjectMember, getProjectById, removeProjectMember } from "@/api/admin";
-import { searchUsers } from "@/api/users";
+import { searchUsers, PaginatedResponse } from "@/api/users";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,6 +51,7 @@ const SingleProject = () => {
     const [isMemberDialogOpen, setIsMemberDialogOpen] = useState<"A" | "S" | "P" | null>(null);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
+    // results come from the paginated response returned by `searchUsers` (see api/users.ts)
     const [results, setResults] = useState<IUser[]>([]);
     const [memberToRemove, setMemberToRemove] = useState<{ id: string, type: "S" | "A" | "P" } | null>(null);
     // const [channels, setChannels] = useState<IChannel[]>([]);
@@ -71,7 +72,10 @@ const SingleProject = () => {
             query: debouncedSearch.toLowerCase(),
             role: (isMemberDialogOpen === "S" ? Roles.Supervisor : isMemberDialogOpen === "A" ? Roles.Agent : Roles.Partner)
         })
-            .then(setResults)
+            .then((d: PaginatedResponse) => {
+                // the API returns a PaginatedResponse with `data` field
+                setResults(d?.data || []);
+            })
             .finally(() => setLoading(false));
     }, [debouncedSearch, isMemberDialogOpen, projectId]);
 
@@ -108,6 +112,8 @@ const SingleProject = () => {
                 setProject((pre) => ({ ...pre, supervisors: [...pre.supervisors, member] as any }))
             } else if (type === "A") {
                 setProject((pre) => ({ ...pre, agents: [...pre.agents, member] as any }))
+            } else if (type === "P") {
+                setProject((pre) => ({ ...pre, partners: [...pre.partners, member] as any }))
             }
         })
         setIsMemberDialogOpen(null);
@@ -214,10 +220,13 @@ const SingleProject = () => {
                                                         {user.name} {user.surname}
                                                     </span>
 
-                                                    {(isMemberDialogOpen === "S"
-                                                        ? project.supervisors
-                                                        : project.agents
-                                                    )?.some(u => u._id === user._id) && <Check />}
+                                                    {(
+                                                isMemberDialogOpen === "S"
+                                                    ? project.supervisors
+                                                    : isMemberDialogOpen === "A"
+                                                        ? project.agents
+                                                        : project.partners
+                                            )?.some(u => u._id === user._id) && <Check />}
                                                 </CommandItem>
                                             ))}
                                         </CommandGroup>
