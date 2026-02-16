@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { ColumnType, ISheetColumn } from '@/types/types';
 import { Edit, Plus, Trash2, GripVertical } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -133,30 +134,32 @@ const AdminColumns = () => {
                                 editing.type === ColumnType.Select && (
                                     <div>
                                         <Label>Options (vergül ilə ayrılmış)</Label>
-                                        {(editing.options || []).map((opt, idx) => (
-                                            <div key={idx} className="flex gap-2 mb-2 items-center">
-                                                <div className="flex-1 flex gap-2">
-                                                    <span className="font-medium">Label:</span>
-                                                    <span>{opt.label}</span>
+                                        <div className="h-48 w-full overflow-y-auto overflow-x-hidden border rounded p-2 mb-2">
+                                            {(editing.options || []).map((opt, idx) => (
+                                                <div key={idx} className="flex gap-2 mb-2 items-center w-full min-w-0">
+                                                    <div className="flex-1 flex gap-2 min-w-0">
+                                                        <span className="font-medium">Label:</span>
+                                                        <span className="break-words break-all whitespace-normal">{opt.label}</span>
+                                                    </div>
+                                                    <div className="flex-1 flex gap-2 min-w-0">
+                                                        <span className="font-medium">Value:</span>
+                                                        <span className="break-words break-all whitespace-normal">{opt.value}</span>
+                                                    </div>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        onClick={() => {
+                                                            setEditing({
+                                                                ...editing,
+                                                                options: (editing.options || []).filter((_, i) => i !== idx)
+                                                            });
+                                                        }}
+                                                    >
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
                                                 </div>
-                                                <div className="flex-1 flex gap-2">
-                                                    <span className="font-medium">Value:</span>
-                                                    <span>{opt.value}</span>
-                                                </div>
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    onClick={() => {
-                                                        setEditing({
-                                                            ...editing,
-                                                            options: (editing.options || []).filter((_, i) => i !== idx)
-                                                        });
-                                                    }}
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                                </Button>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                         <div className="flex gap-2 mb-2">
                                             <Input
                                                 value={optionValue.label}
