@@ -45,13 +45,15 @@ export class UserController {
         @Param('sheetId') sheetId: string,
         @Query('page') page = '1',
         @Query('limit') limit = '50',
-        @Query('search') search = ''
+        @Query('search') search = '',
+        @Query('skip') skip = '0'
     ) {
         const result = await this.userService.getColumnsBySheetId(
             sheetId,
             Number(page),
             Number(limit),
-            search
+            search,
+            Number(skip)
         );
         return { data: result };
     }

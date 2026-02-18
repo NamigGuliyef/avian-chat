@@ -108,8 +108,8 @@ export class UserService {
   }
 
 
-  async getColumnsBySheetId(sheetId: string, page = 1, limit = 50, search = ''): Promise<any> {
-    const skip = (page - 1) * limit;
+  async getColumnsBySheetId(sheetId: string, page = 1, limit = 50, search = '', skip = 0): Promise<any> {
+    const skipOffset = (page - 1) * limit + skip;
     const sheet = await this.sheetModel.findById(sheetId).populate({ path: 'columnIds.columnId', model: 'Column' }).exec();
     console.log(sheet?.columnIds);
     if (!sheet) throw new Error('Sheet not found');
@@ -155,15 +155,19 @@ export class UserService {
       });
 
       // Apply pagination
-      rows = filteredRows.slice(skip, skip + limit);
+      rows = filteredRows.slice(skipOffset, skipOffset + limit);
     } else {
       // No search - simple find with pagination
-      rows = await this.rowModel.find(matchStage).sort({ rowNumber: 1 }).skip(skip).limit(limit).exec();
+      rows = await this.rowModel.find(matchStage).sort({ rowNumber: 1 }).skip(skipOffset).limit(limit).exec();
     }
+
+    // Count total documents matching the criteria (for pagination)
+    const total = await this.rowModel.countDocuments(matchStage);
 
     return {
       columns: sheet.columnIds,
       rows,
+      total
     };
   }
 

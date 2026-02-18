@@ -13,6 +13,22 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { formatDate } from "@/lib/utils";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { Input } from "../ui/input";
 
 
 const UserColumns: React.FC = () => {
@@ -28,12 +44,11 @@ const UserColumns: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const rowsPerPage = 50;
 
-    useEffect(() => {
-        if (sheetId) {
-            fetchData();
-            setCurrentPage(1);
-        }
-    }, [sheetId]);
+    // Pagination & Skip Logic
+    const [skipRows, setSkipRows] = useState<number>(0);
+    const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
+    const [isSkipModalOpen, setIsSkipModalOpen] = useState(true);
+    const [tempSkipValue, setTempSkipValue] = useState<string>("0");
 
     useEffect(() => {
         if (sheetId) {
@@ -43,15 +58,28 @@ const UserColumns: React.FC = () => {
     }, [searchTerm]);
 
     useEffect(() => {
-        if (sheetId) fetchData();
-    }, [sheetId, currentPage]);
+        if (sheetId && hasLoadedInitialData) {
+            fetchData();
+        }
+    }, [sheetId, currentPage, skipRows, hasLoadedInitialData]);
 
     const fetchData = async () => {
         try {
             setLoading(true);
-            const data = await getColumnsBySheetId(sheetId!, currentPage, rowsPerPage, searchTerm);
+            const data = await getColumnsBySheetId(sheetId!, currentPage, rowsPerPage, searchTerm, skipRows);
             setColumns(data.columns);
-            setRows(data.rows)
+            setRows(data.rows);
+            // Set total rows from API response if available, or fall back to estimation if needed
+            if (typeof data.total === 'number') {
+                setTotalRows(data.total);
+            } else {
+                // Fallback if API hasn't updated yet (though we just updated it)
+                if (data.rows.length > 0 && data.rows.length < rowsPerPage) {
+                    setTotalRows((currentPage - 1) * rowsPerPage + data.rows.length);
+                } else if (data.rows.length === rowsPerPage) {
+                    setTotalRows((currentPage * rowsPerPage) + 1); // estimate
+                }
+            }
         } catch (e) {
             toast.error("Sütunlar gətirilərkən xəta baş verdi");
         } finally {
@@ -179,16 +207,16 @@ const UserColumns: React.FC = () => {
     return (
         <div className="h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 flex flex-col overflow-hidden">
             {/* Header Section */}
-            <div className="flex-shrink-0 mb-4">
-                <div className="flex items-center justify-between mb-4">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(-1)}
-                        className="hover:bg-slate-200 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Geri
-                    </Button>
+            <div className="flex-shrink-0 justify-between">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate(-1)}
+                    className="hover:bg-slate-200 transition-colors"
+                >
+                    <ArrowLeft className="w-4 h-4 mr-2" /> Geri
+                </Button>
+                <div className="flex items-center justify-end">
                     <Button
                         variant="outline"
                         size="sm"
@@ -197,6 +225,28 @@ const UserColumns: React.FC = () => {
                     >
                         <RefreshCw className="w-4 h-4 mr-2" /> Yenilə
                     </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIsSkipModalOpen(true)}
+                        className="hover:bg-blue-50 transition-colors ml-2"
+                    >
+                        Skip: {skipRows}
+                    </Button>
+                    {hasLoadedInitialData && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                                const totalAfterSkip = Math.max(0, totalRows);
+                                const lastPage = Math.max(1, Math.ceil(totalAfterSkip / rowsPerPage));
+                                setCurrentPage(lastPage);
+                            }}
+                            className="hover:bg-blue-50 transition-colors ml-2"
+                        >
+                            Son sətirə Get
+                        </Button>
+                    )}
                 </div>
 
                 <div className="mb-3">
@@ -359,6 +409,22 @@ const UserColumns: React.FC = () => {
                             )}
                         </div>
 
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" size="sm" className="hover:bg-slate-100">
+                                    Səhifəyə get
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-48">
+                                <GoToPage
+                                    totalRows={totalRows}
+                                    rowsPerPage={rowsPerPage}
+                                    skipRows={skipRows}
+                                    onGo={setCurrentPage}
+                                />
+                            </PopoverContent>
+                        </Popover>
+
                         <Button
                             variant="outline"
                             size="sm"
@@ -371,8 +437,94 @@ const UserColumns: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            <AlertDialog
+                open={isSkipModalOpen}
+                onOpenChange={(open) => {
+                    if (hasLoadedInitialData) setIsSkipModalOpen(open);
+                }}
+            >
+                <AlertDialogContent className="max-w-2xl w-[90vw]">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{hasLoadedInitialData ? "Sətirləri Ötür" : "Məlumatları Yüklə"}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {hasLoadedInitialData
+                                ? "Başlanğıcdan neçə sətir ötürmək istədiyinizi qeyd edin."
+                                : "Cədvəli yükləmək üçün sətir ötürmə sayını qeyd edin."}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="py-4">
+                        <Input
+                            type="number"
+                            placeholder="Ötürüləcək sətir sayı"
+                            value={tempSkipValue}
+                            onChange={(e) => setTempSkipValue(e.target.value)}
+                        />
+                    </div>
+                    <AlertDialogFooter className="flex flex-col gap-2">
+                        <AlertDialogCancel onClick={() => setIsSkipModalOpen(false)} className="w-full bg-red-50 hover:bg-red-600 hover:text-white text-red-600 border-red-200">
+                            Ləğv et
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                const val = Number(tempSkipValue) || 0;
+                                setSkipRows(val);
+                                setHasLoadedInitialData(true);
+                                setCurrentPage(1);
+                                setIsSkipModalOpen(false);
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 w-full"
+                        >
+                            {hasLoadedInitialData ? "Tətbiq et" : "Yüklə"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div >
     );
 };
+
+// Extracted component to prevent re-renders of the entire table on input change
+const GoToPage = ({ totalRows, rowsPerPage, skipRows, onGo }: { totalRows: number, rowsPerPage: number, skipRows: number, onGo: (page: number) => void }) => {
+    const [inputPage, setInputPage] = useState("");
+
+    return (
+        <div className="flex flex-col gap-2">
+            <h4 className="font-medium leading-none mb-1">Səhifəyə keçid</h4>
+            <div className="flex gap-2">
+                <Input
+                    type="number"
+                    value={inputPage}
+                    onChange={(e) => setInputPage(e.target.value)}
+                    placeholder="#"
+                    className="h-8"
+                    min={1}
+                />
+                <Button
+                    size="sm"
+                    onClick={() => {
+                        const p = parseInt(inputPage);
+                        if (!isNaN(p) && p > 0) {
+                            const totalAfterSkip = Math.max(0, totalRows - skipRows);
+                            const maxPage = Math.ceil(totalAfterSkip / rowsPerPage);
+
+                            // If totalRows is 0 (not loaded yet or empty), we might want to allow navigation or not.
+                            // Assuming if totalRows is 0, maxPage is 0.
+                            if (maxPage > 0 && p > maxPage) {
+                                toast.error(`Maksimum səhifə sayı: ${maxPage}`);
+                                return;
+                            }
+                            onGo(p);
+                            setInputPage("");
+                        }
+                    }}
+                    className="h-8 w-12 bg-blue-600 hover:bg-blue-700"
+                >
+                    Get
+                </Button>
+            </div>
+        </div>
+    );
+}
 
 export default UserColumns;

@@ -56,8 +56,8 @@ export const getSheetsByExcelId = async (excelId) => {
     const { data } = await axios.get(`/user/sheets/excel/${excelId}`);
     return data;
 }
-export const getColumnsBySheetId = async (sheetId, page = 1, limit = 50, search = ''): Promise<IUserSheetResponse> => {
-    let url = `/user/columns/sheet/${sheetId}?page=${page}&limit=${limit}`;
+export const getColumnsBySheetId = async (sheetId, page = 1, limit = 50, search = '', skip = 0): Promise<IUserSheetResponse> => {
+    let url = `/user/columns/sheet/${sheetId}?page=${page}&limit=${limit}&skip=${skip}`;
     if (search) {
         url += `&search=${encodeURIComponent(search)}`;
     }
@@ -67,6 +67,7 @@ export const getColumnsBySheetId = async (sheetId, page = 1, limit = 50, search 
 export interface IUserSheetResponse {
     columns: SheetColumnForm[];
     rows: SheetRowForm[];
+    total: number;
 }
 
 export const getReminders = async (): Promise<any[]> => {

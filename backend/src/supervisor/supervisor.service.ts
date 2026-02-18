@@ -450,8 +450,30 @@ export class SupervisorService {
 
 
   async importFromExcel(sheetId: Types.ObjectId, file: Express.Multer.File) {
-    const sheet = await this.sheetModel.findById(sheetId);
+    const sheet = await this.sheetModel.findById(sheetId).populate({
+      path: 'columnIds.columnId',
+      model: 'Column'
+    });
     if (!sheet) throw new NotFoundException('Sheet tapılmadı');
+
+    // Find Agent column key
+    // We look for a column named 'Agent', 'agent', 'Təmsilçi', etc.
+    // or with dataKey 'agent', 'assignee'.
+    let agentKey = 'agent';
+    if (sheet.columnIds && sheet.columnIds.length > 0) {
+      const agentCol = sheet.columnIds.find((c: any) => {
+        const name = c.columnId?.name?.toLowerCase() || '';
+        const key = c.columnId?.dataKey?.toLowerCase() || '';
+        return name.includes('agent') || name.includes('təmsilçi') || key === 'agent' || key === 'assignee';
+      });
+      if (agentCol && (agentCol as any).columnId?.dataKey) {
+        agentKey = (agentCol as any).columnId.dataKey;
+      }
+    }
+
+    // Current Supervisor
+    const currentUser = this.request.user;
+    const defaultAgentName = currentUser ? `${currentUser.name} ${currentUser.surname}` : '';
 
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(file.buffer as unknown as ArrayBuffer);
@@ -495,6 +517,12 @@ export class SupervisorService {
 
         rowData[key] = value;
       });
+
+      // Default Agent Logic: If Agent column is empty, set default supervisor name
+      if (defaultAgentName && (!rowData[agentKey] || String(rowData[agentKey]).trim() === '')) {
+        rowData[agentKey] = defaultAgentName;
+      }
+
       console.log('rowData', rowData)
       rows.push(rowData);
     });
