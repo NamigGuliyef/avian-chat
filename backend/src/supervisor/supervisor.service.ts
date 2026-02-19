@@ -285,6 +285,36 @@ export class SupervisorService {
       this.validateAgentRowRanges(updateSheetData.agentIds);
     }
 
+    // 19.02.2026
+    // Təyin olunan agent-in sheetrow modelindəki rowNumber-larına uyğunluğunu yoxla və data.agent sahəsinə agentin adı və soyadını yazdır.
+    if (updateSheetData.agentIds && updateSheetData.agentIds.length > 0) {
+      for (const agent of updateSheetData.agentIds) {
+        const agentData = agent as any;
+        const agentInfo = await this.userModel.findById(agentData._id || agentData.agentId);
+        if (!agentInfo) {
+          throw new NotFoundException(`Agent tapılmadı: ${agentData._id || agentData.agentId}`);
+        }
+        const agentName = `${agentInfo.name} ${agentInfo.surname}`;
+        const ranges = agentData.ranges && Array.isArray(agentData.ranges) ? agentData.ranges : (agentData.startRow && agentData.endRow ? [{ startRow: agentData.startRow, endRow: agentData.endRow }] : []);
+        for (const range of ranges) {
+          await this.sheetRowModel.updateMany(
+            {
+              sheetId: sheet._id,
+              rowNumber: { $gte: Number(range.startRow), $lte: Number(range.endRow) },
+            },
+            { $set: { 'data.agent': agentName } }
+          );
+        }
+      }
+    } else {
+      // Əgər agentIds boşdursa, sheetə aid bütün row-ların data.agent sahəsini boşalt
+      await this.sheetRowModel.updateMany(
+        { sheetId: sheet._id },
+        { $unset: { 'data.agent': "" } }
+      );
+    }
+
+
     /* 3. Sheet məlumatlarının update edilməsi */
     sheet.set({
       name: updateSheetData.name ?? sheet.name,
