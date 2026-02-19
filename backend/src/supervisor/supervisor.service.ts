@@ -456,6 +456,18 @@ export class SupervisorService {
     });
     if (!sheet) throw new NotFoundException('Sheet tapılmadı');
 
+    // Create a map of column dataKey to type for date conversion
+    const columnTypeMap: Record<string, string> = {};
+    if (sheet.columnIds && sheet.columnIds.length > 0) {
+      sheet.columnIds.forEach((col: any) => {
+        const dataKey = col.columnId?.dataKey;
+        const type = col.columnId?.type;
+        if (dataKey && type) {
+          columnTypeMap[dataKey] = type.toLowerCase();
+        }
+      });
+    }
+
     // Find Agent column key
     // We look for a column named 'Agent', 'agent', 'Təmsilçi', etc.
     // or with dataKey 'agent', 'assignee'.
@@ -508,6 +520,13 @@ export class SupervisorService {
         // 🔥 Tarix handling
         if (value instanceof Date) {
           value = value; // artıq JS Date-dir
+        } else if (typeof value === 'string' && value.trim() && columnTypeMap[key] === 'date') {
+          // String dəyəri timestamp-ə çevir və Date-ə çevir
+          const parsedDate = new Date(value);
+          // Əgər tarix parsə edilə bilirsə, Date object olaraq saxla
+          if (!isNaN(parsedDate.getTime())) {
+            value = parsedDate;
+          }
         }
 
         // Formula varsa
