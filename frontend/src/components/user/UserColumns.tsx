@@ -67,6 +67,10 @@ const UserColumns: React.FC = () => {
         try {
             setLoading(true);
             const data = await getColumnsBySheetId(sheetId!, currentPage, rowsPerPage, searchTerm, skipRows);
+            console.log('Fetched data:', {
+                columns: data.columns?.map(c => ({ name: c.columnId?.name, dataKey: c.columnId?.dataKey, order: c.order })),
+                rows: data.rows?.slice(0, 2).map(r => ({ rowNumber: r.rowNumber, data: r.data }))
+            });
             setColumns(data.columns);
             setRows(data.rows);
             // Set total rows from API response if available, or fall back to estimation if needed
@@ -327,7 +331,7 @@ const UserColumns: React.FC = () => {
                             <tbody>
                                 {rows.map((row, rowIndex) => (
                                     <tr
-                                        key={rowIndex}
+                                        key={`${row.rowNumber}-${rowIndex}`}
                                         className="border-b border-slate-200 hover:bg-blue-50 transition-colors duration-150 group"
                                     >
                                         <td className="px-4 py-3 text-slate-600 font-medium text-sm bg-slate-50 group-hover:bg-blue-100 min-w-[60px]">
@@ -342,20 +346,22 @@ const UserColumns: React.FC = () => {
                                             />
                                         </td>
                                         {columns
-                                            .sort((a, b) => a.order - b.order)
-                                            .map((col) => {
+                                            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                                            .map((col, colIndex) => {
                                                 const colDef = col.columnId;
                                                 if (!colDef) return null;
 
+                                                const cellValue = row.data?.[colDef.dataKey];
+
                                                 return (
                                                     <td
-                                                        key={colDef._id}
+                                                        key={`${colDef._id}-${colIndex}`}
                                                         className="px-4 py-3 text-slate-700 text-sm border-r border-slate-100 hover:bg-blue-100 transition-colors min-w-[150px]"
                                                     >
                                                         <div className="max-h-20 overflow-auto">
                                                             <EditableCell
                                                                 colDef={colDef}
-                                                                value={row.data[colDef.dataKey]}
+                                                                value={cellValue}
                                                                 editable={col.editable}
                                                                 onSave={(val) =>
                                                                     handleUpdateCell(row.rowNumber, colDef.dataKey, val)
