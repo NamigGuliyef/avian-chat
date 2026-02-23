@@ -176,14 +176,24 @@ const PartnerReportsPage: React.FC = () => {
           // Əgər sheet-də row varsa → hər biri ayrıca row olur
           if (sheet.sheetRows && sheet.sheetRows.length > 0) {
             sheet.sheetRows.forEach((row: any) => {
+              const cleanedRow = { ...row };
+              
+              // Remove agent/operator information from the partner view
+              Object.keys(cleanedRow).forEach(key => {
+                const lowerKey = key.toLowerCase();
+                if (lowerKey.includes('agent') || lowerKey.includes('operator') || lowerKey.includes('icraçı') || lowerKey.includes('icraci')) {
+                  delete cleanedRow[key];
+                }
+              });
+
               rows.push({
                 company: companyName,
-                project: row.projectName,
+                project: cleanedRow.projectName || row.projectName,
                 excel: excelName,
                 sheetName,
 
                 // dynamic data
-                ...row,
+                ...cleanedRow,
               });
             });
           }

@@ -94,7 +94,13 @@ const PartnerSingleSheet: React.FC = () => {
     const fetchColumns = async () => {
         try {
             const data = await getPartnerColumns(sheetId!);
-            setColumns(data);
+            const filtered = data.filter((item: any) => {
+                const colDef = item.columnId;
+                if (!colDef) return false;
+                const lowerKey = colDef.dataKey?.toLowerCase() || '';
+                return !(lowerKey.includes('agent') || lowerKey.includes('operator') || lowerKey.includes('icraçı') || lowerKey.includes('icraci'));
+            });
+            setColumns(filtered);
         } catch (e) {
             toast.error("Sütunlar gətirilərkən xəta baş verdi");
         }
