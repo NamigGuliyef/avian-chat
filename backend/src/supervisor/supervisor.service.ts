@@ -667,14 +667,31 @@ export class SupervisorService {
     console.log(`[getRows] ID: ${objSheetId}, Type: ${typeof sheetId}, Page: ${page}`);
     const query: any = { sheetId: objSheetId };
 
+    // Fetch column types for filters and search keys
+    let sheet: any = null;
+    const columnTypeMap: Record<string, string> = {};
+    if (search || filters) {
+      sheet = await this.sheetModel.findById(objSheetId).populate({
+        path: 'columnIds.columnId',
+        model: 'Column',
+        select: 'name dataKey type'
+      }).lean();
+
+      if (sheet?.columnIds) {
+        sheet.columnIds.forEach((c: any) => {
+          if (c.columnId?.dataKey && c.columnId?.type) {
+            columnTypeMap[c.columnId.dataKey] = c.columnId.type;
+          }
+        });
+      }
+    }
+
     // Fetch column keys AND all existing keys in data objects for this sheet
     let dataKeys: string[] = [];
     if (search) {
-      const [sheet, keysInData, sampleCount] = await Promise.all([
-        this.sheetModel.findById(objSheetId).populate('columnIds.columnId').lean(),
+      const [keysInData, sampleCount] = await Promise.all([
         this.sheetRowModel.aggregate([
           { $match: { sheetId: objSheetId } },
-          // { $limit: 100 }, // Search ALL keys in the sheet for reliability
           { $project: { keys: { $objectToArray: "$data" } } },
           { $unwind: "$keys" },
           { $group: { _id: null, allKeys: { $addToSet: "$keys.k" } } }
@@ -682,10 +699,7 @@ export class SupervisorService {
         this.sheetRowModel.countDocuments({ sheetId: objSheetId })
       ]);
 
-      const columnKeys = sheet?.columnIds
-        ?.map((c: any) => c.columnId?.dataKey)
-        .filter((k: string) => k) || [];
-
+      const columnKeys = Object.keys(columnTypeMap);
       const foundKeysInData = keysInData[0]?.allKeys || [];
       const fallbacks = ['phone', 'Phone', 'Mobil', 'mobil', 'nömrə', 'Nömrə', 'number', 'Number', '№', 'status', 'Status', 'Zəng nömrəsi', 'Əlaqə nömrəsi'];
       dataKeys = Array.from(new Set([...columnKeys, ...foundKeysInData, ...fallbacks]));
@@ -698,8 +712,20 @@ export class SupervisorService {
       try {
         const parsedFilters = JSON.parse(filters);
         Object.keys(parsedFilters).forEach((key) => {
-          const values = parsedFilters[key];
+          let values = parsedFilters[key];
           if (Array.isArray(values) && values.length > 0) {
+
+            // Convert to Date if it's a date column
+            if (columnTypeMap[key] === 'date') {
+              values = values.map((v: any) => {
+                if (typeof v === 'string') {
+                  const d = new Date(v);
+                  if (!isNaN(d.getTime())) return d;
+                }
+                return v;
+              });
+            }
+
             // Use specific index for phone if key is phone
             if (key === 'phone') {
               query['data.phone'] = { $in: values };
@@ -805,22 +831,52 @@ export class SupervisorService {
     sheetCellData: SheetCellDto
   ) {
     const isRemindMe = sheetCellData.key === 'remindMe';
-    const updateQuery: any = isRemindMe
-      ? { remindMe: !!sheetCellData.value }
-      : { [`data.${sheetCellData.key}`]: sheetCellData.value };
+    let targetValue = sheetCellData.value;
 
-    // Status dəyişdirildikdə tarix avtomatik yenilənsin
-    if (!isRemindMe && sheetCellData.key?.toLowerCase().includes('status')) {
-      const sheet = await this.sheetModel
-        .findById(sheetId)
-        .populate({ path: 'columnIds', select: 'columnId' });
+    // Check if updating a Date column
+    const sheet = await this.sheetModel
+      .findById(sheetId)
+      .populate({
+        path: 'columnIds.columnId',
+        model: 'Column',
+        select: 'name dataKey type'
+      });
 
-      const dateColumn: any = sheet?.columnIds?.find((c: any) =>
+    let isDateColumn = false;
+    let dateColumnKey = null;
+
+    if (sheet?.columnIds) {
+      // Find if this specific key being updated is a date column
+      const targetCol: any = sheet.columnIds.find((c: any) => c?.columnId?.dataKey === sheetCellData.key);
+      if (targetCol && targetCol.columnId?.type === 'date') {
+        isDateColumn = true;
+      }
+
+      // Find the designated date column for status updates
+      const dCol: any = sheet.columnIds.find((c: any) =>
         c?.columnId?.dataKey?.toLowerCase().includes('date') ||
         c?.columnId?.name?.toLowerCase().includes('tarix')
       );
+      if (dCol?.columnId?.dataKey) {
+        dateColumnKey = dCol.columnId.dataKey;
+      }
+    }
 
-      if (dateColumn?.columnId?.dataKey) {
+    // Convert ISO Date strings to Date object to save reliably in MongoDB
+    if (isDateColumn && typeof targetValue === 'string') {
+      const parsedDate = new Date(targetValue);
+      if (!isNaN(parsedDate.getTime())) {
+        targetValue = parsedDate; // Store as Date object
+      }
+    }
+
+    const updateQuery: any = isRemindMe
+      ? { remindMe: !!targetValue }
+      : { [`data.${sheetCellData.key}`]: targetValue };
+
+    // Status dəyişdirildikdə tarix avtomatik yenilənsin
+    if (!isRemindMe && sheetCellData.key?.toLowerCase().includes('status')) {
+      if (dateColumnKey) {
         const now = new Date();
         const dateStr = now.toLocaleString('az-AZ', {
           year: 'numeric',
@@ -830,7 +886,7 @@ export class SupervisorService {
           minute: '2-digit',
           second: '2-digit',
         });
-        updateQuery[`data.${dateColumn.columnId.dataKey}`] = dateStr;
+        updateQuery[`data.${dateColumnKey}`] = dateStr;
       }
     }
 
@@ -873,12 +929,20 @@ export class SupervisorService {
     endDate?: string
   ): Promise<any[]> {
     const start = startDate
-      ? new Date(startDate)
-      : new Date(new Date().setHours(0, 0, 0, 0));
+      ? new Date(`${startDate}T00:00:00.000Z`)
+      : new Date();
+
+    if (!startDate) {
+      start.setUTCHours(0, 0, 0, 0);
+    }
 
     const end = endDate
-      ? new Date(endDate)
-      : new Date(new Date().setHours(23, 59, 59, 999));
+      ? new Date(`${endDate}T23:59:59.999Z`)
+      : new Date();
+
+    if (!endDate) {
+      end.setUTCHours(23, 59, 59, 999);
+    }
 
     // 1. Supervisorun aid olduğu layihələri çəkirik
     const projects = await this.projectModel

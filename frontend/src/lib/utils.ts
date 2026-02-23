@@ -59,9 +59,9 @@ export const formatDateForEditableCell = (value: any) => {
   const date = value instanceof Date ? value : new Date(value);
   if (isNaN(date.getTime())) return "";
 
-  const dd = String(date.getDate()).padStart(2, "0");
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const yyyy = date.getFullYear();
+  const dd = String(date.getUTCDate()).padStart(2, "0");
+  const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const yyyy = date.getUTCFullYear();
 
   return `${dd}/${mm}/${yyyy}`;
 };
@@ -79,9 +79,9 @@ export const toDateInputValue = (value: any) => {
   const d = value instanceof Date ? value : new Date(value);
   if (isNaN(d.getTime())) return "";
 
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
 
   return `${year}-${month}-${day}`;
 };
@@ -89,5 +89,5 @@ export const toDateInputValue = (value: any) => {
 export const fromDateInputValue = (value: string) => {
   if (!value) return null;
   const [y, m, d] = value.split("-").map(Number);
-  return new Date(y, m - 1, d);
+  return new Date(Date.UTC(y, m - 1, d));
 };

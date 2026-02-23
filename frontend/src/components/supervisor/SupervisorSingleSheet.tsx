@@ -178,7 +178,36 @@ const SupervisorSingleSheet: React.FC = () => {
     const fetchRows = useCallback(async () => {
         try {
             setLoading(true)
-            const res = await getRows(sheetId!, currentPage, rowsPerPage, skipRows, searchQuery, filters);
+
+            // Map the display values back to original values for the API request
+            const apiFilters: Record<string, string[]> = {};
+            Object.entries(filters).forEach(([colId, displayValues]) => {
+                if (!displayValues || displayValues.length === 0) return;
+
+                const uniqueOrigs = filterOptions[colId] || [];
+                const matchedOrigs: string[] = [];
+
+                uniqueOrigs.forEach(orig => {
+                    let display = String(orig);
+                    if (colId.toLowerCase().includes('date') && orig) {
+                        const d = new Date(orig as string);
+                        if (!isNaN(d.getTime())) {
+                            const dd = String(d.getDate()).padStart(2, '0');
+                            const mm = String(d.getMonth() + 1).padStart(2, '0');
+                            const yyyy = d.getFullYear();
+                            display = `${dd}/${mm}/${yyyy}`;
+                        }
+                    }
+                    if (displayValues.includes(display)) {
+                        matchedOrigs.push(String(orig));
+                    }
+                });
+
+                // Fallback to displayValues if no matching originals found
+                apiFilters[colId] = matchedOrigs.length > 0 ? Array.from(new Set(matchedOrigs)) : displayValues;
+            });
+
+            const res = await getRows(sheetId!, currentPage, rowsPerPage, skipRows, searchQuery, apiFilters);
             // support both legacy array response and new { data, total }
             if (Array.isArray(res)) {
                 setRows(res);
@@ -201,7 +230,7 @@ const SupervisorSingleSheet: React.FC = () => {
         } finally {
             setLoading(false)
         }
-    }, [sheetId, currentPage, rowsPerPage, skipRows, searchQuery, filters]);
+    }, [sheetId, currentPage, rowsPerPage, skipRows, searchQuery, filters, filterOptions]);
 
     // ---------------- Row Actions ----------------
     const handleAddRow = async () => {

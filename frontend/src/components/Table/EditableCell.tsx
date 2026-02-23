@@ -133,13 +133,15 @@ export const EditableCell: React.FC<EditableCellProps> = React.memo(({
                         onChange={(e) => setLocalValue(e.target.value)}
                         onBlur={() => {
                             setIsEditing(false);
-                            const parsed = fromDateInputValue(localValue);
-                            if (parsed) onSave(parsed);
+                            if (localValue && localValue !== toDateInputValue(value)) {
+                                onSave(fromDateInputValue(localValue)); // Send Date object
+                            }
                         }}
                         onKeyDown={(e) => {
                             if (e.key === "Enter") {
-                                const parsed = fromDateInputValue(localValue);
-                                if (parsed) onSave(parsed);
+                                if (localValue && localValue !== toDateInputValue(value)) {
+                                    onSave(fromDateInputValue(localValue)); // Send Date object
+                                }
                                 setIsEditing(false);
                             }
                         }}
