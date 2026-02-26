@@ -32,6 +32,12 @@ export const EditableCell: React.FC<EditableCellProps> = React.memo(({
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
+        if (!isEditing) {
+            setLocalValue(value);
+        }
+    }, [value, isEditing]);
+
+    useEffect(() => {
         if (isEditing) {
             inputRef.current?.focus();
             inputRef.current?.select();
@@ -70,11 +76,15 @@ export const EditableCell: React.FC<EditableCellProps> = React.memo(({
                     onValueChange={(val) => {
                         if (val !== undefined && val !== null) {
                             setLocalValue(val);
+                            setIsEditing(false);
+                            if (val !== value) {
+                                onSave(val);
+                            }
                         }
                     }}
                     onOpenChange={(open) => {
                         if (!open) {
-                            handleSave()
+                            setIsEditing(false);
                         }
                     }}
                 >
