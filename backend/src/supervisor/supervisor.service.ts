@@ -875,7 +875,7 @@ export class SupervisorService {
       : { [`data.${sheetCellData.key}`]: targetValue };
 
     // Status dəyişdirildikdə tarix avtomatik yenilənsin
-    if (!isRemindMe && sheetCellData.key?.toLowerCase().includes('status')) {
+    if (!isRemindMe && sheetCellData.key?.toLowerCase() === 'callstatus' && targetValue === 'Successful') {
       if (dateColumnKey) {
         const now = new Date();
         const dateStr = now.toLocaleString('az-AZ', {
