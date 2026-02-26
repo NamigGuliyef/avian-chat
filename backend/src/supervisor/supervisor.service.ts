@@ -730,7 +730,18 @@ export class SupervisorService {
             if (key === 'phone') {
               query['data.phone'] = { $in: values };
             } else {
-              query[`data.${key}`] = { $in: values };
+              query[`data.${key}`] = {
+                $in: values.reduce((acc: any[], v: any) => {
+                  if (typeof v === 'string') {
+                    const escaped = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    acc.push(v);
+                    acc.push(new RegExp(`^${escaped}$`, 'i'));
+                  } else {
+                    acc.push(v);
+                  }
+                  return acc;
+                }, [])
+              };
             }
           }
         });
@@ -802,10 +813,17 @@ export class SupervisorService {
     ]);
 
     return filterOptions.reduce((acc, curr) => {
-      acc[curr._id] = curr.values
-        .filter((v) => v !== null && v !== undefined && v !== '')
-        .map((v) => String(v))
-        .sort();
+      const rawValues = curr.values
+        .filter((v: any) => v !== null && v !== undefined && v !== '')
+        .map((v: any) => String(v));
+
+      const uniqueValues = Array.from(new Set(rawValues.map((v: string) => {
+        const trimmed = v.trim();
+        if (!trimmed) return v;
+        return trimmed.split(/\s+/).map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+      }))).sort();
+
+      acc[curr._id] = uniqueValues;
       return acc;
     }, {});
   }
